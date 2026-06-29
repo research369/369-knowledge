@@ -1,43 +1,30 @@
-FROM node:22-alpine AS builder
+FROM node:22-alpine
 
 WORKDIR /app
 
 # Install pnpm
 RUN npm install -g pnpm@9
 
-# Copy monorepo root files
+# Copy monorepo root package files
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/backend/package.json ./packages/backend/
 
 # Install all workspace dependencies
 RUN pnpm install --no-frozen-lockfile
 
-# Copy backend source
-COPY packages/backend/ ./packages/backend/
+# Copy backend source and drizzle migrations
+COPY packages/backend/src ./packages/backend/src
+COPY packages/backend/tsconfig.json ./packages/backend/
+COPY packages/backend/drizzle ./packages/backend/drizzle
 
 # Build TypeScript
 RUN cd packages/backend && pnpm build
 
-# ─── Production image ──────────────────────────────────────────────────────────
-FROM node:22-alpine AS runner
+# Verify build output exists
+RUN ls -la packages/backend/dist/
 
-WORKDIR /app
-
-RUN npm install -g pnpm@9
-
-# Copy backend package.json
-COPY packages/backend/package.json ./package.json
-
-# Install production dependencies
-RUN pnpm install --prod --no-frozen-lockfile
-
-# Copy built artifacts
-COPY --from=builder /app/packages/backend/dist ./dist
-COPY --from=builder /app/packages/backend/drizzle ./drizzle
-
-# Security: non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
+# Move to backend directory for runtime
+WORKDIR /app/packages/backend
 
 EXPOSE 3001
 
