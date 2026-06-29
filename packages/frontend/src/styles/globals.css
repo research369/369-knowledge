@@ -2,6 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Tailwind Custom Colors via CSS Variables ───────────────────────────── */
+@layer utilities {
+  .bg-navy { background-color: var(--color-navy); }
+  .bg-navy-light { background-color: var(--color-navy-light); }
+  .bg-blue { background-color: var(--color-blue); }
+  .bg-blue-mid { background-color: var(--color-blue-mid); }
+  .bg-blue-bright { background-color: var(--color-blue-bright); }
+  .bg-gold { background-color: var(--color-gold); }
+  .text-navy { color: var(--color-navy); }
+  .text-navy-light { color: var(--color-navy-light); }
+  .text-blue-bright { color: var(--color-blue-bright); }
+  .text-blue-mid { color: var(--color-blue-mid); }
+  .text-gold { color: var(--color-gold); }
+  .text-gold-light { color: var(--color-gold-light); }
+  .border-blue { border-color: var(--color-blue); }
+  .border-blue-bright { border-color: var(--color-blue-bright); }
+  .border-gold { border-color: var(--color-gold); }
+  .from-blue-mid { --tw-gradient-from: var(--color-blue-mid); }
+  .to-blue-bright { --tw-gradient-to: var(--color-blue-bright); }
+  .bg-blue\/5 { background-color: rgba(30, 58, 138, 0.05); }
+  .bg-blue\/10 { background-color: rgba(30, 58, 138, 0.10); }
+  .bg-blue\/15 { background-color: rgba(30, 58, 138, 0.15); }
+  .bg-blue\/20 { background-color: rgba(30, 58, 138, 0.20); }
+  .border-blue\/20 { border-color: rgba(30, 58, 138, 0.20); }
+  .border-blue\/30 { border-color: rgba(30, 58, 138, 0.30); }
+  .border-blue\/40 { border-color: rgba(30, 58, 138, 0.40); }
+  .hover\:bg-blue\/5:hover { background-color: rgba(30, 58, 138, 0.05); }
+  .hover\:bg-blue\/10:hover { background-color: rgba(30, 58, 138, 0.10); }
+  .hover\:border-blue\/40:hover { border-color: rgba(30, 58, 138, 0.40); }
+  .hover\:text-blue-bright:hover { color: var(--color-blue-bright); }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-blue-mid);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+  .btn-primary:hover {
+    background: var(--color-blue-bright);
+  }
+}
+
 /* ─── 369 Research Design System ─────────────────────────────────────────── */
 
 :root {

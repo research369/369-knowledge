@@ -13,6 +13,8 @@ import { relationsRouter } from "./routes/relations.router.js";
 import { contentBlocksRouter } from "./routes/content-blocks.router.js";
 import { adminAuthRouter } from "./routes/admin-auth.router.js";
 import { sitemapRouter } from "./routes/sitemap.router.js";
+import { topicsRouter } from "./routes/topics.router.js";
+import { searchRouter } from "./routes/search.router.js";
 
 const app = express();
 const PORT = process.env.PORT || 4001;
@@ -27,6 +29,9 @@ const allowedOrigins = [
   process.env.FRONTEND_URL ?? "http://localhost:5174",
   "https://wissen.369research.eu",
   "https://369research.eu",
+  "https://369-knowledge.netlify.app",
+  "http://localhost:5173",
+  "http://localhost:5174",
 ];
 
 app.use(cors({
@@ -88,6 +93,8 @@ app.use("/api/entities", entitiesRouter);
 app.use("/api/relations", relationsRouter);
 app.use("/api/blocks", contentBlocksRouter);
 app.use("/api/admin", adminAuthRouter);
+app.use("/api/topics", topicsRouter);
+app.use("/api/search", searchRouter);
 app.use("/", sitemapRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────

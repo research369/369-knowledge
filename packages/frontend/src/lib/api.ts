@@ -21,28 +21,67 @@ async function request<T>(
   return res.json();
 }
 
-// ─── Entities ─────────────────────────────────────────────────────────────
+// ─── API ──────────────────────────────────────────────────────────────────────
 
 export const api = {
   entities: {
-    list: (params?: { status?: string; type?: string; q?: string }) => {
+    list: (params?: { status?: string; type?: string; q?: string; limit?: string; offset?: string }) => {
       const qs = new URLSearchParams(params as Record<string, string>).toString();
       return request<{ data: Entity[]; total: number }>(`/entities${qs ? `?${qs}` : ""}`);
     },
-    get: (id: string) => request<{ entity: Entity; blocks: ContentBlock[]; relations: Relation[] }>(`/entities/${id}`),
-    getBySlug: (slug: string) => request<{ entity: Entity; blocks: ContentBlock[]; relations: Relation[] }>(`/entities/slug/${slug}`),
+    get: (id: string, scope?: string) =>
+      request<{ entity: Entity; blocks: ContentBlock[]; relations: Relation[] }>(
+        `/entities/${id}${scope ? `?scope=${scope}` : ""}`
+      ),
+    getBySlug: (slug: string, scope?: string) =>
+      request<{ entity: Entity; blocks: ContentBlock[]; relations: Relation[] }>(
+        `/entities/slug/${slug}${scope ? `?scope=${scope}` : ""}`
+      ),
     create: (data: Partial<Entity>) =>
       request<{ entity: Entity }>("/entities", { method: "POST", body: JSON.stringify(data) }),
     update: (id: string, data: Partial<Entity>) =>
       request<{ entity: Entity }>(`/entities/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
-    generate: (id: string) =>
-      request<{ entity: Entity; blocks: ContentBlock[] }>(`/entities/${id}/generate`, { method: "POST" }),
+    generate: (id: string, context?: string) =>
+      request<{ blocksCreated: number; suggestedRelations: unknown[]; seoTitle: string; blocks?: ContentBlock[]; entity?: Entity }>(
+        `/entities/${id}/generate`,
+        { method: "POST", body: JSON.stringify({ context }) }
+      ),
     publish: (id: string) =>
-      request<{ entity: Entity }>(`/entities/${id}/publish`, { method: "POST" }),
+      request<{ message: string; publishedAt: string }>(`/entities/${id}/publish`, { method: "POST" }),
     unpublish: (id: string) =>
-      request<{ entity: Entity }>(`/entities/${id}/unpublish`, { method: "POST" }),
+      request<{ message: string }>(`/entities/${id}/unpublish`, { method: "POST" }),
+    adminAll: () =>
+      request<{ data: Entity[]; total: number }>("/entities/admin/all"),
     delete: (id: string) =>
       request<{ message: string }>(`/entities/${id}`, { method: "DELETE" }),
+  },
+
+  topics: {
+    list: () => request<{ data: Topic[]; total: number }>("/topics"),
+    get: (slug: string, params?: { type?: string; limit?: string }) => {
+      const qs = new URLSearchParams(params as Record<string, string> ?? {}).toString();
+      return request<{ topic: Topic; entities: Entity[]; total: number }>(
+        `/topics/${slug}${qs ? `?${qs}` : ""}`
+      );
+    },
+    create: (data: Partial<Topic>) =>
+      request<{ topic: Topic }>("/topics", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<Topic>) =>
+      request<{ topic: Topic }>(`/topics/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    assignEntity: (topicId: string, entityId: string, opts?: { isPrimary?: boolean; sortOrder?: number }) =>
+      request<{ message: string }>(`/topics/${topicId}/entities/${entityId}`, {
+        method: "POST",
+        body: JSON.stringify(opts ?? {}),
+      }),
+    removeEntity: (topicId: string, entityId: string) =>
+      request<{ message: string }>(`/topics/${topicId}/entities/${entityId}`, { method: "DELETE" }),
+  },
+
+  search: {
+    query: (q: string, opts?: { type?: string; limit?: number }) => {
+      const params = new URLSearchParams({ q, ...(opts as Record<string, string> ?? {}) });
+      return request<{ data: Entity[]; total: number; query: string }>(`/search?${params}`);
+    },
   },
 
   relations: {
@@ -83,10 +122,11 @@ export const api = {
   },
 };
 
-// ─── Types ─────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface Entity {
   id: string;
+  slug?: string;
   type: string;
   canonicalName: string;
   aliases: string[];
@@ -94,14 +134,33 @@ export interface Entity {
   casNumber?: string;
   categories: string[];
   tags: string[];
+  shortDescription?: string;
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords: string[];
   heroImageUrl?: string;
   metrics: Array<{ label: string; value: string; unit?: string }>;
-  status: "draft" | "review" | "published" | "archived";
+  status: "draft" | "review" | "pending_review" | "published" | "archived";
+  generatedByAi?: boolean;
   version: number;
   publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Topic {
+  id: string;
+  slug: string;
+  name: string;
+  nameEn?: string;
+  description?: string;
+  heroImageUrl?: string;
+  iconName?: string;
+  color?: string;
+  sortOrder: number;
+  active: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -142,6 +142,7 @@ export const entities = pgTable(
   "entities",
   {
     id: text("id").primaryKey(), // slug, e.g. "bpc-157"
+    slug: varchar("slug", { length: 300 }).unique(), // URL-friendly slug, e.g. "bpc-157"
     type: entityTypeEnum("type").notNull(),
     canonicalName: varchar("canonical_name", { length: 500 }).notNull(),
     aliases: jsonb("aliases").notNull().default("[]"), // string[]
@@ -149,6 +150,7 @@ export const entities = pgTable(
     casNumber: varchar("cas_number", { length: 100 }),
     categories: jsonb("categories").notNull().default("[]"), // string[]
     tags: jsonb("tags").notNull().default("[]"), // string[]
+    shortDescription: varchar("short_description", { length: 300 }), // 1-2 Sätze für Cards/Previews
     status: contentStatusEnum("status").notNull().default("draft"),
     // SEO
     seoTitle: varchar("seo_title", { length: 200 }),
@@ -276,6 +278,55 @@ export const adminSessions = pgTable("admin_sessions", {
   expiresAt: timestamp("expires_at").notNull(),
 });
 
+/**
+ * Topics — thematic hubs (Longevity, Mitochondrien, Fettverlust, etc.)
+ */
+export const topics = pgTable(
+  "topics",
+  {
+    id: text("id").primaryKey(), // e.g. "longevity"
+    slug: varchar("slug", { length: 200 }).notNull().unique(), // URL slug
+    name: varchar("name", { length: 200 }).notNull(), // e.g. "Longevity"
+    nameEn: varchar("name_en", { length: 200 }), // English name for SEO
+    description: text("description"), // Short description for topic hub page
+    heroImageUrl: text("hero_image_url"),
+    iconName: varchar("icon_name", { length: 100 }), // Lucide icon name
+    color: varchar("color", { length: 50 }), // Accent color for this topic
+    sortOrder: integer("sort_order").notNull().default(0),
+    active: boolean("active").notNull().default(true),
+    seoTitle: varchar("seo_title", { length: 200 }),
+    seoDescription: varchar("seo_description", { length: 500 }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    slugIdx: index("topics_slug_idx").on(t.slug),
+  })
+);
+
+/**
+ * Entity-Topic assignments (many-to-many)
+ */
+export const entityTopics = pgTable(
+  "entity_topics",
+  {
+    entityId: text("entity_id")
+      .notNull()
+      .references(() => entities.id, { onDelete: "cascade" }),
+    topicId: text("topic_id")
+      .notNull()
+      .references(() => topics.id, { onDelete: "cascade" }),
+    isPrimary: boolean("is_primary").notNull().default(false), // primary topic for this entity
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.entityId, t.topicId] }),
+    entityIdx: index("entity_topics_entity_idx").on(t.entityId),
+    topicIdx: index("entity_topics_topic_idx").on(t.topicId),
+  })
+);
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type Entity = typeof entities.$inferSelect;
@@ -286,3 +337,6 @@ export type Relation = typeof relations.$inferSelect;
 export type NewRelation = typeof relations.$inferInsert;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type EntityVersion = typeof entityVersions.$inferSelect;
+export type Topic = typeof topics.$inferSelect;
+export type NewTopic = typeof topics.$inferInsert;
+export type EntityTopic = typeof entityTopics.$inferSelect;

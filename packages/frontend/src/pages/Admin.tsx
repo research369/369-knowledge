@@ -288,7 +288,7 @@ function EntityForm({ entityId, onSave, onCancel }: { entityId?: string; onSave:
         id = res.entity.id;
       }
       const res = await api.entities.generate(id!);
-      setGeneratedBlocks(res.blocks);
+      setGeneratedBlocks(res.blocks ?? []);
     } catch (e: any) {
       setError(e.message);
     } finally {

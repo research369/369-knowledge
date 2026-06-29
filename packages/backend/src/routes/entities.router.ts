@@ -31,6 +31,55 @@ router.get("/", async (req: Request, res: Response) => {
   }
 });
 
+// ─── Public: Get entity by slug ─────────────────────────────────────────────
+
+router.get("/slug/:slug", async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const scope = (req.query.scope as string) ?? "portal";
+
+    // Try slug field first, then fall back to id
+    let entity = await db
+      .select()
+      .from(entities)
+      .where(and(eq(entities.slug, slug), eq(entities.status, "published")))
+      .limit(1);
+
+    if (entity.length === 0) {
+      // Fallback: try id
+      entity = await db
+        .select()
+        .from(entities)
+        .where(and(eq(entities.id, slug), eq(entities.status, "published")))
+        .limit(1);
+    }
+
+    if (entity.length === 0) {
+      return res.status(404).json({ error: "Entity not found" });
+    }
+
+    const id = entity[0].id;
+    const portalLayers = ["L1", "L2", "L3"];
+    const academyLayers = ["L1", "L2", "L3", "L4", "L5", "L6"];
+    const allowedLayers = scope === "academy" || scope === "bedo" ? academyLayers : portalLayers;
+
+    const blocks = await db
+      .select()
+      .from(contentBlocks)
+      .where(and(eq(contentBlocks.entityId, id), inArray(contentBlocks.layer, allowedLayers as any[])))
+      .orderBy(contentBlocks.sortOrder);
+
+    const relatedEdges = await db
+      .select()
+      .from(relations)
+      .where(eq(relations.fromEntityId, id));
+
+    res.json({ entity: entity[0], blocks, relations: relatedEdges });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Public: Get single published entity with content blocks ─────────────────
 
 router.get("/:id", async (req: Request, res: Response) => {
@@ -92,6 +141,7 @@ const createEntitySchema = z.object({
   casNumber: z.string().optional(),
   categories: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
+  shortDescription: z.string().max(300).optional(),
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
   seoKeywords: z.array(z.string()).optional(),
@@ -130,7 +180,9 @@ router.post(
           seoDescription: parsed.data.seoDescription,
           seoKeywords: parsed.data.seoKeywords ?? [],
           heroImageUrl: parsed.data.heroImageUrl,
+          shortDescription: parsed.data.shortDescription,
           metrics: parsed.data.metrics ?? [],
+          slug: parsed.data.id, // default slug = id
           status: "draft" as const,
           version: 1,
           createdAt: now,
