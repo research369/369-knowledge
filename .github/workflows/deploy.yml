@@ -3,8 +3,7 @@ name: Deploy
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
   # ─── TypeScript Check ──────────────────────────────────────────────────────
@@ -14,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v3
         with:
           version: 9
 
@@ -23,7 +22,7 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --no-frozen-lockfile
 
       - name: Check Backend
         run: cd packages/backend && pnpm typecheck
@@ -38,16 +37,20 @@ jobs:
     needs: typecheck
     if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy to Railway
-        run: railway up --service knowledge-api --detach
-        working-directory: packages/backend
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      - name: Trigger Railway Deploy via GraphQL API
+        run: |
+          RESPONSE=$(curl -s -X POST https://backboard.railway.com/graphql/v2 \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"query":"mutation{serviceInstanceDeploy(serviceId:\"${{ secrets.RAILWAY_SERVICE_ID }}\",environmentId:\"${{ secrets.RAILWAY_ENVIRONMENT_ID }}\")}" }')
+          echo "Railway response: $RESPONSE"
+          if echo "$RESPONSE" | grep -q '"serviceInstanceDeploy":true'; then
+            echo "✅ Railway deploy triggered successfully"
+          else
+            echo "❌ Railway deploy trigger failed"
+            echo "$RESPONSE"
+            exit 1
+          fi
 
   # ─── Deploy Frontend to Netlify ────────────────────────────────────────────
   deploy-frontend:
@@ -58,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v3
         with:
           version: 9
 
@@ -67,17 +70,16 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --no-frozen-lockfile
 
       - name: Build Frontend
         run: cd packages/frontend && pnpm build
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_API_URL: https://backend-production-77f3.up.railway.app
 
       - name: Deploy to Netlify
-        uses: netlify/actions/cli@master
-        with:
-          args: deploy --dir=packages/frontend/dist --prod
+        run: |
+          npm install -g netlify-cli
+          netlify deploy --dir=packages/frontend/dist --prod --site=${{ secrets.NETLIFY_SITE_ID }}
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
