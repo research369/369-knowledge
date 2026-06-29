@@ -128,6 +128,7 @@ export interface Entity {
   id: string;
   slug?: string;
   type: string;
+  entityType?: string;
   canonicalName: string;
   aliases: string[];
   language: string;
@@ -155,6 +156,7 @@ export interface Topic {
   nameEn?: string;
   description?: string;
   heroImageUrl?: string;
+  icon?: string;
   iconName?: string;
   color?: string;
   sortOrder: number;
