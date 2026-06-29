@@ -1,33 +1,37 @@
+# Build-Context: Repo-Root (Railway dockerfilePath = packages/backend/Dockerfile)
 # ---- Builder stage ----
 FROM node:22-alpine AS builder
 WORKDIR /app
 
 RUN npm install -g pnpm@9
 
-# Install deps
-COPY package.json ./
+# Copy monorepo root files
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY packages/backend/package.json ./packages/backend/
+
+# Install all workspace deps
 RUN pnpm install --no-frozen-lockfile
 
-# Copy source + migrations
-COPY src ./src
-COPY tsconfig.json ./
-COPY drizzle.config.ts ./
-COPY drizzle ./drizzle
+# Copy backend source + drizzle migrations
+COPY packages/backend/src ./packages/backend/src
+COPY packages/backend/tsconfig.json ./packages/backend/
+COPY packages/backend/drizzle.config.ts ./packages/backend/
+COPY packages/backend/drizzle ./packages/backend/drizzle
 
-# Build
-RUN pnpm build
+# Build TypeScript
+RUN cd packages/backend && pnpm build
 
 # ---- Production stage ----
 FROM node:22-alpine
-WORKDIR /app
+WORKDIR /app/packages/backend
 
 RUN npm install -g pnpm@9
 
-COPY package.json ./
+COPY packages/backend/package.json ./
 RUN pnpm install --no-frozen-lockfile --prod
 
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/drizzle ./drizzle
+COPY --from=builder /app/packages/backend/dist ./dist
+COPY --from=builder /app/packages/backend/drizzle ./drizzle
 
 EXPOSE 3001
 

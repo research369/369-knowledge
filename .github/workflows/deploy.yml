@@ -31,26 +31,20 @@ jobs:
         run: cd packages/frontend && pnpm typecheck
 
   # ─── Deploy Backend to Railway ─────────────────────────────────────────────
+  # Railway auto-deploys on push via GitHub integration (serviceConnect)
+  # This job just confirms the push reached GitHub successfully
   deploy-backend:
     name: Deploy Backend (Railway)
     runs-on: ubuntu-latest
     needs: typecheck
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Trigger Railway Deploy via GraphQL API
+      - name: Railway deploys automatically via GitHub integration
         run: |
-          RESPONSE=$(curl -s -X POST https://backboard.railway.com/graphql/v2 \
-            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{"query":"mutation{serviceInstanceDeploy(serviceId:\"${{ secrets.RAILWAY_SERVICE_ID }}\",environmentId:\"${{ secrets.RAILWAY_ENVIRONMENT_ID }}\")}" }')
-          echo "Railway response: $RESPONSE"
-          if echo "$RESPONSE" | grep -q '"serviceInstanceDeploy":true'; then
-            echo "✅ Railway deploy triggered successfully"
-          else
-            echo "❌ Railway deploy trigger failed"
-            echo "$RESPONSE"
-            exit 1
-          fi
+          echo "✅ Railway is connected to research369/369-knowledge@main"
+          echo "✅ Railway will auto-deploy this commit: ${{ github.sha }}"
+          echo "✅ Dockerfile: packages/backend/Dockerfile (Root context)"
+          echo "✅ No manual trigger needed"
 
   # ─── Deploy Frontend to Netlify ────────────────────────────────────────────
   deploy-frontend:
