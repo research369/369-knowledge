@@ -5,6 +5,7 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  PNPM_VERSION = "9"
 
 # SPA routing — alle Pfade zum index.html
 [[redirects]]

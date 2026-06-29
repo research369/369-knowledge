@@ -5,10 +5,14 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 
+import { db } from "./db/index.js";
+import { sql } from "drizzle-orm";
+
 import { entitiesRouter } from "./routes/entities.router.js";
 import { relationsRouter } from "./routes/relations.router.js";
 import { contentBlocksRouter } from "./routes/content-blocks.router.js";
 import { adminAuthRouter } from "./routes/admin-auth.router.js";
+import { sitemapRouter } from "./routes/sitemap.router.js";
 
 const app = express();
 const PORT = process.env.PORT || 4001;
@@ -58,13 +62,24 @@ app.use("/api/entities/:id/generate", generateLimiter);
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
 
-app.get("/health", (_req, res) => {
-  res.json({
-    status: "ok",
-    service: "369-knowledge-api",
-    version: "1.0.0",
-    timestamp: new Date().toISOString(),
-  });
+app.get("/health", async (_req, res) => {
+  try {
+    await db.execute(sql`SELECT 1`);
+    res.json({
+      status: "ok",
+      service: "369-knowledge-api",
+      version: "1.0.0",
+      db: "connected",
+      timestamp: new Date().toISOString(),
+    });
+  } catch {
+    res.status(503).json({
+      status: "error",
+      service: "369-knowledge-api",
+      db: "disconnected",
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
@@ -73,6 +88,7 @@ app.use("/api/entities", entitiesRouter);
 app.use("/api/relations", relationsRouter);
 app.use("/api/blocks", contentBlocksRouter);
 app.use("/api/admin", adminAuthRouter);
+app.use("/", sitemapRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 
