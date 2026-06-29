@@ -33,9 +33,11 @@ function LoginScreen({ onLogin }: { onLogin: (pw: string) => Promise<void> }) {
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-navy)" }}>
       <div className="card" style={{ width: "100%", maxWidth: "400px", padding: "2.5rem" }}>
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <div style={{ width: "48px", height: "48px", background: "var(--color-blue-mid)", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "1.1rem", fontFamily: "var(--font-condensed)", color: "white", margin: "0 auto 1rem" }}>
-            369
-          </div>
+          <img
+            src="https://369academy-pbxbt3uf.manus.space/manus-storage/369-research-logo_7c3bb4da.png"
+            alt="369 Research"
+            style={{ height: "48px", width: "auto", objectFit: "contain", margin: "0 auto 1rem", display: "block" }}
+          />
           <h2 style={{ color: "white" }}>Knowledge Admin</h2>
           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", marginTop: "0.5rem" }}>Scientific OS — Verwaltung</p>
         </div>
@@ -104,9 +106,11 @@ function AdminDashboard({ onLogout }: { onLogout: () => Promise<void> }) {
       {/* Top Bar */}
       <div style={{ background: "var(--color-navy)", borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "0 1.5rem", height: "60px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <div style={{ width: "32px", height: "32px", background: "var(--color-blue-mid)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "0.875rem", fontFamily: "var(--font-condensed)", color: "white" }}>
-            369
-          </div>
+          <img
+            src="https://369academy-pbxbt3uf.manus.space/manus-storage/369-research-logo_7c3bb4da.png"
+            alt="369 Research"
+            style={{ height: "32px", width: "auto", objectFit: "contain" }}
+          />
           <span style={{ fontFamily: "var(--font-condensed)", fontWeight: 700, color: "white" }}>Knowledge Admin</span>
         </div>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>

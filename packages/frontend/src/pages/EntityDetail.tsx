@@ -83,11 +83,13 @@ export default function EntityDetail({ entityId }: { entityId: string }) {
       <nav className="nav">
         <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "64px" }}>
           <a href="/" style={{ display: "flex", alignItems: "center", gap: "0.75rem", textDecoration: "none" }}>
-            <div style={{ width: "36px", height: "36px", background: "var(--color-blue-mid)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "1rem", fontFamily: "var(--font-condensed)", color: "white" }}>
-              369
-            </div>
+            <img
+              src="https://369academy-pbxbt3uf.manus.space/manus-storage/369-research-logo_7c3bb4da.png"
+              alt="369 Research"
+              style={{ height: "40px", width: "auto", objectFit: "contain" }}
+            />
             <span style={{ fontFamily: "var(--font-condensed)", fontWeight: 700, fontSize: "1.1rem", color: "white" }}>
-              Research <span style={{ color: "var(--color-gold)" }}>Wissen</span>
+              <span style={{ color: "var(--color-gold)" }}>Wissen</span>
             </span>
           </a>
           <a href="/" style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.875rem", textDecoration: "none" }}>

@@ -69,11 +69,13 @@ export default function Portal() {
       <nav className="nav">
         <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "64px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <div style={{ width: "36px", height: "36px", background: "var(--color-blue-mid)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "1rem", fontFamily: "var(--font-condensed)" }}>
-              369
-            </div>
-            <span style={{ fontFamily: "var(--font-condensed)", fontWeight: 700, fontSize: "1.1rem", letterSpacing: "0.02em" }}>
-              Research <span style={{ color: "var(--color-gold)" }}>Wissen</span>
+            <img
+              src="https://369academy-pbxbt3uf.manus.space/manus-storage/369-research-logo_7c3bb4da.png"
+              alt="369 Research"
+              style={{ height: "40px", width: "auto", objectFit: "contain" }}
+            />
+            <span style={{ fontFamily: "var(--font-condensed)", fontWeight: 700, fontSize: "1.1rem", letterSpacing: "0.02em", color: "white" }}>
+              <span style={{ color: "var(--color-gold)" }}>Wissen</span>
             </span>
           </div>
           <a href="https://369research.eu" target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ fontSize: "0.8125rem", padding: "0.5rem 1rem" }}>
