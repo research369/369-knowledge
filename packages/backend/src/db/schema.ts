@@ -337,6 +337,15 @@ export const entities = pgTable(
     protocolIds: jsonb("protocol_ids").notNull().default("[]"),              // linked protocols
     stackIds: jsonb("stack_ids").notNull().default("[]"),                    // linked stacks
     guideIds: jsonb("guide_ids").notNull().default("[]"),                    // linked guides
+    // Goldstandard: GEO / JSON-LD / Schema.org
+    canonicalUrl: text("canonical_url"),                             // full canonical URL
+    geoQa: jsonb("geo_qa").notNull().default("[]"),                  // [{question, answer, sourceId}]
+    jsonLd: jsonb("json_ld"),                                        // Schema.org JSON-LD object
+    schemaOrg: jsonb("schema_org"),                                  // additional Schema.org metadata
+    // Goldstandard: Content completeness
+    contentCompleteness: integer("content_completeness").notNull().default(0), // 0–100 %
+    goldstandardApproved: boolean("goldstandard_approved").notNull().default(false),
+    goldstandardApprovedAt: timestamp("goldstandard_approved_at"),
     // Workflow & versioning
     generatedByAi: boolean("generated_by_ai").notNull().default(false),
     manuallyEdited: boolean("manually_edited").notNull().default(false),
@@ -1047,6 +1056,11 @@ export const contentBlocks = pgTable(
     sortOrder: integer("sort_order").notNull().default(0),
     generatedByAi: boolean("generated_by_ai").notNull().default(false),
     aiPromptId: text("ai_prompt_id").references(() => aiPrompts.id, { onDelete: "set null" }),
+    // Goldstandard: Verständlichkeitsebenen
+    comprehensionLevel: varchar("comprehension_level", { length: 50 }).notNull().default("all"), // 'brief'|'simple'|'scientific'|'all'
+    targetAudience: varchar("target_audience", { length: 50 }).notNull().default("all"),         // 'beginner'|'intermediate'|'expert'|'all'
+    readingTimeSeconds: integer("reading_time_seconds"),                                         // estimated reading time
+    glossarTerms: jsonb("glossar_terms").notNull().default("[]"),                               // [{term, entityId, slug}]
     // Phase 2b: Lifecycle & review
     lifecycleStatus: lifecycleStatusEnum("lifecycle_status").notNull().default("new"),
     version: integer("version").notNull().default(1),
@@ -1195,6 +1209,38 @@ export const entityTopics = pgTable(
   })
 );
 
+// ─── Goldstandard: Ecosystem Links ──────────────────────────────────────────
+
+/**
+ * Ecosystem Links — connects entities to external systems (Academy, Shop, Guides, Protocols, Stacks).
+ * Not visible to users — used for internal routing and future cross-system navigation.
+ */
+export const ecosystemLinks = pgTable(
+  "ecosystem_links",
+  {
+    id: text("id").primaryKey(),
+    entityId: text("entity_id")
+      .notNull()
+      .references(() => entities.id, { onDelete: "cascade" }),
+    linkType: varchar("link_type", { length: 100 }).notNull(), // 'academy_module'|'shop_product'|'guide'|'protocol'|'stack'|'collection'
+    externalId: text("external_id").notNull(),                  // ID in the external system
+    externalSlug: text("external_slug"),                        // slug/URL in the external system
+    externalName: text("external_name"),                        // human-readable name
+    externalSystem: varchar("external_system", { length: 100 }).notNull().default("369research"), // 'academy'|'shop'|'wawi'|'whatsapp'
+    relevanceScore: real("relevance_score").notNull().default(1.0), // 0.0–1.0
+    notes: text("notes"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    entityIdx: index("ecosystem_links_entity_idx").on(t.entityId),
+    typeIdx: index("ecosystem_links_type_idx").on(t.linkType),
+    systemIdx: index("ecosystem_links_system_idx").on(t.externalSystem),
+  })
+);
+
 // ─── Phase 2b Types ──────────────────────────────────────────────────────────
 export type DecisionHistory = typeof decisionHistory.$inferSelect;
 export type NewDecisionHistory = typeof decisionHistory.$inferInsert;
@@ -1239,3 +1285,6 @@ export type AgentApiKey = typeof agentApiKeys.$inferSelect;
 export type AgentSuggestion = typeof agentSuggestions.$inferSelect;
 export type NewAgentSuggestion = typeof agentSuggestions.$inferInsert;
 export type AgentAccessLog = typeof agentAccessLog.$inferSelect;
+// Goldstandard types
+export type EcosystemLink = typeof ecosystemLinks.$inferSelect;
+export type NewEcosystemLink = typeof ecosystemLinks.$inferInsert;

@@ -8,6 +8,7 @@ import rateLimit from "express-rate-limit";
 import { db } from "./db/index.js";
 import { sql } from "drizzle-orm";
 import { runPhase2bMigration } from "./db/migrate-phase2b-auto.js";
+import { runGoldstandardMigration } from "./db/migrate-goldstandard-auto.js";
 
 import { entitiesRouter } from "./routes/entities.router.js";
 import { relationsRouter } from "./routes/relations.router.js";
@@ -129,18 +130,16 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   res.status(500).json({ error: "Internal server error" });
 });
 
-// Run Phase 2b migration on startup (idempotent — safe to run multiple times)
-runPhase2bMigration().then(() => {
+// Run migrations on startup (idempotent — safe to run multiple times)
+async function startServer() {
+  try { await runPhase2bMigration(); } catch (e) { console.error("[Phase 2b Migration] Failed:", (e as Error).message); }
+  try { await runGoldstandardMigration(); } catch (e) { console.error("[Goldstandard Migration] Failed:", (e as Error).message); }
   app.listen(PORT, () => {
     console.log(`369 Knowledge API running on http://localhost:${PORT}`);
     console.log(`Health: http://localhost:${PORT}/health`);
   });
-}).catch((err) => {
-  console.error("[Phase 2b Migration] Failed, starting server anyway:", err.message);
-  app.listen(PORT, () => {
-    console.log(`369 Knowledge API running on http://localhost:${PORT}`);
-    console.log(`Health: http://localhost:${PORT}/health`);
-  });
-});
+}
+
+startServer();
 
 export default app;
