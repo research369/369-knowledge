@@ -90,7 +90,7 @@ export async function runTb500Seed() {
         })},
         lifecycle_status = 'approved',
         content_completeness = 90,
-        is_goldstandard = true
+        goldstandard_approved = true
       WHERE id = ${TB500_UUID}
     `);
 
