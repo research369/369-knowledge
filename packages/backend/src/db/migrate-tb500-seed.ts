@@ -25,7 +25,7 @@ export async function runTb500Seed() {
       sql`SELECT COUNT(*) as cnt FROM content_blocks WHERE entity_id = ${TB500_UUID}`
     );
     const relCountResult = await db.execute(
-      sql`SELECT COUNT(*) as cnt FROM relations WHERE source_entity_id = ${TB500_UUID} OR target_entity_id = ${TB500_UUID}`
+      sql`      SELECT COUNT(*) as cnt FROM relations WHERE from_entity_id = ${TB500_UUID} OR to_entity_id = ${TB500_UUID}`
     );
 
     const blockCount = Number((blockCountResult as any)[0]?.cnt ?? 0);
@@ -462,7 +462,7 @@ TB-500 ist nicht für die Anwendung am Menschen zugelassen und nicht als Arzneim
     // ── 4. RELATIONS ──────────────────────────────────────────────────────────
     // GOLDSTANDARD REGEL 3+4: Nur gültige Enum-Werte aus schema.ts
     // GOLDSTANDARD REGEL: relations-Tabelle hat KEIN lifecycle_status
-    await db.execute(sql`DELETE FROM relations WHERE source_entity_id = ${TB500_UUID} OR target_entity_id = ${TB500_UUID}`);
+    await db.execute(sql`DELETE FROM relations WHERE from_entity_id = ${TB500_UUID} OR to_entity_id = ${TB500_UUID}`);
 
     // Hilfsfunktion: Entity-ID aus Slug
     const getEntityId = async (slug: string): Promise<string | null> => {
@@ -505,12 +505,14 @@ TB-500 ist nicht für die Anwendung am Menschen zugelassen und nicht als Arzneim
       const relId = `rel-tb500-${rel.targetSlug}-${Date.now()}-${relationsInserted}`;
       await db.execute(sql`
         INSERT INTO relations (
-          id, source_entity_id, target_entity_id, relation_type,
-          strength, evidence_level, description, is_bidirectional, status
+          id, from_entity_id, to_entity_id, relation_type,
+          layer, scope,
+          confidence_score, evidence_level, description, status
         ) VALUES (
           ${relId}, ${TB500_UUID}, ${targetId}, ${rel.type},
+          'L2', '["portal","academy","bedo"]'::jsonb,
           ${rel.strength}, ${rel.evidenceLevel}, ${rel.description},
-          false, 'published'
+          'published'
         )
         ON CONFLICT DO NOTHING
       `);

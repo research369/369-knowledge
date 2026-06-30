@@ -11,6 +11,7 @@ import { runPhase2bMigration } from "./db/migrate-phase2b-auto.js";
 import { runGoldstandardMigration } from "./db/migrate-goldstandard-auto.js";
 import { runBpc157SeedMigration } from "./db/migrate-bpc157-seed.js";
 import { runTb500Seed } from "./db/migrate-tb500-seed.js";
+import { runAllMigrations } from "./db/migration-runner.js";
 
 import { entitiesRouter } from "./routes/entities.router.js";
 import { relationsRouter } from "./routes/relations.router.js";
@@ -133,11 +134,15 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 });
 
 // Run migrations on startup (idempotent — safe to run multiple times)
+// CRASH-SCHUTZ: runAllMigrations() wirft NIE — Server startet immer
 async function startServer() {
-  try { await runPhase2bMigration(); } catch (e) { console.error("[Phase 2b Migration] Failed:", (e as Error).message); }
-  try { await runGoldstandardMigration(); } catch (e) { console.error("[Goldstandard Migration] Failed:", (e as Error).message); }
-  try { await runBpc157SeedMigration(); } catch (e) { console.error("[BPC-157 Seed] Failed:", (e as Error).message); }
-  try { await runTb500Seed(); } catch (e) { console.error("[TB-500 Seed] Failed:", (e as Error).message); }
+  await runAllMigrations([
+    { name: "Phase 2b",        fn: runPhase2bMigration },
+    { name: "Goldstandard",    fn: runGoldstandardMigration },
+    { name: "BPC-157 Seed",    fn: runBpc157SeedMigration },
+    { name: "TB-500 Seed",     fn: runTb500Seed },
+  ]);
+
   app.listen(PORT, () => {
     console.log(`369 Knowledge API running on http://localhost:${PORT}`);
     console.log(`Health: http://localhost:${PORT}/health`);
