@@ -106,12 +106,12 @@ export async function runTb500Seed() {
         block_type: "summary",
         comprehension_level: "brief",
         title: "TB-500 in 30 Sekunden",
-        content: `TB-500 ist ein Peptid, das dein Körper selbst produziert — unter dem Namen Thymosin Beta-4. Es spielt eine zentrale Rolle dabei, wie Gewebe sich nach Verletzungen repariert: Es hilft Zellen, sich zu bewegen, neue Blutgefäße zu bilden und Entzündungen zu regulieren. In Tiermodellen zeigt TB-500 bemerkenswerte Effekte auf die Heilung von Muskeln, Sehnen und sogar Herzgewebe. Für den Menschen gibt es noch keine klinischen Studien — alle Erkenntnisse stammen aus präklinischer Forschung.`,
+        body: `TB-500 ist ein Peptid, das dein Körper selbst produziert — unter dem Namen Thymosin Beta-4. Es spielt eine zentrale Rolle dabei, wie Gewebe sich nach Verletzungen repariert: Es hilft Zellen, sich zu bewegen, neue Blutgefäße zu bilden und Entzündungen zu regulieren. In Tiermodellen zeigt TB-500 bemerkenswerte Effekte auf die Heilung von Muskeln, Sehnen und sogar Herzgewebe. Für den Menschen gibt es noch keine klinischen Studien — alle Erkenntnisse stammen aus präklinischer Forschung.`,
         scope: JSON.stringify(["portal", "academy", "bedo"]),
         language: "de",
         status: "published",
         version: 1,
-        is_ai_generated: false,
+        generated_by_ai: false,
         reading_time_seconds: 30,
       },
       {
@@ -121,7 +121,7 @@ export async function runTb500Seed() {
         block_type: "explanation",
         comprehension_level: "simple",
         title: "TB-500 einfach erklärt",
-        content: `Stell dir vor, dein Körper hat ein internes Reparatursystem. Thymosin Beta-4 — das natürliche Pendant zu TB-500 — ist ein Schlüsselmolekül dieses Systems. Es ist in fast jeder Körperzelle vorhanden und wird besonders aktiv, wenn Gewebe beschädigt wird.
+        body: `Stell dir vor, dein Körper hat ein internes Reparatursystem. Thymosin Beta-4 — das natürliche Pendant zu TB-500 — ist ein Schlüsselmolekül dieses Systems. Es ist in fast jeder Körperzelle vorhanden und wird besonders aktiv, wenn Gewebe beschädigt wird.
 
 **Was TB-500 im Körper macht:**
 
@@ -138,7 +138,7 @@ In Tiermodellen wurden Effekte auf Herzregeneration nach Herzinfarkt, Wundheilun
         language: "de",
         status: "published",
         version: 1,
-        is_ai_generated: false,
+        generated_by_ai: false,
         reading_time_seconds: 120,
       },
       {
@@ -148,12 +148,12 @@ In Tiermodellen wurden Effekte auf Herzregeneration nach Herzinfarkt, Wundheilun
         block_type: "mechanism_brief",
         comprehension_level: "brief",
         title: "Mechanismus: Kurz erklärt",
-        content: `TB-500 wirkt über drei Hauptmechanismen: Es bindet G-Aktin (Zellskelett-Baustein), aktiviert den PI3K/Akt-Signalweg (Zellüberleben und -wachstum) und fördert die Angiogenese (Neubildung von Blutgefäßen). Das Ergebnis: Zellen migrieren schneller zur Verletzungsstelle, überleben besser und werden mit mehr Sauerstoff versorgt.`,
+        body: `TB-500 wirkt über drei Hauptmechanismen: Es bindet G-Aktin (Zellskelett-Baustein), aktiviert den PI3K/Akt-Signalweg (Zellüberleben und -wachstum) und fördert die Angiogenese (Neubildung von Blutgefäßen). Das Ergebnis: Zellen migrieren schneller zur Verletzungsstelle, überleben besser und werden mit mehr Sauerstoff versorgt.`,
         scope: JSON.stringify(["portal", "academy", "bedo"]),
         language: "de",
         status: "published",
         version: 1,
-        is_ai_generated: false,
+        generated_by_ai: false,
         reading_time_seconds: 45,
       },
       {
@@ -163,7 +163,7 @@ In Tiermodellen wurden Effekte auf Herzregeneration nach Herzinfarkt, Wundheilun
         block_type: "mechanism_simple",
         comprehension_level: "scientific",
         title: "Molekulare Mechanismen von TB-500",
-        content: `**Aktin-Sequestration als primärer Mechanismus**
+        body: `**Aktin-Sequestration als primärer Mechanismus**
 
 Der zentrale Wirkmechanismus von Thymosin Beta-4 ist die Bindung an monomeres G-Aktin (globuläres Aktin) mit hoher Affinität (Kd ≈ 0,5 μM). Durch diese Sequestration reguliert Tβ4 das Gleichgewicht zwischen G-Aktin und F-Aktin (filamentöses Aktin) — dem dynamischen Gerüst des Zytoskeletts. Diese Regulation ist fundamental für Zellmigration, Morphologie und Teilung.
 
@@ -190,7 +190,7 @@ In Herzmuskelzellen aktiviert Tβ4 ruhende Progenitorzellen (Epicardial Progenit
         language: "de",
         status: "published",
         version: 1,
-        is_ai_generated: false,
+        generated_by_ai: false,
         reading_time_seconds: 300,
       },
       {
@@ -200,7 +200,7 @@ In Herzmuskelzellen aktiviert Tβ4 ruhende Progenitorzellen (Epicardial Progenit
         block_type: "applications",
         comprehension_level: "all",
         title: "Forschungsgebiete und präklinische Anwendungen",
-        content: `**Kardiovaskuläre Regeneration**
+        body: `**Kardiovaskuläre Regeneration**
 
 Die am besten untersuchte präklinische Anwendung von TB-500 ist die kardiale Regeneration. In Mausmodellen des Myokardinfarkts reduzierte Tβ4-Behandlung die Infarktgröße, verbesserte die linksventrikuläre Funktion und förderte die Neubildung von Kardiomyozyten aus Progenitorzellen. Besonders bemerkenswert: Die Effekte wurden sowohl bei präventiver als auch bei therapeutischer Gabe beobachtet.
 
@@ -221,7 +221,7 @@ In Modellen für Schlaganfall und traumatische Hirnverletzung zeigte Tβ4 neurop
         language: "de",
         status: "published",
         version: 1,
-        is_ai_generated: false,
+        generated_by_ai: false,
         reading_time_seconds: 360,
       },
       {
@@ -231,7 +231,7 @@ In Modellen für Schlaganfall und traumatische Hirnverletzung zeigte Tβ4 neurop
         block_type: "evidence_overview",
         comprehension_level: "scientific",
         title: "Evidenzlage: Stärken und Limitationen",
-        content: `**Stärken der Evidenz**
+        body: `**Stärken der Evidenz**
 
 Die präklinische Datenlage zu Thymosin Beta-4 ist für ein Forschungspeptid vergleichsweise robust. Mehrere unabhängige Forschungsgruppen haben konsistente Effekte auf kardiale Regeneration, Wundheilung und Neuroprotektion in verschiedenen Tiermodellen berichtet. Die molekularen Mechanismen (Aktin-Bindung, PI3K/Akt-Aktivierung) sind gut charakterisiert.
 
@@ -254,7 +254,7 @@ TB-500 ist ein wissenschaftlich interessantes Peptid mit plausiblen Mechanismen 
         language: "de",
         status: "published",
         version: 1,
-        is_ai_generated: false,
+        generated_by_ai: false,
         reading_time_seconds: 300,
       },
       {
@@ -264,7 +264,7 @@ TB-500 ist ein wissenschaftlich interessantes Peptid mit plausiblen Mechanismen 
         block_type: "limitations",
         comprehension_level: "scientific",
         title: "Offene Fragen und Forschungslücken",
-        content: `**Was wir nicht wissen**
+        body: `**Was wir nicht wissen**
 
 Trotz umfangreicher präklinischer Forschung bleiben zentrale Fragen offen:
 
@@ -281,7 +281,7 @@ Laufende präklinische Forschung fokussiert auf kardiale Regeneration (besonders
         language: "de",
         status: "published",
         version: 1,
-        is_ai_generated: false,
+        generated_by_ai: false,
         reading_time_seconds: 240,
       },
       {
@@ -291,7 +291,7 @@ Laufende präklinische Forschung fokussiert auf kardiale Regeneration (besonders
         block_type: "faq",
         comprehension_level: "all",
         title: "Häufige Fragen zu TB-500",
-        content: `**Was ist der Unterschied zwischen TB-500 und Thymosin Beta-4?**
+        body: `**Was ist der Unterschied zwischen TB-500 und Thymosin Beta-4?**
 
 TB-500 ist ein synthetisches Peptid, das dem natürlich vorkommenden Thymosin Beta-4 (Tβ4) entspricht. Genauer gesagt entspricht TB-500 dem aktiven Kernfragment von Tβ4 (Aminosäuren 17–23: LKKTETQ). Thymosin Beta-4 ist das vollständige 43-Aminosäuren-Peptid, das der Körper selbst produziert.
 
@@ -314,7 +314,7 @@ TB-500 ist nicht für die Anwendung am Menschen zugelassen und nicht als Arzneim
         language: "de",
         status: "published",
         version: 1,
-        is_ai_generated: false,
+        generated_by_ai: false,
         reading_time_seconds: 480,
       }
     ];
@@ -327,9 +327,9 @@ TB-500 ist nicht für die Anwendung am Menschen zugelassen und nicht als Arzneim
           generated_by_ai, reading_time_seconds
         ) VALUES (
           ${block.id}, ${block.entity_id}, ${block.layer}, ${block.block_type},
-          ${block.comprehension_level}, ${block.title}, ${block.content},
+          ${block.comprehension_level}, ${block.title}, ${block.body},
           ${block.scope}::jsonb, 'published',
-          ${block.version}, ${block.is_ai_generated},
+          ${block.version}, ${block.generated_by_ai},
           ${block.reading_time_seconds}
         )
       `);
