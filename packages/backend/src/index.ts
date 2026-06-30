@@ -9,6 +9,7 @@ import { db } from "./db/index.js";
 import { sql } from "drizzle-orm";
 import { runPhase2bMigration } from "./db/migrate-phase2b-auto.js";
 import { runGoldstandardMigration } from "./db/migrate-goldstandard-auto.js";
+import { runBpc157SeedMigration } from "./db/migrate-bpc157-seed.js";
 
 import { entitiesRouter } from "./routes/entities.router.js";
 import { relationsRouter } from "./routes/relations.router.js";
@@ -134,6 +135,7 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 async function startServer() {
   try { await runPhase2bMigration(); } catch (e) { console.error("[Phase 2b Migration] Failed:", (e as Error).message); }
   try { await runGoldstandardMigration(); } catch (e) { console.error("[Goldstandard Migration] Failed:", (e as Error).message); }
+  try { await runBpc157SeedMigration(); } catch (e) { console.error("[BPC-157 Seed] Failed:", (e as Error).message); }
   app.listen(PORT, () => {
     console.log(`369 Knowledge API running on http://localhost:${PORT}`);
     console.log(`Health: http://localhost:${PORT}/health`);
