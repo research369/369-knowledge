@@ -79,29 +79,6 @@ app.use(cookieParser());
 app.use("/api", apiLimiter);
 app.use("/api/entities/:id/generate", generateLimiter);
 
-// ─── Debug Migration Endpoint (temporary) ────────────────────────────────────
-app.get("/debug/run-tb500", async (_req, res) => {
-  const logs: string[] = [];
-  const errors: string[] = [];
-  try {
-    const TB500_UUID = "ac37e146-c28c-4e81-a47d-17141f6cc857";
-    // Run the actual migration and capture output
-    const { runTb500Seed } = await import("./db/migrate-tb500-seed.js");
-    await runTb500Seed();
-    const blockCountResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM content_blocks WHERE entity_id = ${TB500_UUID}`);
-    const cnt = Number((blockCountResult as any)[0]?.cnt ?? 0);
-    logs.push(`Blocks after migration: ${cnt}`);
-    const relCountResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM relations WHERE from_entity_id = ${TB500_UUID} OR to_entity_id = ${TB500_UUID}`);
-    const relCnt = Number((relCountResult as any)[0]?.cnt ?? 0);
-    logs.push(`Relations after migration: ${relCnt}`);
-    res.json({ success: true, logs, errors, blocks: cnt, relations: relCnt });
-  } catch (e: any) {
-    errors.push(e.message ?? String(e));
-    errors.push(e.stack ?? "");
-    res.status(500).json({ success: false, logs, errors });
-  }
-});
-
 // ─── Health Check ─────────────────────────────────────────────────────────────
 
 app.get("/health", async (_req, res) => {
