@@ -206,6 +206,65 @@ export const suggestionStatusEnum = pgEnum("suggestion_status", [
   "merged",
 ]);
 
+// ─── NEW: Phase 2b Enums ──────────────────────────────────────────────────────
+
+/**
+ * Knowledge Lifecycle — 9-stage lifecycle for all knowledge objects
+ */
+export const lifecycleStatusEnum = pgEnum("lifecycle_status", [
+  "new",             // just created, no content yet
+  "ai_draft",        // AI has generated a draft
+  "review",          // human review required
+  "approved",        // approved by reviewer, not yet published
+  "published",       // live on portal
+  "monitoring",      // published, being monitored for new evidence
+  "review_required", // new evidence found, needs update
+  "updated",         // updated after new evidence
+  "archived",        // no longer active, kept for history
+]);
+
+/**
+ * Scientific Task types — tasks the platform generates automatically
+ */
+export const scientificTaskTypeEnum = pgEnum("scientific_task_type", [
+  "review_new_source",      // new study appeared, review for entity
+  "update_entity",          // entity needs update based on new evidence
+  "review_faq",             // FAQ may need update
+  "review_guide",           // guide may need update
+  "review_protocol",        // protocol may need update
+  "review_relation",        // relation may need update
+  "review_product_link",    // product relation may need update
+  "review_academy_link",    // academy module may need update
+  "validate_confidence",    // confidence score needs manual validation
+  "resolve_conflict",       // conflicting suggestions need resolution
+  "complete_lifecycle",     // lifecycle transition needs review
+  "custom",                 // manually created task
+]);
+
+/**
+ * Scientific Task status
+ */
+export const scientificTaskStatusEnum = pgEnum("scientific_task_status", [
+  "open",
+  "in_progress",
+  "completed",
+  "dismissed",
+  "blocked",
+]);
+
+/**
+ * Discussion entry types
+ */
+export const discussionEntryTypeEnum = pgEnum("discussion_entry_type", [
+  "suggestion",    // agent submitted a suggestion
+  "comment",       // reviewer added a comment
+  "evidence",      // new evidence cited
+  "conflict",      // conflicting claim identified
+  "resolution",    // conflict resolved
+  "decision",      // final decision made
+  "system",        // automated system event
+]);
+
 // ─── Ontology Tables ──────────────────────────────────────────────────────────
 
 /**
@@ -243,6 +302,8 @@ export const entities = pgTable(
   "entities",
   {
     id: text("id").primaryKey(), // slug, e.g. "bpc-157"
+    // Phase 2b: Lifecycle status (replaces simple contentStatusEnum for entities)
+    lifecycleStatus: lifecycleStatusEnum("lifecycle_status").notNull().default("new"),
     slug: varchar("slug", { length: 300 }).unique(), // URL-friendly slug
     type: entityTypeEnum("type").notNull(),
     // Compound subtype (for compound hierarchy)
@@ -595,6 +656,257 @@ export const agentAccessLog = pgTable(
   })
 );
 
+// ─── MODULE 6: Phase 2b — Scientific Memory & Knowledge Lifecycle ────────────
+
+/**
+ * Scientific Decision History — every review decision with full context.
+ * Replaces the shallow reviewNote/reviewedBy fields with a rich audit trail.
+ */
+export const decisionHistory = pgTable(
+  "decision_history",
+  {
+    id: text("id").primaryKey(),
+    // What was decided
+    targetType: varchar("target_type", { length: 100 }).notNull(), // "entity", "content_block", "relation", "source", "suggestion"
+    targetId: text("target_id").notNull(),
+    // Decision
+    decision: varchar("decision", { length: 100 }).notNull(), // "approved", "rejected", "updated", "archived", "lifecycle_transition"
+    previousStatus: varchar("previous_status", { length: 100 }),
+    newStatus: varchar("new_status", { length: 100 }),
+    // Scientific reasoning
+    reasoning: text("reasoning"),              // why the decision was made
+    evidenceSummary: text("evidence_summary"), // evidence considered
+    evidenceLevel: evidenceLevelEnum("evidence_level"),
+    confidenceScore: real("confidence_score"), // 0.0–1.0
+    // References
+    sourceIds: jsonb("source_ids").notNull().default("[]"),    // sources consulted
+    relatedTaskId: text("related_task_id"),                    // linked scientific task
+    relatedSuggestionId: text("related_suggestion_id"),        // linked suggestion
+    // Discussion
+    discussionSummary: text("discussion_summary"),             // summary of discussion
+    openConflicts: jsonb("open_conflicts").notNull().default("[]"), // unresolved conflicts
+    // Who decided
+    reviewedBy: varchar("reviewed_by", { length: 200 }).notNull(),
+    reviewerRole: varchar("reviewer_role", { length: 100 }),
+    // When
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    targetIdx: index("decision_history_target_idx").on(t.targetId),
+    typeIdx: index("decision_history_type_idx").on(t.targetType),
+    reviewerIdx: index("decision_history_reviewer_idx").on(t.reviewedBy),
+    createdIdx: index("decision_history_created_idx").on(t.createdAt),
+  })
+);
+
+/**
+ * Scientific Discussion — threaded discussion per knowledge object.
+ * Multiple agents/reviewers can contribute. Conflicts are tracked, not overwritten.
+ */
+export const scientificDiscussion = pgTable(
+  "scientific_discussion",
+  {
+    id: text("id").primaryKey(),
+    // Thread anchor
+    targetType: varchar("target_type", { length: 100 }).notNull(),
+    targetId: text("target_id").notNull(),
+    threadId: text("thread_id"),               // groups entries into a thread
+    parentEntryId: text("parent_entry_id"),    // for nested replies
+    // Entry
+    entryType: discussionEntryTypeEnum("entry_type").notNull(),
+    content: text("content").notNull(),
+    // Author
+    authorType: varchar("author_type", { length: 50 }).notNull(), // "agent", "reviewer", "system"
+    authorId: varchar("author_id", { length: 200 }),  // agent key ID or reviewer name
+    authorRole: varchar("author_role", { length: 100 }),
+    // Evidence
+    sourceIds: jsonb("source_ids").notNull().default("[]"),
+    confidenceScore: real("confidence_score"),
+    evidenceLevel: evidenceLevelEnum("evidence_level"),
+    // Conflict tracking
+    isConflict: boolean("is_conflict").notNull().default(false),
+    conflictWith: text("conflict_with"),        // ID of conflicting entry
+    conflictResolved: boolean("conflict_resolved").notNull().default(false),
+    resolvedBy: varchar("resolved_by", { length: 200 }),
+    resolvedAt: timestamp("resolved_at"),
+    // Status
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    targetIdx: index("sci_discussion_target_idx").on(t.targetId),
+    threadIdx: index("sci_discussion_thread_idx").on(t.threadId),
+    conflictIdx: index("sci_discussion_conflict_idx").on(t.isConflict),
+    createdIdx: index("sci_discussion_created_idx").on(t.createdAt),
+  })
+);
+
+/**
+ * Confidence Scores — computed scientific confidence per knowledge object.
+ * Automatically calculated and stored for entities, blocks, relations, sources.
+ */
+export const confidenceScores = pgTable(
+  "confidence_scores",
+  {
+    id: text("id").primaryKey(),
+    // Target
+    targetType: varchar("target_type", { length: 100 }).notNull(),
+    targetId: text("target_id").notNull().unique(), // one score per object
+    // Composite score
+    overallScore: real("overall_score").notNull().default(0.0), // 0.0–1.0
+    // Component scores
+    evidenceLevelScore: real("evidence_level_score").notNull().default(0.0),
+    sourceCountScore: real("source_count_score").notNull().default(0.0),
+    humanStudyScore: real("human_study_score").notNull().default(0.0),
+    animalStudyScore: real("animal_study_score").notNull().default(0.0),
+    inVitroScore: real("in_vitro_score").notNull().default(0.0),
+    metaAnalysisScore: real("meta_analysis_score").notNull().default(0.0),
+    recencyScore: real("recency_score").notNull().default(0.0),
+    reviewerValidationScore: real("reviewer_validation_score").notNull().default(0.0),
+    aiValidationScore: real("ai_validation_score").notNull().default(0.0),
+    // Raw counts
+    totalSources: integer("total_sources").notNull().default(0),
+    humanStudies: integer("human_studies").notNull().default(0),
+    animalStudies: integer("animal_studies").notNull().default(0),
+    inVitroStudies: integer("in_vitro_studies").notNull().default(0),
+    rctCount: integer("rct_count").notNull().default(0),
+    metaAnalysisCount: integer("meta_analysis_count").notNull().default(0),
+    openConflicts: integer("open_conflicts").notNull().default(0),
+    // Temporal
+    newestSourceYear: integer("newest_source_year"),
+    oldestSourceYear: integer("oldest_source_year"),
+    lastValidatedAt: timestamp("last_validated_at"),
+    lastValidatedBy: varchar("last_validated_by", { length: 200 }),
+    nextValidationDue: timestamp("next_validation_due"),
+    // Computation
+    computedAt: timestamp("computed_at").defaultNow().notNull(),
+    computationVersion: integer("computation_version").notNull().default(1),
+    notes: text("notes"),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    targetIdx: index("confidence_scores_target_idx").on(t.targetId),
+    typeIdx: index("confidence_scores_type_idx").on(t.targetType),
+    scoreIdx: index("confidence_scores_score_idx").on(t.overallScore),
+  })
+);
+
+/**
+ * Scientific Tasks — tasks generated by the platform or manually.
+ * Enables the platform to organize itself.
+ */
+export const scientificTasks = pgTable(
+  "scientific_tasks",
+  {
+    id: text("id").primaryKey(),
+    // Type & context
+    taskType: scientificTaskTypeEnum("task_type").notNull(),
+    title: varchar("title", { length: 500 }).notNull(),
+    description: text("description"),
+    // Target
+    targetType: varchar("target_type", { length: 100 }),
+    targetId: text("target_id"),
+    // Trigger
+    triggeredBy: varchar("triggered_by", { length: 200 }), // agent ID, system, or reviewer
+    triggerReason: text("trigger_reason"),
+    triggerSourceId: text("trigger_source_id"),            // e.g. new study that triggered this
+    // Assignment
+    assignedTo: varchar("assigned_to", { length: 200 }),
+    priority: integer("priority").notNull().default(5),    // 1 (highest) – 10 (lowest)
+    dueAt: timestamp("due_at"),
+    // Checklist (auto-generated based on task type)
+    checklist: jsonb("checklist").notNull().default("[]"), // {item, completed, completedAt, completedBy}[]
+    // Status
+    status: scientificTaskStatusEnum("status").notNull().default("open"),
+    completedBy: varchar("completed_by", { length: 200 }),
+    completedAt: timestamp("completed_at"),
+    completionNote: text("completion_note"),
+    // Linked objects
+    linkedSuggestionIds: jsonb("linked_suggestion_ids").notNull().default("[]"),
+    linkedDecisionIds: jsonb("linked_decision_ids").notNull().default("[]"),
+    // Metadata
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    statusIdx: index("sci_tasks_status_idx").on(t.status),
+    typeIdx: index("sci_tasks_type_idx").on(t.taskType),
+    targetIdx: index("sci_tasks_target_idx").on(t.targetId),
+    priorityIdx: index("sci_tasks_priority_idx").on(t.priority),
+    createdIdx: index("sci_tasks_created_idx").on(t.createdAt),
+  })
+);
+
+/**
+ * Agent Feedback — reviewer decisions are stored as feedback for agents.
+ * Enables agents to learn from past decisions without direct KB write access.
+ */
+export const agentFeedback = pgTable(
+  "agent_feedback",
+  {
+    id: text("id").primaryKey(),
+    // Which suggestion was reviewed
+    suggestionId: text("suggestion_id")
+      .notNull()
+      .references(() => agentSuggestions.id, { onDelete: "cascade" }),
+    agentKeyId: text("agent_key_id").references(() => agentApiKeys.id, { onDelete: "set null" }),
+    agentRole: agentRoleEnum("agent_role"),
+    // Feedback
+    decision: varchar("decision", { length: 50 }).notNull(), // "approved", "rejected", "merged"
+    feedbackType: varchar("feedback_type", { length: 100 }), // "correct", "partially_correct", "incorrect", "duplicate", "insufficient_evidence"
+    feedbackNote: text("feedback_note"),
+    // What the agent got right/wrong
+    correctAspects: jsonb("correct_aspects").notNull().default("[]"),    // string[]
+    incorrectAspects: jsonb("incorrect_aspects").notNull().default("[]"), // string[]
+    improvementHints: text("improvement_hints"),
+    // Confidence calibration
+    agentConfidence: real("agent_confidence"),   // what the agent claimed
+    actualQuality: real("actual_quality"),        // reviewer's assessment 0.0–1.0
+    // Reviewer
+    reviewedBy: varchar("reviewed_by", { length: 200 }).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    suggestionIdx: index("agent_feedback_suggestion_idx").on(t.suggestionId),
+    agentIdx: index("agent_feedback_agent_idx").on(t.agentKeyId),
+    roleIdx: index("agent_feedback_role_idx").on(t.agentRole),
+    createdIdx: index("agent_feedback_created_idx").on(t.createdAt),
+  })
+);
+
+/**
+ * Monitoring Rules — defines what triggers a lifecycle transition to "review_required".
+ * The platform uses these to automatically flag entities that need attention.
+ */
+export const monitoringRules = pgTable(
+  "monitoring_rules",
+  {
+    id: text("id").primaryKey(),
+    name: varchar("name", { length: 200 }).notNull(),
+    description: text("description"),
+    // Trigger conditions
+    triggerType: varchar("trigger_type", { length: 100 }).notNull(),
+    // "new_source_for_entity", "confidence_drop", "time_since_review",
+    // "new_agent_suggestion", "open_conflict", "new_meta_analysis"
+    // Configuration
+    config: jsonb("config").notNull().default("{}"),
+    // e.g. { minConfidenceDrop: 0.1, maxDaysSinceReview: 180, minSourceCount: 3 }
+    // Target scope
+    appliesTo: jsonb("applies_to").notNull().default("[]"), // entity types or "all"
+    // Action
+    taskTypeToCreate: scientificTaskTypeEnum("task_type_to_create"),
+    taskPriority: integer("task_priority").notNull().default(5),
+    // Status
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    activeIdx: index("monitoring_rules_active_idx").on(t.active),
+    typeIdx: index("monitoring_rules_type_idx").on(t.triggerType),
+  })
+);
+
 // ─── Existing tables (unchanged) ──────────────────────────────────────────────
 
 /**
@@ -735,6 +1047,14 @@ export const contentBlocks = pgTable(
     sortOrder: integer("sort_order").notNull().default(0),
     generatedByAi: boolean("generated_by_ai").notNull().default(false),
     aiPromptId: text("ai_prompt_id").references(() => aiPrompts.id, { onDelete: "set null" }),
+    // Phase 2b: Lifecycle & review
+    lifecycleStatus: lifecycleStatusEnum("lifecycle_status").notNull().default("new"),
+    version: integer("version").notNull().default(1),
+    approvedBy: varchar("approved_by", { length: 200 }),
+    approvedAt: timestamp("approved_at"),
+    lastReviewedAt: timestamp("last_reviewed_at"),
+    nextReviewDue: timestamp("next_review_due"),
+    reviewNote: text("review_note"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -874,6 +1194,19 @@ export const entityTopics = pgTable(
     topicIdx: index("entity_topics_topic_idx").on(t.topicId),
   })
 );
+
+// ─── Phase 2b Types ──────────────────────────────────────────────────────────
+export type DecisionHistory = typeof decisionHistory.$inferSelect;
+export type NewDecisionHistory = typeof decisionHistory.$inferInsert;
+export type ScientificDiscussion = typeof scientificDiscussion.$inferSelect;
+export type NewScientificDiscussion = typeof scientificDiscussion.$inferInsert;
+export type ConfidenceScore = typeof confidenceScores.$inferSelect;
+export type NewConfidenceScore = typeof confidenceScores.$inferInsert;
+export type ScientificTask = typeof scientificTasks.$inferSelect;
+export type NewScientificTask = typeof scientificTasks.$inferInsert;
+export type AgentFeedback = typeof agentFeedback.$inferSelect;
+export type NewAgentFeedback = typeof agentFeedback.$inferInsert;
+export type MonitoringRule = typeof monitoringRules.$inferSelect;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

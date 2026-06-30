@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 
 import { db } from "./db/index.js";
 import { sql } from "drizzle-orm";
+import { runPhase2bMigration } from "./db/migrate-phase2b-auto.js";
 
 import { entitiesRouter } from "./routes/entities.router.js";
 import { relationsRouter } from "./routes/relations.router.js";
@@ -21,6 +22,9 @@ import { collectionsRouter } from "./routes/collections.router.js";
 import sourcesRouter from "./routes/sources.router.js";
 import promptsRouter from "./routes/prompts.router.js";
 import agentsRouter from "./routes/agents.router.js";
+import confidenceRouter from "./routes/confidence.router.js";
+import discussionRouter from "./routes/discussion.router.js";
+import tasksRouter from "./routes/tasks.router.js";
 
 const app = express();
 const PORT = process.env.PORT || 4001;
@@ -107,6 +111,9 @@ app.use("/api/collections", collectionsRouter);
 app.use("/api/sources", sourcesRouter);
 app.use("/api/prompts", promptsRouter);
 app.use("/api/agents", agentsRouter);
+app.use("/api/confidence", confidenceRouter);
+app.use("/api/discussion", discussionRouter);
+app.use("/api/tasks", tasksRouter);
 app.use("/", sitemapRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
@@ -122,9 +129,18 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   res.status(500).json({ error: "Internal server error" });
 });
 
-app.listen(PORT, () => {
-  console.log(`369 Knowledge API running on http://localhost:${PORT}`);
-  console.log(`Health: http://localhost:${PORT}/health`);
+// Run Phase 2b migration on startup (idempotent — safe to run multiple times)
+runPhase2bMigration().then(() => {
+  app.listen(PORT, () => {
+    console.log(`369 Knowledge API running on http://localhost:${PORT}`);
+    console.log(`Health: http://localhost:${PORT}/health`);
+  });
+}).catch((err) => {
+  console.error("[Phase 2b Migration] Failed, starting server anyway:", err.message);
+  app.listen(PORT, () => {
+    console.log(`369 Knowledge API running on http://localhost:${PORT}`);
+    console.log(`Health: http://localhost:${PORT}/health`);
+  });
 });
 
 export default app;

@@ -215,6 +215,45 @@ export const api = {
     },
   },
 
+  confidence: {
+    get: (targetType: string, targetId: string) =>
+      request<ConfidenceScore>(`/confidence/${targetType}/${targetId}`),
+    compute: (targetType: string, targetId: string) =>
+      request<ConfidenceScore>(`/confidence/compute/${targetType}/${targetId}`, { method: "POST" }),
+    top: (targetType: string, limit?: number) =>
+      request<ConfidenceScore[]>(`/confidence/top/${targetType}${limit ? `?limit=${limit}` : ""}`),
+  },
+
+  discussion: {
+    get: (targetType: string, targetId: string) =>
+      request<DiscussionThread>(`/discussion/${targetType}/${targetId}`),
+    add: (targetType: string, targetId: string, data: Partial<DiscussionEntry>) =>
+      request<{ id: string; threadId: string }>(`/discussion/${targetType}/${targetId}`, { method: "POST", body: JSON.stringify(data) }),
+    resolve: (entryId: string, data: { resolvedBy?: string; resolutionNote?: string }) =>
+      request<{ success: boolean }>(`/discussion/${entryId}/resolve`, { method: "PATCH", body: JSON.stringify(data) }),
+    remove: (entryId: string) =>
+      request<{ success: boolean }>(`/discussion/${entryId}`, { method: "DELETE" }),
+  },
+
+  tasks: {
+    list: (params?: { status?: string; taskType?: string; targetType?: string; targetId?: string; limit?: string; offset?: string }) => {
+      const qs = new URLSearchParams((params ?? {}) as Record<string, string>).toString();
+      return request<{ tasks: ScientificTask[]; total: number; openCount: number }>(`/tasks${qs ? `?${qs}` : ""}`);
+    },
+    get: (id: string) => request<ScientificTask>(`/tasks/${id}`),
+    create: (data: Partial<ScientificTask> & { taskType: string; title: string }) =>
+      request<{ id: string }>("/tasks", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<ScientificTask> & { completedBy?: string; completionNote?: string }) =>
+      request<{ success: boolean }>(`/tasks/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    lifecycle: (targetType: string, targetId: string, data: LifecycleTransition) =>
+      request<{ decisionId: string; previousStatus: string; newStatus: string }>(
+        `/tasks/lifecycle/${targetType}/${targetId}`, { method: "POST", body: JSON.stringify(data) }
+      ),
+    history: (targetType: string, targetId: string) =>
+      request<DecisionHistory[]>(`/tasks/history/${targetType}/${targetId}`),
+    stats: () => request<TaskStats>("/tasks/stats/overview"),
+  },
+
   admin: {
     login: (password: string) =>
       request<{ message: string; expiresAt: string }>("/admin/login", {
@@ -445,6 +484,127 @@ export interface AgentSuggestion {
   reviewedAt?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ConfidenceScore {
+  id: string;
+  targetType: string;
+  targetId: string;
+  overallScore: number;
+  evidenceLevelScore: number;
+  sourceCountScore: number;
+  humanStudyScore: number;
+  animalStudyScore: number;
+  inVitroScore: number;
+  metaAnalysisScore: number;
+  recencyScore: number;
+  reviewerValidationScore: number;
+  aiValidationScore: number;
+  totalSources: number;
+  humanStudies: number;
+  animalStudies: number;
+  inVitroStudies: number;
+  rctCount: number;
+  metaAnalysisCount: number;
+  openConflicts: number;
+  newestSourceYear?: number;
+  oldestSourceYear?: number;
+  nextValidationDue?: string;
+  computedAt: string;
+  updatedAt: string;
+  canonicalName?: string;
+  slug?: string;
+}
+
+export interface DiscussionEntry {
+  id: string;
+  targetType: string;
+  targetId: string;
+  threadId: string;
+  parentEntryId?: string;
+  entryType: string;
+  content: string;
+  authorType: string;
+  authorId?: string;
+  authorRole?: string;
+  sourceIds: string[];
+  confidenceScore?: number;
+  evidenceLevel?: string;
+  isConflict: boolean;
+  conflictWith?: string;
+  conflictResolved: boolean;
+  resolvedBy?: string;
+  resolvedAt?: string;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface DiscussionThread {
+  targetType: string;
+  targetId: string;
+  totalEntries: number;
+  openConflicts: number;
+  threads: DiscussionEntry[][];
+}
+
+export interface ScientificTask {
+  id: string;
+  taskType: string;
+  title: string;
+  description?: string;
+  targetType?: string;
+  targetId?: string;
+  triggeredBy?: string;
+  triggerReason?: string;
+  assignedTo?: string;
+  priority: number;
+  dueAt?: string;
+  checklist: Array<{ item: string; completed: boolean }>;
+  status: "open" | "in_progress" | "completed" | "dismissed" | "blocked";
+  completedBy?: string;
+  completedAt?: string;
+  completionNote?: string;
+  linkedSuggestionIds: string[];
+  linkedDecisionIds: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LifecycleTransition {
+  newStatus: string;
+  reasoning: string;
+  evidenceSummary?: string;
+  evidenceLevel?: string;
+  confidenceScore?: number;
+  sourceIds?: string[];
+  reviewedBy?: string;
+  reviewerRole?: string;
+}
+
+export interface DecisionHistory {
+  id: string;
+  targetType: string;
+  targetId: string;
+  decision: string;
+  previousStatus?: string;
+  newStatus?: string;
+  reasoning: string;
+  evidenceSummary?: string;
+  evidenceLevel?: string;
+  confidenceScore?: number;
+  sourceIds: string[];
+  reviewedBy: string;
+  reviewerRole?: string;
+  createdAt: string;
+}
+
+export interface TaskStats {
+  open_tasks: string;
+  in_progress_tasks: string;
+  completed_tasks: string;
+  urgent_tasks: string;
+  open_conflicts: string;
+  pending_source_reviews: string;
 }
 
 export interface ApiKey {

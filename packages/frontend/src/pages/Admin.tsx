@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { api, Entity, Topic, Source, AiPrompt, AgentKey, AgentSuggestion } from "@/lib/api";
+import { api, Entity, Topic, Source, AiPrompt, AgentKey, AgentSuggestion, ScientificTask, TaskStats, ConfidenceScore, DiscussionThread, DiscussionEntry } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type AdminTab = "dashboard" | "entities" | "review" | "topics" | "generate" | "ontologie" | "sources" | "prompts" | "agents";
+type AdminTab = "dashboard" | "entities" | "review" | "topics" | "generate" | "ontologie" | "sources" | "prompts" | "agents" | "tasks";
 
 const ENTITY_TYPES = [
   // Substanzen
@@ -121,6 +121,7 @@ function AdminShell({ onLogout }: { onLogout: () => Promise<void> }) {
     { id: "sources", label: "Sources", icon: "📚" },
     { id: "prompts", label: "Prompts", icon: "✦" },
     { id: "agents", label: "Agents", icon: "🤖" },
+    { id: "tasks", label: "Task Queue", icon: "⚡" },
   ];
 
   return (
@@ -184,6 +185,7 @@ function AdminShell({ onLogout }: { onLogout: () => Promise<void> }) {
         {tab === "sources" && <SourcesTab />}
         {tab === "prompts" && <PromptsTab />}
         {tab === "agents" && <AgentsTab />}
+        {tab === "tasks" && <TasksTab />}
       </main>
     </div>
   );
@@ -1890,6 +1892,456 @@ function AgentsTab() {
           <p style={{ fontSize: "0.8125rem", marginTop: "0.5rem" }}>Alle API-Anfragen werden in der Datenbank protokolliert.</p>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Tasks Tab ────────────────────────────────────────────────────────────────
+const TASK_TYPE_LABELS: Record<string, string> = {
+  review_new_source: "Neue Quelle prüfen",
+  update_entity: "Entity aktualisieren",
+  review_faq: "FAQ prüfen",
+  review_guide: "Guide prüfen",
+  review_protocol: "Protokoll prüfen",
+  review_relation: "Relation prüfen",
+  review_product_link: "Produkt-Link prüfen",
+  review_academy_link: "Academy-Link prüfen",
+  validate_confidence: "Confidence validieren",
+  resolve_conflict: "Konflikt lösen",
+  complete_lifecycle: "Lifecycle abschließen",
+  custom: "Sonstige Aufgabe",
+};
+
+const TASK_STATUS_COLORS: Record<string, string> = {
+  open: "#f59e0b",
+  in_progress: "var(--color-blue-bright)",
+  completed: "#4ade80",
+  dismissed: "rgba(255,255,255,0.2)",
+  blocked: "#f87171",
+};
+
+const PRIORITY_LABELS: Record<number, { label: string; color: string }> = {
+  1: { label: "Kritisch", color: "#ef4444" },
+  2: { label: "Dringend", color: "#f97316" },
+  3: { label: "Hoch", color: "#f59e0b" },
+  4: { label: "Normal", color: "var(--color-blue-bright)" },
+  5: { label: "Niedrig", color: "rgba(255,255,255,0.3)" },
+};
+
+function TasksTab() {
+  const [tasks, setTasks] = useState<ScientificTask[]>([]);
+  const [stats, setStats] = useState<TaskStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState("open");
+  const [filterType, setFilterType] = useState("all");
+  const [selectedTask, setSelectedTask] = useState<ScientificTask | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newTask, setNewTask] = useState({ taskType: "custom", title: "", description: "", priority: 5 });
+  const [saving, setSaving] = useState(false);
+
+  const loadTasks = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params: Record<string, string> = {};
+      if (filterStatus !== "all") params.status = filterStatus;
+      if (filterType !== "all") params.taskType = filterType;
+      const [tasksRes, statsRes] = await Promise.all([
+        api.tasks.list(params),
+        api.tasks.stats(),
+      ]);
+      setTasks(tasksRes.tasks as ScientificTask[]);
+      setStats(statsRes);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [filterStatus, filterType]);
+
+  useEffect(() => { loadTasks(); }, [loadTasks]);
+
+  const handleStatusChange = async (taskId: string, newStatus: ScientificTask["status"]) => {
+    setSaving(true);
+    try {
+      await api.tasks.update(taskId, { status: newStatus, completedBy: "admin" });
+      await loadTasks();
+      if (selectedTask?.id === taskId) setSelectedTask(null);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleChecklistToggle = async (task: ScientificTask, idx: number) => {
+    const updated = task.checklist.map((item, i) =>
+      i === idx ? { ...item, completed: !item.completed } : item
+    );
+    await api.tasks.update(task.id, { checklist: updated });
+    setTasks(prev => prev.map(t => t.id === task.id ? { ...t, checklist: updated } : t));
+    if (selectedTask?.id === task.id) setSelectedTask({ ...selectedTask, checklist: updated });
+  };
+
+  const handleCreateTask = async () => {
+    if (!newTask.title) return;
+    setSaving(true);
+    try {
+      await api.tasks.create({ ...newTask, priority: Number(newTask.priority) });
+      setShowCreateForm(false);
+      setNewTask({ taskType: "custom", title: "", description: "", priority: 5 });
+      await loadTasks();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div>
+      <SectionHeader
+        title="Scientific Task Queue"
+        subtitle="Plattform-generierte und manuelle Aufgaben"
+      />
+
+      {/* Stats Row */}
+      {stats && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "0.75rem", marginBottom: "1.5rem" }}>
+          {[
+            { label: "Offen", value: stats.open_tasks, color: "#f59e0b" },
+            { label: "In Arbeit", value: stats.in_progress_tasks, color: "var(--color-blue-bright)" },
+            { label: "Abgeschlossen", value: stats.completed_tasks, color: "#4ade80" },
+            { label: "Kritisch", value: stats.urgent_tasks, color: "#ef4444" },
+            { label: "Konflikte", value: stats.open_conflicts, color: "#f97316" },
+            { label: "Quellen-Review", value: stats.pending_source_reviews, color: "rgba(255,255,255,0.5)" },
+          ].map((s) => (
+            <div key={s.label} className="card" style={{ padding: "0.875rem" }}>
+              <div style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.25rem" }}>{s.label}</div>
+              <div style={{ fontSize: "1.75rem", fontWeight: 800, fontFamily: "var(--font-condensed)", color: s.color, lineHeight: 1 }}>{s.value}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Filters + Create */}
+      <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.25rem", alignItems: "center" }}>
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="form-input"
+          style={{ width: "auto", fontSize: "0.8125rem" }}
+        >
+          <option value="all">Alle Status</option>
+          <option value="open">Offen</option>
+          <option value="in_progress">In Arbeit</option>
+          <option value="completed">Abgeschlossen</option>
+          <option value="dismissed">Verworfen</option>
+          <option value="blocked">Blockiert</option>
+        </select>
+        <select
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+          className="form-input"
+          style={{ width: "auto", fontSize: "0.8125rem" }}
+        >
+          <option value="all">Alle Typen</option>
+          {Object.entries(TASK_TYPE_LABELS).map(([k, v]) => (
+            <option key={k} value={k}>{v}</option>
+          ))}
+        </select>
+        <div style={{ flex: 1 }} />
+        <button
+          onClick={() => setShowCreateForm(!showCreateForm)}
+          className="btn btn-primary"
+          style={{ fontSize: "0.8125rem" }}
+        >
+          + Neue Aufgabe
+        </button>
+      </div>
+
+      {/* Create Form */}
+      {showCreateForm && (
+        <div className="card" style={{ padding: "1.25rem", marginBottom: "1.25rem" }}>
+          <h4 style={{ color: "white", marginBottom: "1rem", fontSize: "0.9375rem" }}>Neue Aufgabe erstellen</h4>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "0.75rem" }}>
+            <div>
+              <label className="form-label">Typ</label>
+              <select
+                value={newTask.taskType}
+                onChange={(e) => setNewTask({ ...newTask, taskType: e.target.value })}
+                className="form-input"
+              >
+                {Object.entries(TASK_TYPE_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="form-label">Priorität</label>
+              <select
+                value={newTask.priority}
+                onChange={(e) => setNewTask({ ...newTask, priority: Number(e.target.value) })}
+                className="form-input"
+              >
+                {Object.entries(PRIORITY_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>{v.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div style={{ marginBottom: "0.75rem" }}>
+            <label className="form-label">Titel *</label>
+            <input
+              value={newTask.title}
+              onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+              className="form-input"
+              placeholder="Aufgabentitel..."
+            />
+          </div>
+          <div style={{ marginBottom: "1rem" }}>
+            <label className="form-label">Beschreibung</label>
+            <textarea
+              value={newTask.description}
+              onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+              className="form-input"
+              rows={2}
+              placeholder="Optional..."
+            />
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button onClick={handleCreateTask} disabled={saving || !newTask.title} className="btn btn-primary" style={{ fontSize: "0.8125rem" }}>
+              {saving ? "..." : "Erstellen"}
+            </button>
+            <button onClick={() => setShowCreateForm(false)} className="btn btn-outline" style={{ fontSize: "0.8125rem" }}>
+              Abbrechen
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: selectedTask ? "1fr 380px" : "1fr", gap: "1.25rem" }}>
+        {/* Task List */}
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          {loading ? (
+            <div style={{ padding: "2rem", textAlign: "center", color: "rgba(255,255,255,0.3)" }}>Lädt...</div>
+          ) : tasks.length === 0 ? (
+            <div style={{ padding: "2rem", textAlign: "center", color: "rgba(255,255,255,0.3)" }}>
+              <p>Keine Aufgaben gefunden.</p>
+              <p style={{ fontSize: "0.8125rem", marginTop: "0.5rem" }}>Das System generiert automatisch Aufgaben bei neuen Quellen, Konflikten und Lifecycle-Ereignissen.</p>
+            </div>
+          ) : (
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                  {["Priorität", "Typ", "Titel", "Status", "Erstellt", "Aktionen"].map((h) => (
+                    <th key={h} style={{ padding: "0.625rem 0.875rem", textAlign: "left", fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {tasks.map((task) => {
+                  const prio = PRIORITY_LABELS[task.priority] ?? PRIORITY_LABELS[5];
+                  const completedItems = task.checklist.filter(c => c.completed).length;
+                  const totalItems = task.checklist.length;
+                  return (
+                    <tr
+                      key={task.id}
+                      onClick={() => setSelectedTask(selectedTask?.id === task.id ? null : task)}
+                      style={{
+                        borderTop: "1px solid rgba(255,255,255,0.05)",
+                        cursor: "pointer",
+                        background: selectedTask?.id === task.id ? "rgba(37,99,235,0.08)" : "transparent",
+                        transition: "background 0.1s",
+                      }}
+                    >
+                      <td style={{ padding: "0.625rem 0.875rem" }}>
+                        <span style={{ fontSize: "0.7rem", color: prio.color, fontWeight: 700 }}>{prio.label}</span>
+                      </td>
+                      <td style={{ padding: "0.625rem 0.875rem" }}>
+                        <span style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)", fontSize: "0.7rem", padding: "0.125rem 0.5rem", borderRadius: "4px" }}>
+                          {TASK_TYPE_LABELS[task.taskType] ?? task.taskType}
+                        </span>
+                      </td>
+                      <td style={{ padding: "0.625rem 0.875rem" }}>
+                        <div style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.875rem" }}>{task.title}</div>
+                        {totalItems > 0 && (
+                          <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", marginTop: "0.125rem" }}>
+                            {completedItems}/{totalItems} Schritte
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ padding: "0.625rem 0.875rem" }}>
+                        <span style={{
+                          fontSize: "0.7rem",
+                          color: TASK_STATUS_COLORS[task.status] ?? "rgba(255,255,255,0.4)",
+                          background: `${TASK_STATUS_COLORS[task.status] ?? "rgba(255,255,255,0.1)"}22`,
+                          padding: "0.125rem 0.5rem",
+                          borderRadius: "4px",
+                          fontWeight: 600,
+                        }}>
+                          {task.status === "open" ? "Offen" : task.status === "in_progress" ? "In Arbeit" : task.status === "completed" ? "Fertig" : task.status === "dismissed" ? "Verworfen" : "Blockiert"}
+                        </span>
+                      </td>
+                      <td style={{ padding: "0.625rem 0.875rem", color: "rgba(255,255,255,0.3)", fontSize: "0.8125rem" }}>
+                        {new Date(task.createdAt).toLocaleDateString("de-DE")}
+                      </td>
+                      <td style={{ padding: "0.625rem 0.875rem" }}>
+                        <div style={{ display: "flex", gap: "0.25rem" }} onClick={(e) => e.stopPropagation()}>
+                          {task.status === "open" && (
+                            <button
+                              onClick={() => handleStatusChange(task.id, "in_progress")}
+                              className="btn btn-outline"
+                              style={{ fontSize: "0.65rem", padding: "0.15rem 0.4rem", color: "var(--color-blue-bright)" }}
+                            >
+                              Start
+                            </button>
+                          )}
+                          {(task.status === "open" || task.status === "in_progress") && (
+                            <button
+                              onClick={() => handleStatusChange(task.id, "completed")}
+                              className="btn btn-outline"
+                              style={{ fontSize: "0.65rem", padding: "0.15rem 0.4rem", color: "#4ade80" }}
+                            >
+                              ✓
+                            </button>
+                          )}
+                          {task.status === "open" && (
+                            <button
+                              onClick={() => handleStatusChange(task.id, "dismissed")}
+                              className="btn btn-outline"
+                              style={{ fontSize: "0.65rem", padding: "0.15rem 0.4rem", color: "rgba(255,255,255,0.3)" }}
+                            >
+                              ✗
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Task Detail Panel */}
+        {selectedTask && (
+          <div className="card" style={{ padding: "1.25rem", alignSelf: "start" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+              <h4 style={{ color: "white", fontSize: "0.9375rem", lineHeight: 1.3, flex: 1, marginRight: "0.5rem" }}>{selectedTask.title}</h4>
+              <button
+                onClick={() => setSelectedTask(null)}
+                style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontSize: "1rem", padding: "0" }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.375rem", marginBottom: "1rem" }}>
+              <span style={{ fontSize: "0.7rem", background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)", padding: "0.125rem 0.5rem", borderRadius: "4px" }}>
+                {TASK_TYPE_LABELS[selectedTask.taskType] ?? selectedTask.taskType}
+              </span>
+              <span style={{ fontSize: "0.7rem", color: (PRIORITY_LABELS[selectedTask.priority] ?? PRIORITY_LABELS[5]).color, fontWeight: 700 }}>
+                {(PRIORITY_LABELS[selectedTask.priority] ?? PRIORITY_LABELS[5]).label}
+              </span>
+              {selectedTask.targetType && selectedTask.targetId && (
+                <span style={{ fontSize: "0.7rem", background: "rgba(37,99,235,0.15)", color: "var(--color-blue-bright)", padding: "0.125rem 0.5rem", borderRadius: "4px", fontFamily: "monospace" }}>
+                  {selectedTask.targetType}: {selectedTask.targetId.substring(0, 8)}
+                </span>
+              )}
+            </div>
+
+            {selectedTask.description && (
+              <p style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.5)", marginBottom: "1rem", lineHeight: 1.5 }}>
+                {selectedTask.description}
+              </p>
+            )}
+
+            {selectedTask.triggerReason && (
+              <div style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "6px", padding: "0.625rem 0.75rem", marginBottom: "1rem" }}>
+                <div style={{ fontSize: "0.65rem", color: "#f59e0b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.25rem" }}>Auslöser</div>
+                <p style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.7)" }}>{selectedTask.triggerReason}</p>
+              </div>
+            )}
+
+            {/* Checklist */}
+            {selectedTask.checklist.length > 0 && (
+              <div style={{ marginBottom: "1rem" }}>
+                <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.5rem" }}>
+                  Checkliste ({selectedTask.checklist.filter(c => c.completed).length}/{selectedTask.checklist.length})
+                </div>
+                {selectedTask.checklist.map((item, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => handleChecklistToggle(selectedTask, idx)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      padding: "0.375rem 0",
+                      cursor: "pointer",
+                      borderBottom: "1px solid rgba(255,255,255,0.04)",
+                    }}
+                  >
+                    <div style={{
+                      width: "14px",
+                      height: "14px",
+                      borderRadius: "3px",
+                      border: `1px solid ${item.completed ? "#4ade80" : "rgba(255,255,255,0.2)"}`,
+                      background: item.completed ? "rgba(74,222,128,0.2)" : "transparent",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}>
+                      {item.completed && <span style={{ fontSize: "0.6rem", color: "#4ade80" }}>✓</span>}
+                    </div>
+                    <span style={{
+                      fontSize: "0.8125rem",
+                      color: item.completed ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.75)",
+                      textDecoration: item.completed ? "line-through" : "none",
+                    }}>
+                      {item.item}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+              {selectedTask.status === "open" && (
+                <button
+                  onClick={() => handleStatusChange(selectedTask.id, "in_progress")}
+                  className="btn btn-primary"
+                  style={{ fontSize: "0.8125rem" }}
+                >
+                  Starten
+                </button>
+              )}
+              {(selectedTask.status === "open" || selectedTask.status === "in_progress") && (
+                <button
+                  onClick={() => handleStatusChange(selectedTask.id, "completed")}
+                  className="btn btn-outline"
+                  style={{ fontSize: "0.8125rem", color: "#4ade80" }}
+                >
+                  Abschließen
+                </button>
+              )}
+              {selectedTask.status === "open" && (
+                <button
+                  onClick={() => handleStatusChange(selectedTask.id, "dismissed")}
+                  className="btn btn-outline"
+                  style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.3)" }}
+                >
+                  Verwerfen
+                </button>
+              )}
+            </div>
+
+            <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.75rem", color: "rgba(255,255,255,0.25)" }}>
+              Erstellt: {new Date(selectedTask.createdAt).toLocaleString("de-DE")}
+              {selectedTask.triggeredBy && ` · von ${selectedTask.triggeredBy}`}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
