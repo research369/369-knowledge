@@ -319,23 +319,32 @@ TB-500 ist nicht für die Anwendung am Menschen zugelassen und nicht als Arzneim
       }
     ];
 
+    let insertedBlocks = 0;
     for (const block of blocks) {
-      await db.execute(sql`
-        INSERT INTO content_blocks (
-          id, entity_id, layer, block_type, comprehension_level,
-          title, body, scope, lifecycle_status, version,
-          generated_by_ai, reading_time_seconds
-        ) VALUES (
-          ${block.id}, ${block.entity_id}, ${block.layer}, ${block.block_type},
-          ${block.comprehension_level}, ${block.title}, ${block.body},
-          ${block.scope}::jsonb, 'published',
-          ${block.version}, ${block.generated_by_ai},
-          ${block.reading_time_seconds}
-        )
-      `);
+      try {
+        await db.execute(sql`
+          INSERT INTO content_blocks (
+            id, entity_id, layer, block_type, comprehension_level,
+            title, body, scope, lifecycle_status, version,
+            generated_by_ai, reading_time_seconds
+          ) VALUES (
+            ${block.id}, ${block.entity_id}, ${block.layer}, ${block.block_type},
+            ${block.comprehension_level}, ${block.title}, ${block.body},
+            ${block.scope}::jsonb, 'published',
+            ${block.version}, ${block.generated_by_ai},
+            ${block.reading_time_seconds}
+          )
+        `);
+        insertedBlocks++;
+        console.log(`[TB-500 Seed] Block ${insertedBlocks}/${blocks.length} inserted: ${block.block_type} (${block.comprehension_level})`);
+      } catch (blockErr: any) {
+        console.error(`[TB-500 Seed] BLOCK INSERT FAILED at block ${insertedBlocks + 1}/${blocks.length}:`, block.block_type, block.comprehension_level);
+        console.error(`[TB-500 Seed] Error:`, blockErr?.message ?? String(blockErr));
+        // Continue with remaining blocks
+      }
     }
 
-    console.log(`[TB-500 Seed] Inserted ${blocks.length} content blocks`);
+    console.log(`[TB-500 Seed] Inserted ${insertedBlocks}/${blocks.length} content blocks`);
 
     // ── 3. SOURCES ────────────────────────────────────────────────────────────
     // GOLDSTANDARD REGEL 5: Exakte Spalten aus Drizzle-Schema
