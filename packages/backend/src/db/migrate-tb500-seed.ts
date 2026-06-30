@@ -348,7 +348,7 @@ TB-500 ist nicht für die Anwendung am Menschen zugelassen und nicht als Arzneim
 
     // ── 3. SOURCES ────────────────────────────────────────────────────────────
     // GOLDSTANDARD REGEL 5: Exakte Spalten aus Drizzle-Schema
-    await db.execute(sql`DELETE FROM sources WHERE ${TB500_UUID} = ANY(linked_entity_ids::text[])`);
+    await db.execute(sql`DELETE FROM sources WHERE linked_entity_ids @> ${JSON.stringify([TB500_UUID])}::jsonb`);
 
     const sources = [
       {
