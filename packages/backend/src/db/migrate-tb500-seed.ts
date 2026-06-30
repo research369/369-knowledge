@@ -12,7 +12,7 @@
  * 5. Exakte Spalten aus Drizzle-Schema
  */
 
-import { db } from "./index";
+import { db } from "./index.js";
 import { sql } from "drizzle-orm";
 
 // GOLDSTANDARD REGEL 1: UUID direkt — nie Slug als ID
