@@ -71,16 +71,49 @@ jobs:
         env:
           VITE_API_URL: https://backend-production-77f3.up.railway.app
 
-      - name: Deploy to Netlify
+      - name: Deploy to Netlify via API
         run: |
-          npm install -g netlify-cli
-          netlify deploy \
-            --auth "$NETLIFY_AUTH_TOKEN" \
-            --site "$NETLIFY_SITE_ID" \
-            --dir "packages/frontend/dist" \
-            --prod \
-            --no-build \
-            --message "Deploy ${{ github.sha }}"
+          # Zip the dist directory
+          cd packages/frontend
+          zip -r ../../dist.zip dist/
+          cd ../..
+
+          # Deploy via Netlify API (no CLI, no project detection issues)
+          RESPONSE=$(curl -s -X POST \
+            "https://api.netlify.com/api/v1/sites/${NETLIFY_SITE_ID}/deploys" \
+            -H "Authorization: Bearer ${NETLIFY_AUTH_TOKEN}" \
+            -H "Content-Type: application/zip" \
+            --data-binary @dist.zip)
+
+          echo "Deploy response: $RESPONSE"
+
+          # Check for errors
+          DEPLOY_ID=$(echo "$RESPONSE" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('id',''))" 2>/dev/null)
+          if [ -z "$DEPLOY_ID" ]; then
+            echo "❌ Deploy failed — no deploy ID returned"
+            exit 1
+          fi
+          echo "✅ Deploy started: $DEPLOY_ID"
+
+          # Wait for deploy to complete
+          for i in $(seq 1 30); do
+            sleep 10
+            STATUS=$(curl -s \
+              "https://api.netlify.com/api/v1/deploys/${DEPLOY_ID}" \
+              -H "Authorization: Bearer ${NETLIFY_AUTH_TOKEN}" | \
+              python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('state',''))" 2>/dev/null)
+            echo "Deploy status: $STATUS"
+            if [ "$STATUS" = "ready" ]; then
+              echo "✅ Deploy complete!"
+              exit 0
+            fi
+            if [ "$STATUS" = "error" ]; then
+              echo "❌ Deploy failed with error state"
+              exit 1
+            fi
+          done
+          echo "⚠️ Deploy timed out after 5 minutes"
+          exit 1
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
