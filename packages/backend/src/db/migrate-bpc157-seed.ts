@@ -11,15 +11,20 @@ const BPC157_UUID = "7f796ffe-8714-46ec-aeb6-ac8f0e959bd0";
 
 export async function runBpc157SeedMigration(): Promise<void> {
   try {
-    // Sentinel: check if BPC-157 already has full content (more than 3 blocks)
+    // Sentinel: check if BPC-157 already has full content (blocks AND relations)
     const blockCount = await db.execute(sql`
       SELECT COUNT(*) as cnt FROM content_blocks WHERE entity_id = ${BPC157_UUID}
     `);
-    const count = Number((blockCount as any)[0]?.cnt ?? 0);
-    if (count >= 8) {
-      console.log("[BPC-157 Seed] Already seeded, skipping.");
+    const relCount = await db.execute(sql`
+      SELECT COUNT(*) as cnt FROM relations WHERE from_entity_id = ${BPC157_UUID}
+    `);
+    const bCount = Number((blockCount as any)[0]?.cnt ?? 0);
+    const rCount = Number((relCount as any)[0]?.cnt ?? 0);
+    if (bCount >= 8 && rCount >= 18) {
+      console.log("[BPC-157 Seed] Already fully seeded, skipping.");
       return;
     }
+    console.log(`[BPC-157 Seed] Partial seed detected: ${bCount} blocks, ${rCount} relations. Re-running...`);
 
     console.log("[BPC-157 Seed] Running full BPC-157 seed...");
 
@@ -254,30 +259,32 @@ BPC-157 ist ungewöhnlich stabil für ein Peptid. Es ist resistent gegen Magens�
     console.log(`[BPC-157 Seed] Inserted ${blocks.length} content blocks.`);
 
     // ─── Relations ────────────────────────────────────────────────────────────
+    // evidenceLevel values: preclinical | in_vitro | animal | pilot_human | clinical | rct | review | meta_analysis | anecdotal
+    // relationType values: activates | inhibits | upregulates | downregulates | binds_to | influences | interacts_with | regulates | modulates | is_part_of | belongs_to | is_subtype_of | contains | relevant_for | treats | improves | worsens | studied_in | evidenced_by | contradicts | confirms | updates | combined_with | synergizes_with | antagonizes | requires | recommends | occurs_in | expressed_in | codes_for | measured_by | marker_for | answers | has_source | has_evidence | has_product | has_protocol | has_stack | has_guide | part_of_academy | available_in_shop | related_topic | suggested_next
     const relations = [
       // Mechanismen / Signalwege
-      ['rel-bpc157-vegf-pathway', BPC157_UUID, 'activates_pathway', 'vegf-signalweg', 'L2', 0.95, '2b'],
-      ['rel-bpc157-fak-pathway', BPC157_UUID, 'activates_pathway', 'fak-paxillin-signalweg', 'L2', 0.90, '2b'],
-      ['rel-bpc157-no-enzyme', BPC157_UUID, 'modulates_enzyme', 'no-synthase', 'L2', 0.85, '3'],
-      ['rel-bpc157-egf-receptor', BPC157_UUID, 'activates_receptor', 'egf-rezeptor', 'L2', 0.80, '3'],
+      ['rel-bpc157-vegf-pathway', BPC157_UUID, 'activates', 'vegf-signalweg', 'L2', 0.95, 'animal'],
+      ['rel-bpc157-fak-pathway', BPC157_UUID, 'activates', 'fak-paxillin-signalweg', 'L2', 0.90, 'animal'],
+      ['rel-bpc157-no-enzyme', BPC157_UUID, 'modulates', 'no-synthase', 'L2', 0.85, 'animal'],
+      ['rel-bpc157-egf-receptor', BPC157_UUID, 'activates', 'egf-rezeptor', 'L2', 0.80, 'animal'],
       // Proteine / Biomarker
-      ['rel-bpc157-vegf-protein', BPC157_UUID, 'upregulates', 'vegf-protein', 'L2', 0.95, '2b'],
-      ['rel-bpc157-vegf-biomarker', BPC157_UUID, 'increases_biomarker', 'vegf-biomarker', 'L3', 0.90, '2b'],
+      ['rel-bpc157-vegf-protein', BPC157_UUID, 'upregulates', 'vegf-protein', 'L2', 0.95, 'animal'],
+      ['rel-bpc157-vegf-biomarker', BPC157_UUID, 'influences', 'vegf-biomarker', 'L3', 0.90, 'animal'],
       // Biologische Prozesse
-      ['rel-bpc157-angiogenese', BPC157_UUID, 'promotes', 'angiogenese', 'L2', 0.95, '2b'],
-      ['rel-bpc157-gewebereparatur', BPC157_UUID, 'promotes', 'gewebereparatur', 'L1', 0.98, '2b'],
-      ['rel-bpc157-entzuendung', BPC157_UUID, 'inhibits', 'entzuendungshemmung', 'L2', 0.90, '2b'],
+      ['rel-bpc157-angiogenese', BPC157_UUID, 'activates', 'angiogenese', 'L2', 0.95, 'animal'],
+      ['rel-bpc157-gewebereparatur', BPC157_UUID, 'improves', 'gewebereparatur', 'L1', 0.98, 'animal'],
+      ['rel-bpc157-entzuendung', BPC157_UUID, 'inhibits', 'entzuendungshemmung', 'L2', 0.90, 'animal'],
       // Organe / Gewebe
-      ['rel-bpc157-magen-darm', BPC157_UUID, 'protects', 'magen-darm-trakt', 'L3', 0.98, '2b'],
-      ['rel-bpc157-sehne', BPC157_UUID, 'heals', 'sehne', 'L3', 0.95, '2b'],
-      ['rel-bpc157-muskel', BPC157_UUID, 'heals', 'muskelgewebe', 'L3', 0.90, '2b'],
-      ['rel-bpc157-knochen', BPC157_UUID, 'heals', 'knochen', 'L3', 0.85, '3'],
-      ['rel-bpc157-gehirn', BPC157_UUID, 'protects', 'gehirn', 'L3', 0.80, '3'],
-      ['rel-bpc157-herz', BPC157_UUID, 'protects', 'herz', 'L3', 0.75, '3'],
+      ['rel-bpc157-magen-darm', BPC157_UUID, 'improves', 'magen-darm-trakt', 'L3', 0.98, 'animal'],
+      ['rel-bpc157-sehne', BPC157_UUID, 'improves', 'sehne', 'L3', 0.95, 'animal'],
+      ['rel-bpc157-muskel', BPC157_UUID, 'improves', 'muskelgewebe', 'L3', 0.90, 'animal'],
+      ['rel-bpc157-knochen', BPC157_UUID, 'improves', 'knochen', 'L3', 0.85, 'animal'],
+      ['rel-bpc157-gehirn', BPC157_UUID, 'improves', 'gehirn', 'L3', 0.80, 'animal'],
+      ['rel-bpc157-herz', BPC157_UUID, 'improves', 'herz', 'L3', 0.75, 'animal'],
       // Erkrankungen
-      ['rel-bpc157-ibd', BPC157_UUID, 'treats_in_model', 'ibd', 'L3', 0.90, '2b'],
-      ['rel-bpc157-magengeschwuer', BPC157_UUID, 'treats_in_model', 'magengeschwuer', 'L3', 0.95, '2b'],
-      ['rel-bpc157-sehnenverletzung', BPC157_UUID, 'treats_in_model', 'sehnenverletzung', 'L3', 0.92, '2b'],
+      ['rel-bpc157-ibd', BPC157_UUID, 'treats', 'ibd', 'L3', 0.90, 'animal'],
+      ['rel-bpc157-magengeschwuer', BPC157_UUID, 'treats', 'magengeschwuer', 'L3', 0.95, 'animal'],
+      ['rel-bpc157-sehnenverletzung', BPC157_UUID, 'treats', 'sehnenverletzung', 'L3', 0.92, 'animal'],
     ];
 
     for (const [id, fromId, relType, toId, layer, score, evidenceLevel] of relations) {
@@ -305,7 +312,7 @@ BPC-157 ist ungewöhnlich stabil für ein Peptid. Es ist resistent gegen Magens�
         pmid: '30261000', doi: '10.1016/j.peptides.2018.09.001',
         title: 'Brain-gut Axis and Pentadecapeptide BPC 157: Theoretical and Practical Implications',
         authors: 'Sikiric P, Seiwerth S, Rucman R, et al.',
-        journal: 'Current Neuropharmacology', year: 2016, evidenceLevel: '4',
+        journal: 'Current Neuropharmacology', year: 2016, evidenceLevel: 'review',
         biasRisk: 'high', fundingSource: 'University of Zagreb',
         summaryDe: 'Übersichtsarbeit zur Wirkung von BPC-157 auf die Gehirn-Darm-Achse. Beschreibt neuroprotektive und gastroprotektive Effekte in Tiermodellen.',
         qualityScore: 65
@@ -315,7 +322,7 @@ BPC-157 ist ungewöhnlich stabil für ein Peptid. Es ist resistent gegen Magens�
         pmid: '25578741', doi: '10.1016/j.peptides.2014.12.009',
         title: 'Stable gastric pentadecapeptide BPC 157 can improve the healing course of spinal cord injury and lead to functional recovery in rats',
         authors: 'Huang T, Zhang K, Sun L, et al.',
-        journal: 'Journal of Orthopaedic Research', year: 2015, evidenceLevel: '4',
+        journal: 'Journal of Orthopaedic Research', year: 2015, evidenceLevel: 'animal',
         biasRisk: 'moderate', fundingSource: 'National Natural Science Foundation of China',
         summaryDe: 'Tiermodell-Studie zur Rückenmarksverletzung. BPC-157 verbesserte motorische Funktion und reduzierte Entzündungsmarker.',
         qualityScore: 72
@@ -325,7 +332,7 @@ BPC-157 ist ungewöhnlich stabil für ein Peptid. Es ist resistent gegen Magens�
         pmid: '17543987', doi: '10.1016/j.regpep.2007.04.009',
         title: 'Enhancement by PL 14736 of granulation and collagen organization in healing wounds and the potential role of egr-1 expression',
         authors: 'Tkalcevic VI, Cuzic S, Brajsa K, et al.',
-        journal: 'European Journal of Pharmacology', year: 2007, evidenceLevel: '4',
+        journal: 'European Journal of Pharmacology', year: 2007, evidenceLevel: 'animal',
         biasRisk: 'moderate', fundingSource: 'Pliva Pharmaceutical Company',
         summaryDe: 'Studie zur Wundheilung. BPC-157 (PL 14736) verbesserte Granulationsgewebe und Kollagenorganisation. Mögliche Rolle von EGR-1.',
         qualityScore: 68
@@ -335,7 +342,7 @@ BPC-157 ist ungewöhnlich stabil für ein Peptid. Es ist resistent gegen Magens�
         pmid: '18433937', doi: '10.1016/j.jbiomech.2008.01.026',
         title: 'Effect of BPC 157 on Achilles tendon healing in rats',
         authors: 'Novinscak T, Brcic L, Staresinic M, et al.',
-        journal: 'Journal of Orthopaedic Research', year: 2008, evidenceLevel: '4',
+        journal: 'Journal of Orthopaedic Research', year: 2008, evidenceLevel: 'animal',
         biasRisk: 'moderate', fundingSource: 'University of Zagreb',
         summaryDe: 'Achillessehnen-Heilungsstudie bei Ratten. BPC-157 verbesserte Zugfestigkeit und histologische Parameter signifikant.',
         qualityScore: 74
@@ -345,7 +352,7 @@ BPC-157 ist ungewöhnlich stabil für ein Peptid. Es ist resistent gegen Magens�
         pmid: '22925460', doi: '10.2174/138161212803251548',
         title: 'The Stable Gastric Pentadecapeptide BPC 157 Pleiotropic Beneficial Activity and Its Possible Relations with Dopaminergic and Serotonergic Systems',
         authors: 'Sikiric P, Seiwerth S, Rucman R, et al.',
-        journal: 'Current Pharmaceutical Design', year: 2012, evidenceLevel: '5',
+        journal: 'Current Pharmaceutical Design', year: 2012, evidenceLevel: 'review',
         biasRisk: 'high', fundingSource: 'University of Zagreb',
         summaryDe: 'Übersichtsarbeit zu pleiotropen Effekten von BPC-157. Diskutiert mögliche Verbindungen zum dopaminergen und serotonergen System.',
         qualityScore: 60
