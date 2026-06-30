@@ -79,6 +79,42 @@ app.use(cookieParser());
 app.use("/api", apiLimiter);
 app.use("/api/entities/:id/generate", generateLimiter);
 
+// ─── Debug Migration Endpoint (temporary) ────────────────────────────────────
+app.get("/debug/run-tb500", async (_req, res) => {
+  const logs: string[] = [];
+  const errors: string[] = [];
+  try {
+    const TB500_UUID = "ac37e146-c28c-4e81-a47d-17141f6cc857";
+    const blockCountResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM content_blocks WHERE entity_id = ${TB500_UUID}`);
+    const cnt = Number((blockCountResult as any)[0]?.cnt ?? 0);
+    logs.push(`Current blocks: ${cnt}`);
+    await db.execute(sql`DELETE FROM content_blocks WHERE entity_id = ${TB500_UUID}`);
+    logs.push("Deleted existing blocks");
+    // Test single block insert
+    const testId = `debug-tb500-test-${Date.now()}`;
+    await db.execute(sql`
+      INSERT INTO content_blocks (
+        id, entity_id, layer, block_type, comprehension_level,
+        title, body, scope, lifecycle_status, version,
+        generated_by_ai, reading_time_seconds
+      ) VALUES (
+        ${testId}, ${TB500_UUID}, 'L2', 'mechanism_brief', 'brief',
+        ${'Test Block'}, ${'Test body content here'},
+        ${JSON.stringify(["portal","academy","bedo"])}::jsonb, 'published',
+        ${1}, ${false},
+        ${45}
+      )
+    `);
+    logs.push("Test block inserted successfully");
+    await db.execute(sql`DELETE FROM content_blocks WHERE id = ${testId}`);
+    logs.push("Test block cleaned up");
+    res.json({ success: true, logs, errors });
+  } catch (e: any) {
+    errors.push(e.message ?? String(e));
+    res.status(500).json({ success: false, logs, errors });
+  }
+});
+
 // ─── Health Check ─────────────────────────────────────────────────────────────
 
 app.get("/health", async (_req, res) => {
