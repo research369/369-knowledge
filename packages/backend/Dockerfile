@@ -33,9 +33,9 @@ RUN pnpm install --no-frozen-lockfile --prod
 COPY --from=builder /app/packages/backend/dist ./dist
 COPY --from=builder /app/packages/backend/drizzle ./drizzle
 
-EXPOSE 3001
-
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD wget -qO- http://localhost:3001/health || exit 1
+# Railway setzt PORT dynamisch — kein fester Port im Healthcheck
+# start-period=180s: Migrations brauchen Zeit beim ersten Start
+HEALTHCHECK --interval=30s --timeout=15s --start-period=180s --retries=5 \
+  CMD wget -qO- http://localhost:${PORT:-4001}/health || exit 1
 
 CMD ["node", "dist/index.js"]
