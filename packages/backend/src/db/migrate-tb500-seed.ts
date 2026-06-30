@@ -113,7 +113,6 @@ export async function runTb500Seed() {
         version: 1,
         is_ai_generated: false,
         reading_time_seconds: 30,
-        word_count: 80
       },
       {
         id: `cb-tb500-l1-simple-${Date.now()}-2`,
@@ -141,7 +140,6 @@ In Tiermodellen wurden Effekte auf Herzregeneration nach Herzinfarkt, Wundheilun
         version: 1,
         is_ai_generated: false,
         reading_time_seconds: 120,
-        word_count: 200
       },
       {
         id: `cb-tb500-l2-brief-${Date.now()}-3`,
@@ -157,7 +155,6 @@ In Tiermodellen wurden Effekte auf Herzregeneration nach Herzinfarkt, Wundheilun
         version: 1,
         is_ai_generated: false,
         reading_time_seconds: 45,
-        word_count: 65
       },
       {
         id: `cb-tb500-l2-scientific-${Date.now()}-4`,
@@ -195,7 +192,6 @@ In Herzmuskelzellen aktiviert Tβ4 ruhende Progenitorzellen (Epicardial Progenit
         version: 1,
         is_ai_generated: false,
         reading_time_seconds: 300,
-        word_count: 250
       },
       {
         id: `cb-tb500-l3-applications-${Date.now()}-5`,
@@ -227,7 +223,6 @@ In Modellen für Schlaganfall und traumatische Hirnverletzung zeigte Tβ4 neurop
         version: 1,
         is_ai_generated: false,
         reading_time_seconds: 360,
-        word_count: 260
       },
       {
         id: `cb-tb500-l4-evidence-${Date.now()}-6`,
@@ -261,7 +256,6 @@ TB-500 ist ein wissenschaftlich interessantes Peptid mit plausiblen Mechanismen 
         version: 1,
         is_ai_generated: false,
         reading_time_seconds: 300,
-        word_count: 230
       },
       {
         id: `cb-tb500-l5-limitations-${Date.now()}-7`,
@@ -289,7 +283,6 @@ Laufende präklinische Forschung fokussiert auf kardiale Regeneration (besonders
         version: 1,
         is_ai_generated: false,
         reading_time_seconds: 240,
-        word_count: 185
       },
       {
         id: `cb-tb500-l7-faq-${Date.now()}-8`,
@@ -323,7 +316,6 @@ TB-500 ist nicht für die Anwendung am Menschen zugelassen und nicht als Arzneim
         version: 1,
         is_ai_generated: false,
         reading_time_seconds: 480,
-        word_count: 310
       }
     ];
 
