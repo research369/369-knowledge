@@ -508,15 +508,15 @@ TB-500 ist nicht für die Anwendung am Menschen zugelassen und nicht als Arzneim
         INSERT INTO relations (
           id, from_entity_id, to_entity_id, relation_type,
           layer, scope,
-          confidence_score, evidence_level, description, status
+          confidence_score, evidence_level, description
         ) VALUES (
           ${relId}, ${TB500_UUID}, ${targetId}, ${rel.type},
           'L2', '["portal","academy","bedo"]'::jsonb,
-          ${rel.strength}, ${rel.evidenceLevel}, ${rel.description},
-          'published'
+          ${rel.strength}, ${rel.evidenceLevel}, ${rel.description}
         )
         ON CONFLICT DO NOTHING
       `);
+
       relationsInserted++;
     }
 
