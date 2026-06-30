@@ -72,13 +72,12 @@ jobs:
           VITE_API_URL: https://backend-production-77f3.up.railway.app
 
       - name: Deploy to Netlify
-        working-directory: packages/frontend
         run: |
           npm install -g netlify-cli
           netlify deploy \
             --auth "$NETLIFY_AUTH_TOKEN" \
             --site "$NETLIFY_SITE_ID" \
-            --dir dist \
+            --dir "packages/frontend/dist" \
             --prod \
             --message "Deploy ${{ github.sha }}"
         env:
