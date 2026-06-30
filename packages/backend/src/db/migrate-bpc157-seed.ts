@@ -292,12 +292,12 @@ BPC-157 ist ungewöhnlich stabil für ein Peptid. Es ist resistent gegen Magens�
         INSERT INTO relations (
           id, from_entity_id, relation_type, to_entity_id,
           layer, scope, confidence_score, evidence_level,
-          lifecycle_status, version, created_at, updated_at
+          created_at, updated_at
         ) VALUES (
           ${id as string}, ${fromId as string}, ${relType as string}, ${toId as string},
           ${layer as string}, '["portal","academy","bedo"]'::jsonb,
           ${score as number}, ${evidenceLevel as string},
-          'published', 1, NOW(), NOW()
+          NOW(), NOW()
         )
         ON CONFLICT (id) DO NOTHING
       `);
@@ -362,15 +362,16 @@ BPC-157 ist ungewöhnlich stabil für ein Peptid. Es ist resistent gegen Magens�
     for (const src of sources) {
       await db.execute(sql`
         INSERT INTO sources (
-          id, entity_ids, pmid, doi, title, authors, journal, publication_year,
-          evidence_level, bias_risk, funding_source, summary_de, quality_score,
-          lifecycle_status, version, created_at, updated_at
+          id, pmid, doi, title, authors, journal, year,
+          evidence_level, bias, funding, ai_summary_de, quality_score,
+          linked_entity_ids, is_animal, status, created_at, updated_at
         ) VALUES (
-          ${src.id}, ${JSON.stringify([BPC157_UUID])}::jsonb,
-          ${src.pmid}, ${src.doi}, ${src.title}, ${src.authors},
+          ${src.id}, ${src.pmid}, ${src.doi}, ${src.title},
+          ${JSON.stringify([src.authors])}::jsonb,
           ${src.journal}, ${src.year}, ${src.evidenceLevel}, ${src.biasRisk},
           ${src.fundingSource}, ${src.summaryDe}, ${src.qualityScore},
-          'published', 1, NOW(), NOW()
+          ${JSON.stringify([BPC157_UUID])}::jsonb,
+          true, 'published', NOW(), NOW()
         )
         ON CONFLICT (id) DO NOTHING
       `);
