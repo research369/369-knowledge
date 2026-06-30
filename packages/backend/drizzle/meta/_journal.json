@@ -15,6 +15,13 @@
       "when": 1782718230956,
       "tag": "0001_tricky_wolf_cub",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782794882628,
+      "tag": "0002_past_husk",
+      "breakpoints": true
     }
   ]
 }

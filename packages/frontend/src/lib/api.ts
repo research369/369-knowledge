@@ -104,6 +104,56 @@ export const api = {
       request<{ message: string }>(`/blocks/${id}`, { method: "DELETE" }),
   },
 
+  studies: {
+    list: (params?: { page?: string; limit?: string; q?: string; entityId?: string; studyType?: string; isHuman?: string; isRct?: string; yearFrom?: string; yearTo?: string }) => {
+      const qs = new URLSearchParams((params ?? {}) as Record<string, string>).toString();
+      return request<{ data: Study[]; total: number; page: number; limit: number }>(`/studies${qs ? `?${qs}` : ""}`);
+    },
+    get: (id: string) => request<Study>(`/studies/${id}`),
+    create: (data: Partial<Study>) =>
+      request<Study>("/studies", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<Study>) =>
+      request<Study>(`/studies/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      request<{ success: boolean }>(`/studies/${id}`, { method: "DELETE" }),
+    publish: (id: string) =>
+      request<Study>(`/studies/${id}/publish`, { method: "POST" }),
+  },
+
+  protocols: {
+    list: (params?: { page?: string; limit?: string; q?: string; goal?: string }) => {
+      const qs = new URLSearchParams((params ?? {}) as Record<string, string>).toString();
+      return request<{ data: Protocol[]; total: number; page: number; limit: number }>(`/protocols${qs ? `?${qs}` : ""}`);
+    },
+    getBySlug: (slug: string) => request<Protocol>(`/protocols/slug/${slug}`),
+    get: (id: string) => request<Protocol>(`/protocols/${id}`),
+    create: (data: Partial<Protocol>) =>
+      request<Protocol>("/protocols", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<Protocol>) =>
+      request<Protocol>(`/protocols/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      request<{ success: boolean }>(`/protocols/${id}`, { method: "DELETE" }),
+    publish: (id: string) =>
+      request<Protocol>(`/protocols/${id}/publish`, { method: "POST" }),
+  },
+
+  collections: {
+    list: (params?: { page?: string; limit?: string; q?: string }) => {
+      const qs = new URLSearchParams((params ?? {}) as Record<string, string>).toString();
+      return request<{ data: Collection[]; total: number; page: number; limit: number }>(`/collections${qs ? `?${qs}` : ""}`);
+    },
+    getBySlug: (slug: string) => request<Collection & { entities: Entity[] }>(`/collections/slug/${slug}`),
+    get: (id: string) => request<Collection>(`/collections/${id}`),
+    create: (data: Partial<Collection>) =>
+      request<Collection>("/collections", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<Collection>) =>
+      request<Collection>(`/collections/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      request<{ success: boolean }>(`/collections/${id}`, { method: "DELETE" }),
+    publish: (id: string) =>
+      request<Collection>(`/collections/${id}/publish`, { method: "POST" }),
+  },
+
   admin: {
     login: (password: string) =>
       request<{ message: string; expiresAt: string }>("/admin/login", {
@@ -193,6 +243,63 @@ export interface Relation {
   confidenceScore: number;
   evidenceLevel?: string;
   createdAt: string;
+}
+
+export interface Study {
+  id: string;
+  entityId?: string;
+  title: string;
+  authors?: string[];
+  journal?: string;
+  year?: number;
+  doi?: string;
+  pubmedId?: string;
+  studyType?: "rct" | "meta_analysis" | "systematic_review" | "cohort" | "case_control" | "case_report" | "in_vitro" | "animal" | "review" | "other";
+  isHuman?: boolean;
+  isRct?: boolean;
+  sampleSize?: number;
+  duration?: string;
+  abstractText?: string;
+  aiSummaryDe?: string;
+  keyFindings?: string[];
+  limitations?: string[];
+  evidenceLevel?: "1a" | "1b" | "2a" | "2b" | "3" | "4" | "5";
+  status: "draft" | "review" | "published" | "archived";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Protocol {
+  id: string;
+  slug: string;
+  name: string;
+  goal?: string;
+  targetAudience?: string[];
+  duration?: string;
+  frequency?: string;
+  compounds?: string[];
+  phases?: Array<{ name: string; duration: string; compounds: string[]; notes?: string }>;
+  contraindications?: string[];
+  monitoring?: string[];
+  notes?: string;
+  status: "draft" | "review" | "published" | "archived";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Collection {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string;
+  collectionType?: "stack" | "category" | "goal" | "curated" | "auto";
+  manualEntityIds?: string[];
+  filterEntityTypes?: string[];
+  excludeEntityIds?: string[];
+  sortBy?: string;
+  status: "draft" | "review" | "published" | "archived";
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ApiKey {

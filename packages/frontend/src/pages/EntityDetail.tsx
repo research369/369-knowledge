@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Navigation from "@/components/Navigation";
 import { api, Entity, ContentBlock, Relation } from "@/lib/api";
 import { ArrowLeft, ExternalLink, FlaskConical, BookOpen, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 
@@ -55,15 +56,27 @@ const TYPE_LABELS: Record<string, string> = {
   compound: "Compound",
   peptide: "Peptid",
   supplement: "Supplement",
+  kosmetik: "Kosmetik",
+  mechanismus: "Mechanismus",
+  signalweg: "Signalweg",
+  studie: "Studie",
+  erkrankung: "Erkrankung",
+  symptom: "Symptom",
+  biomarker: "Biomarker",
+  gen: "Gen",
+  protein: "Protein",
+  rezeptor: "Rezeptor",
+  organ: "Organ",
+  glossar: "Glossar",
+  guide: "Guide",
+  stack: "Stack",
+  faq: "FAQ",
+  // legacy keys
   mechanism: "Mechanismus",
   receptor: "Rezeptor",
   gene: "Gen",
-  organ: "Organ",
   disease: "Erkrankung",
-  stack: "Stack",
-  guide: "Guide",
   glossary: "Glossar",
-  faq: "FAQ",
   academy_module: "Academy",
 };
 
@@ -238,22 +251,9 @@ export default function EntityDetail({ entityId }: { entityId: string }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
       />
 
-      {/* Nav */}
-      <nav className="sticky top-0 z-30 border-b border-white/5 bg-navy/90 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded bg-gradient-to-br from-blue-mid to-blue-bright flex items-center justify-center">
-              <span className="text-white font-bold text-xs">369</span>
-            </div>
-            <span className="text-white font-semibold text-sm">Research</span>
-          </a>
-          <a href="/" className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors">
-            <ArrowLeft size={14} /> Übersicht
-          </a>
-        </div>
-      </nav>
+      <Navigation />
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 pt-24 pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* ── Main Content ── */}
           <div className="lg:col-span-2">

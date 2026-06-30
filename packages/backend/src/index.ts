@@ -15,6 +15,9 @@ import { adminAuthRouter } from "./routes/admin-auth.router.js";
 import { sitemapRouter } from "./routes/sitemap.router.js";
 import { topicsRouter } from "./routes/topics.router.js";
 import { searchRouter } from "./routes/search.router.js";
+import { studiesRouter } from "./routes/studies.router.js";
+import { protocolsRouter } from "./routes/protocols.router.js";
+import { collectionsRouter } from "./routes/collections.router.js";
 
 const app = express();
 const PORT = process.env.PORT || 4001;
@@ -73,7 +76,7 @@ app.get("/health", async (_req, res) => {
     res.json({
       status: "ok",
       service: "369-knowledge-api",
-      version: "1.0.0",
+      version: "2.0.0",
       db: "connected",
       timestamp: new Date().toISOString(),
     });
@@ -95,6 +98,9 @@ app.use("/api/blocks", contentBlocksRouter);
 app.use("/api/admin", adminAuthRouter);
 app.use("/api/topics", topicsRouter);
 app.use("/api/search", searchRouter);
+app.use("/api/studies", studiesRouter);
+app.use("/api/protocols", protocolsRouter);
+app.use("/api/collections", collectionsRouter);
 app.use("/", sitemapRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
