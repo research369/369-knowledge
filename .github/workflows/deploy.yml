@@ -74,12 +74,12 @@ jobs:
       - name: Deploy to Netlify
         run: |
           npm install -g netlify-cli
-          cd packages/frontend
           netlify deploy \
             --auth "$NETLIFY_AUTH_TOKEN" \
             --site "$NETLIFY_SITE_ID" \
-            --dir "dist" \
+            --dir "packages/frontend/dist" \
             --prod \
+            --no-build \
             --message "Deploy ${{ github.sha }}"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
