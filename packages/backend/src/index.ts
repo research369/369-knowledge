@@ -85,32 +85,19 @@ app.get("/debug/run-tb500", async (_req, res) => {
   const errors: string[] = [];
   try {
     const TB500_UUID = "ac37e146-c28c-4e81-a47d-17141f6cc857";
+    // Run the actual migration and capture output
+    const { runTb500Seed } = await import("./db/migrate-tb500-seed.js");
+    await runTb500Seed();
     const blockCountResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM content_blocks WHERE entity_id = ${TB500_UUID}`);
     const cnt = Number((blockCountResult as any)[0]?.cnt ?? 0);
-    logs.push(`Current blocks: ${cnt}`);
-    await db.execute(sql`DELETE FROM content_blocks WHERE entity_id = ${TB500_UUID}`);
-    logs.push("Deleted existing blocks");
-    // Test single block insert
-    const testId = `debug-tb500-test-${Date.now()}`;
-    await db.execute(sql`
-      INSERT INTO content_blocks (
-        id, entity_id, layer, block_type, comprehension_level,
-        title, body, scope, lifecycle_status, version,
-        generated_by_ai, reading_time_seconds
-      ) VALUES (
-        ${testId}, ${TB500_UUID}, 'L2', 'mechanism_brief', 'brief',
-        ${'Test Block'}, ${'Test body content here'},
-        ${JSON.stringify(["portal","academy","bedo"])}::jsonb, 'published',
-        ${1}, ${false},
-        ${45}
-      )
-    `);
-    logs.push("Test block inserted successfully");
-    await db.execute(sql`DELETE FROM content_blocks WHERE id = ${testId}`);
-    logs.push("Test block cleaned up");
-    res.json({ success: true, logs, errors });
+    logs.push(`Blocks after migration: ${cnt}`);
+    const relCountResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM relations WHERE from_entity_id = ${TB500_UUID} OR to_entity_id = ${TB500_UUID}`);
+    const relCnt = Number((relCountResult as any)[0]?.cnt ?? 0);
+    logs.push(`Relations after migration: ${relCnt}`);
+    res.json({ success: true, logs, errors, blocks: cnt, relations: relCnt });
   } catch (e: any) {
     errors.push(e.message ?? String(e));
+    errors.push(e.stack ?? "");
     res.status(500).json({ success: false, logs, errors });
   }
 });
