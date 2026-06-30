@@ -44,7 +44,9 @@ export async function runTb500Seed() {
       return;
     }
 
-    console.log(`[TB-500 Seed] Starting — blocks: ${blockCount}/8, relations: ${relCount}/15`);
+    // Phase 3: Wenn Blocks bereits da sind, nur Relations ergänzen
+    const blocksAlreadyDone = blockCount >= 8;
+    console.log(`[TB-500 Seed] Starting — blocks: ${blockCount}/8, relations: ${relCount}/15 (blocks_done: ${blocksAlreadyDone})`);
 
     // ── 1. ENTITY UPDATE ─────────────────────────────────────────────────────
     await db.execute(sql`
