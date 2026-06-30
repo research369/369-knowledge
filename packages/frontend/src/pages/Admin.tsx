@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { api, Entity, Topic } from "@/lib/api";
+import { api, Entity, Topic, Source, AiPrompt, AgentKey, AgentSuggestion } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type AdminTab = "dashboard" | "entities" | "review" | "topics" | "generate" | "ontologie";
+type AdminTab = "dashboard" | "entities" | "review" | "topics" | "generate" | "ontologie" | "sources" | "prompts" | "agents";
 
 const ENTITY_TYPES = [
   // Substanzen
@@ -118,6 +118,9 @@ function AdminShell({ onLogout }: { onLogout: () => Promise<void> }) {
     { id: "topics", label: "Topics", icon: "◎" },
     { id: "generate", label: "KI-Workflow", icon: "✦" },
     { id: "ontologie", label: "Ontologie", icon: "⬢" },
+    { id: "sources", label: "Sources", icon: "📚" },
+    { id: "prompts", label: "Prompts", icon: "✦" },
+    { id: "agents", label: "Agents", icon: "🤖" },
   ];
 
   return (
@@ -178,6 +181,9 @@ function AdminShell({ onLogout }: { onLogout: () => Promise<void> }) {
         {tab === "topics" && <TopicsTab />}
         {tab === "generate" && <GenerateTab />}
         {tab === "ontologie" && <OntologieTab />}
+        {tab === "sources" && <SourcesTab />}
+        {tab === "prompts" && <PromptsTab />}
+        {tab === "agents" && <AgentsTab />}
       </main>
     </div>
   );
@@ -1228,6 +1234,662 @@ function OntologieTab() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Sources Tab ──────────────────────────────────────────────────────────────
+function SourcesTab() {
+  const [sources, setSources] = useState<Source[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [importMode, setImportMode] = useState<"pmid" | "doi" | "batch" | null>(null);
+  const [importValue, setImportValue] = useState("");
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<string | null>(null);
+  const [editSource, setEditSource] = useState<Source | null>(null);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    api.sources.list({
+      search: search || undefined,
+      status: filterStatus !== "all" ? filterStatus : undefined,
+      limit: "50",
+    }).then((r) => {
+      setSources(r.data);
+      setTotal(r.total);
+    }).finally(() => setLoading(false));
+  }, [search, filterStatus]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleImport = async () => {
+    if (!importValue.trim()) return;
+    setImportLoading(true);
+    setImportResult(null);
+    try {
+      if (importMode === "pmid") {
+        const r = await api.sources.importPmid(importValue.trim());
+        setImportResult(r.imported ? `✅ Importiert: ${r.source.title}` : `ℹ️ Bereits vorhanden: ${r.source.title}`);
+      } else if (importMode === "doi") {
+        const r = await api.sources.importDoi(importValue.trim());
+        setImportResult(r.imported ? `✅ Importiert: ${r.source.title}` : `ℹ️ Bereits vorhanden: ${r.source.title}`);
+      } else if (importMode === "batch") {
+        const lines = importValue.split("\n").map(l => l.trim()).filter(Boolean);
+        const pmids = lines.filter(l => /^\d+$/.test(l));
+        const dois = lines.filter(l => l.includes("/"));
+        const r = await api.sources.importBatch(pmids, dois);
+        setImportResult(`✅ ${r.imported} importiert, ❌ ${r.failed} fehlgeschlagen`);
+      }
+      load();
+      setImportValue("");
+    } catch (e: any) {
+      setImportResult(`❌ Fehler: ${e.message}`);
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const EVIDENCE_COLORS: Record<string, string> = {
+    "1a": "#4ade80", "1b": "#86efac", "2a": "#fbbf24", "2b": "#f97316",
+    "3": "#f87171", "4": "#a78bfa", "5": "#64748b",
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.5rem" }}>
+        <SectionHeader title="Scientific Sources" subtitle={`${total} Quellen in der Datenbank`} />
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <button onClick={() => setImportMode("pmid")} className="btn btn-outline" style={{ fontSize: "0.8125rem" }}>PMID Import</button>
+          <button onClick={() => setImportMode("doi")} className="btn btn-outline" style={{ fontSize: "0.8125rem" }}>DOI Import</button>
+          <button onClick={() => setImportMode("batch")} className="btn btn-gold" style={{ fontSize: "0.8125rem" }}>Batch Import</button>
+        </div>
+      </div>
+
+      {/* Import Panel */}
+      {importMode && (
+        <div className="card" style={{ marginBottom: "1.5rem", padding: "1.25rem" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+            <h3 style={{ color: "white", fontSize: "0.9375rem", fontFamily: "var(--font-condensed)", margin: 0 }}>
+              {importMode === "pmid" ? "PubMed Import (PMID)" : importMode === "doi" ? "CrossRef Import (DOI)" : "Batch Import (PMIDs + DOIs)"}
+            </h3>
+            <button onClick={() => { setImportMode(null); setImportResult(null); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: "1.25rem" }}>×</button>
+          </div>
+          {importMode === "batch" ? (
+            <textarea
+              value={importValue}
+              onChange={(e) => setImportValue(e.target.value)}
+              placeholder={"Eine PMID oder DOI pro Zeile:\n12345678\n10.1016/j.example.2024.01.001\n23456789"}
+              className="form-input"
+              style={{ width: "100%", height: "120px", resize: "vertical", fontFamily: "monospace", fontSize: "0.8125rem" }}
+            />
+          ) : (
+            <input
+              type="text"
+              value={importValue}
+              onChange={(e) => setImportValue(e.target.value)}
+              placeholder={importMode === "pmid" ? "z.B. 12345678" : "z.B. 10.1016/j.example.2024.01.001"}
+              className="form-input"
+              style={{ width: "100%" }}
+              onKeyDown={(e) => e.key === "Enter" && handleImport()}
+            />
+          )}
+          {importResult && (
+            <p style={{ marginTop: "0.75rem", fontSize: "0.875rem", color: importResult.startsWith("❌") ? "#f87171" : "#4ade80" }}>{importResult}</p>
+          )}
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem" }}>
+            <button onClick={handleImport} disabled={importLoading || !importValue.trim()} className="btn btn-primary" style={{ fontSize: "0.875rem" }}>
+              {importLoading ? "Importiere..." : "Importieren"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Filters */}
+      <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.25rem", flexWrap: "wrap", alignItems: "center" }}>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Titel, Journal, PMID, DOI..."
+          className="form-input"
+          style={{ width: "280px", padding: "0.4rem 0.75rem", fontSize: "0.875rem" }}
+        />
+        <div style={{ display: "flex", gap: "0.375rem" }}>
+          {["all", "draft", "review", "published"].map((s) => (
+            <button key={s} onClick={() => setFilterStatus(s)}
+              className={`btn ${filterStatus === s ? "btn-primary" : "btn-outline"}`}
+              style={{ fontSize: "0.8125rem", padding: "0.375rem 0.75rem" }}>
+              {s === "all" ? "Alle" : s === "draft" ? "Entwurf" : s === "review" ? "Review" : "Live"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Edit Panel */}
+      {editSource && (
+        <div className="card" style={{ marginBottom: "1.5rem", padding: "1.25rem" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+            <h3 style={{ color: "white", fontSize: "0.9375rem", fontFamily: "var(--font-condensed)", margin: 0 }}>Source bearbeiten</h3>
+            <button onClick={() => setEditSource(null)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: "1.25rem" }}>×</button>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+            {[
+              { key: "title", label: "Titel", full: true },
+              { key: "journal", label: "Journal" },
+              { key: "year", label: "Jahr" },
+              { key: "pmid", label: "PMID" },
+              { key: "doi", label: "DOI" },
+              { key: "evidenceLevel", label: "Evidenzlevel (1a–5)" },
+              { key: "biasRisk", label: "Bias-Risiko" },
+              { key: "fundingSource", label: "Finanzierung" },
+            ].map((f) => (
+              <div key={f.key} style={{ gridColumn: (f as any).full ? "1 / -1" : undefined }}>
+                <label className="form-label">{f.label}</label>
+                <input
+                  type="text"
+                  value={String((editSource as any)[f.key] ?? "")}
+                  onChange={(e) => setEditSource({ ...editSource, [f.key]: e.target.value })}
+                  className="form-input"
+                  style={{ padding: "0.4rem 0.75rem", fontSize: "0.875rem" }}
+                />
+              </div>
+            ))}
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label className="form-label">KI-Zusammenfassung (DE)</label>
+              <textarea
+                value={editSource.aiSummaryDe ?? ""}
+                onChange={(e) => setEditSource({ ...editSource, aiSummaryDe: e.target.value })}
+                className="form-input"
+                style={{ width: "100%", height: "100px", resize: "vertical", fontSize: "0.875rem" }}
+              />
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
+            <button onClick={async () => {
+              await api.sources.update(editSource.id, editSource);
+              setEditSource(null);
+              load();
+            }} className="btn btn-primary" style={{ fontSize: "0.875rem" }}>Speichern</button>
+            <button onClick={async () => {
+              if (!confirm("Source wirklich löschen?")) return;
+              await api.sources.delete(editSource.id);
+              setEditSource(null);
+              load();
+            }} className="btn btn-outline" style={{ fontSize: "0.875rem", color: "#f87171" }}>Löschen</button>
+          </div>
+        </div>
+      )}
+
+      {/* Table */}
+      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+        {loading ? <LoadingState /> : sources.length === 0 ? (
+          <div style={{ padding: "3rem", textAlign: "center", color: "rgba(255,255,255,0.3)" }}>
+            Keine Quellen gefunden. Importiere PMIDs oder DOIs.
+          </div>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                {["Titel", "Journal", "Jahr", "PMID/DOI", "Evidenz", "Status", ""].map((h) => (
+                  <th key={h} style={{ padding: "0.625rem 0.875rem", textAlign: "left", fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {sources.map((s) => (
+                <tr key={s.id} style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                  <td style={{ padding: "0.625rem 0.875rem", color: "rgba(255,255,255,0.85)", fontSize: "0.8125rem", maxWidth: "280px" }}>
+                    <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.title}</div>
+                    {s.authors && s.authors.length > 0 && (
+                      <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.75rem", marginTop: "0.125rem" }}>
+                        {s.authors.slice(0, 2).join(", ")}{s.authors.length > 2 ? " et al." : ""}
+                      </div>
+                    )}
+                  </td>
+                  <td style={{ padding: "0.625rem 0.875rem", color: "rgba(255,255,255,0.5)", fontSize: "0.8125rem" }}>{s.journal || "—"}</td>
+                  <td style={{ padding: "0.625rem 0.875rem", color: "rgba(255,255,255,0.5)", fontSize: "0.8125rem" }}>{s.year || "—"}</td>
+                  <td style={{ padding: "0.625rem 0.875rem", fontSize: "0.75rem", fontFamily: "monospace" }}>
+                    {s.pmid && <a href={s.pubmedUrl || `https://pubmed.ncbi.nlm.nih.gov/${s.pmid}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-blue-bright)", textDecoration: "none" }}>PMID:{s.pmid}</a>}
+                    {s.doi && !s.pmid && <a href={s.crossrefUrl || `https://doi.org/${s.doi}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-gold)", textDecoration: "none" }}>DOI</a>}
+                  </td>
+                  <td style={{ padding: "0.625rem 0.875rem" }}>
+                    {s.evidenceLevel ? (
+                      <span style={{ background: EVIDENCE_COLORS[s.evidenceLevel] || "rgba(255,255,255,0.1)", color: "#000", fontSize: "0.7rem", fontWeight: 700, padding: "0.125rem 0.5rem", borderRadius: "4px" }}>
+                        {s.evidenceLevel}
+                      </span>
+                    ) : <span style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.75rem" }}>—</span>}
+                  </td>
+                  <td style={{ padding: "0.625rem 0.875rem" }}><StatusBadge status={s.status} /></td>
+                  <td style={{ padding: "0.625rem 0.875rem" }}>
+                    <button onClick={() => setEditSource(s)} className="btn btn-outline" style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem" }}>Bearbeiten</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Prompts Tab ──────────────────────────────────────────────────────────────
+function PromptsTab() {
+  const [prompts, setPrompts] = useState<AiPrompt[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState("all");
+  const [editPrompt, setEditPrompt] = useState<AiPrompt | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newPrompt, setNewPrompt] = useState<Partial<AiPrompt>>({ language: "de", active: true, version: 1 });
+
+  const PROMPT_TYPES = [
+    { value: "knowledge_article", label: "Knowledge Article" },
+    { value: "seo_meta", label: "SEO Meta" },
+    { value: "faq", label: "FAQ" },
+    { value: "study_summary", label: "Studienzusammenfassung" },
+    { value: "geo_snippet", label: "GEO Snippet" },
+    { value: "whatsapp", label: "WhatsApp" },
+    { value: "json_ld", label: "JSON-LD" },
+    { value: "relation_extraction", label: "Relation Extraction" },
+    { value: "entity_classification", label: "Entity Classification" },
+  ];
+
+  const load = useCallback(() => {
+    setLoading(true);
+    api.prompts.list({ promptType: filterType !== "all" ? filterType : undefined, limit: "100" })
+      .then((r) => setPrompts(r.data))
+      .finally(() => setLoading(false));
+  }, [filterType]);
+
+  useEffect(() => { load(); }, [load]);
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.5rem" }}>
+        <SectionHeader title="Prompt Management" subtitle={`${prompts.length} Prompts — versioniert und auditierbar`} />
+        <button onClick={() => setShowCreate(true)} className="btn btn-gold" style={{ fontSize: "0.8125rem" }}>+ Neuer Prompt</button>
+      </div>
+
+      {/* Create Form */}
+      {showCreate && (
+        <div className="card" style={{ marginBottom: "1.5rem", padding: "1.25rem" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+            <h3 style={{ color: "white", fontSize: "0.9375rem", fontFamily: "var(--font-condensed)", margin: 0 }}>Neuer Prompt</h3>
+            <button onClick={() => setShowCreate(false)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: "1.25rem" }}>×</button>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+            <div>
+              <label className="form-label">Name</label>
+              <input type="text" value={newPrompt.name ?? ""} onChange={(e) => setNewPrompt({ ...newPrompt, name: e.target.value })} className="form-input" />
+            </div>
+            <div>
+              <label className="form-label">Slug (URL-Key)</label>
+              <input type="text" value={newPrompt.slug ?? ""} onChange={(e) => setNewPrompt({ ...newPrompt, slug: e.target.value })} className="form-input" />
+            </div>
+            <div>
+              <label className="form-label">Typ</label>
+              <select value={newPrompt.promptType ?? ""} onChange={(e) => setNewPrompt({ ...newPrompt, promptType: e.target.value })} className="form-input">
+                <option value="">Wählen...</option>
+                {PROMPT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="form-label">Ziel-Layer (L1–L7, optional)</label>
+              <input type="text" value={newPrompt.targetLayer ?? ""} onChange={(e) => setNewPrompt({ ...newPrompt, targetLayer: e.target.value })} className="form-input" placeholder="z.B. L2" />
+            </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label className="form-label">System Prompt</label>
+              <textarea value={newPrompt.systemPrompt ?? ""} onChange={(e) => setNewPrompt({ ...newPrompt, systemPrompt: e.target.value })} className="form-input" style={{ width: "100%", height: "100px", resize: "vertical", fontSize: "0.8125rem", fontFamily: "monospace" }} />
+            </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label className="form-label">User Prompt Template (verwende {"{{variable}}"} für Variablen)</label>
+              <textarea value={newPrompt.userPromptTemplate ?? ""} onChange={(e) => setNewPrompt({ ...newPrompt, userPromptTemplate: e.target.value })} className="form-input" style={{ width: "100%", height: "150px", resize: "vertical", fontSize: "0.8125rem", fontFamily: "monospace" }} />
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
+            <button onClick={async () => {
+              await api.prompts.create(newPrompt);
+              setShowCreate(false);
+              setNewPrompt({ language: "de", active: true, version: 1 });
+              load();
+            }} className="btn btn-primary" style={{ fontSize: "0.875rem" }}>Erstellen</button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Panel */}
+      {editPrompt && (
+        <div className="card" style={{ marginBottom: "1.5rem", padding: "1.25rem" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+            <h3 style={{ color: "white", fontSize: "0.9375rem", fontFamily: "var(--font-condensed)", margin: 0 }}>
+              {editPrompt.name} <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.8125rem" }}>v{editPrompt.version}</span>
+            </h3>
+            <button onClick={() => setEditPrompt(null)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: "1.25rem" }}>×</button>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+            <div>
+              <label className="form-label">Name</label>
+              <input type="text" value={editPrompt.name} onChange={(e) => setEditPrompt({ ...editPrompt, name: e.target.value })} className="form-input" />
+            </div>
+            <div>
+              <label className="form-label">Typ</label>
+              <select value={editPrompt.promptType} onChange={(e) => setEditPrompt({ ...editPrompt, promptType: e.target.value })} className="form-input">
+                {PROMPT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
+            </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label className="form-label">System Prompt</label>
+              <textarea value={editPrompt.systemPrompt} onChange={(e) => setEditPrompt({ ...editPrompt, systemPrompt: e.target.value })} className="form-input" style={{ width: "100%", height: "120px", resize: "vertical", fontSize: "0.8125rem", fontFamily: "monospace" }} />
+            </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label className="form-label">User Prompt Template</label>
+              <textarea value={editPrompt.userPromptTemplate} onChange={(e) => setEditPrompt({ ...editPrompt, userPromptTemplate: e.target.value })} className="form-input" style={{ width: "100%", height: "200px", resize: "vertical", fontSize: "0.8125rem", fontFamily: "monospace" }} />
+            </div>
+            <div>
+              <label className="form-label">Beschreibung</label>
+              <input type="text" value={editPrompt.description ?? ""} onChange={(e) => setEditPrompt({ ...editPrompt, description: e.target.value })} className="form-input" />
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", paddingTop: "1.5rem" }}>
+              <input type="checkbox" checked={editPrompt.active} onChange={(e) => setEditPrompt({ ...editPrompt, active: e.target.checked })} id="active-toggle" />
+              <label htmlFor="active-toggle" style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem" }}>Aktiv</label>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
+            <button onClick={async () => {
+              await api.prompts.update(editPrompt.id, editPrompt);
+              setEditPrompt(null);
+              load();
+            }} className="btn btn-primary" style={{ fontSize: "0.875rem" }}>Speichern (neue Version)</button>
+          </div>
+        </div>
+      )}
+
+      {/* Filter */}
+      <div style={{ display: "flex", gap: "0.375rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
+        <button onClick={() => setFilterType("all")} className={`btn ${filterType === "all" ? "btn-primary" : "btn-outline"}`} style={{ fontSize: "0.8125rem", padding: "0.375rem 0.75rem" }}>Alle</button>
+        {PROMPT_TYPES.map((t) => (
+          <button key={t.value} onClick={() => setFilterType(t.value)} className={`btn ${filterType === t.value ? "btn-primary" : "btn-outline"}`} style={{ fontSize: "0.8125rem", padding: "0.375rem 0.75rem" }}>{t.label}</button>
+        ))}
+      </div>
+
+      {/* List */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+        {loading ? <LoadingState /> : prompts.length === 0 ? (
+          <div className="card" style={{ padding: "3rem", textAlign: "center", color: "rgba(255,255,255,0.3)" }}>Keine Prompts gefunden.</div>
+        ) : prompts.map((p) => (
+          <div key={p.id} className="card" style={{ padding: "1rem", display: "flex", alignItems: "flex-start", gap: "1rem" }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.375rem" }}>
+                <span style={{ color: "white", fontWeight: 600, fontSize: "0.9375rem" }}>{p.name}</span>
+                <span style={{ background: "rgba(37,99,235,0.2)", color: "var(--color-blue-bright)", fontSize: "0.7rem", padding: "0.125rem 0.5rem", borderRadius: "4px", fontFamily: "monospace" }}>{p.promptType}</span>
+                {p.targetLayer && <span style={{ background: "rgba(251,191,36,0.15)", color: "var(--color-gold)", fontSize: "0.7rem", padding: "0.125rem 0.5rem", borderRadius: "4px" }}>{p.targetLayer}</span>}
+                <span style={{ background: p.active ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.08)", color: p.active ? "#4ade80" : "rgba(255,255,255,0.3)", fontSize: "0.7rem", padding: "0.125rem 0.5rem", borderRadius: "4px" }}>v{p.version} {p.active ? "aktiv" : "inaktiv"}</span>
+              </div>
+              {p.description && <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8125rem", margin: 0 }}>{p.description}</p>}
+              <div style={{ marginTop: "0.5rem", background: "rgba(0,0,0,0.3)", borderRadius: "6px", padding: "0.5rem 0.75rem", fontFamily: "monospace", fontSize: "0.75rem", color: "rgba(255,255,255,0.5)", maxHeight: "60px", overflow: "hidden" }}>
+                {p.userPromptTemplate.substring(0, 200)}...
+              </div>
+            </div>
+            <button onClick={() => setEditPrompt(p)} className="btn btn-outline" style={{ fontSize: "0.75rem", padding: "0.25rem 0.625rem", flexShrink: 0 }}>Bearbeiten</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Agents Tab ───────────────────────────────────────────────────────────────
+function AgentsTab() {
+  const [keys, setKeys] = useState<AgentKey[]>([]);
+  const [suggestions, setSuggestions] = useState<AgentSuggestion[]>([]);
+  const [loadingKeys, setLoadingKeys] = useState(true);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(true);
+  const [subTab, setSubTab] = useState<"keys" | "suggestions" | "logs">("keys");
+  const [showCreateKey, setShowCreateKey] = useState(false);
+  const [newKey, setNewKey] = useState({ name: "", agentRole: "reader", canRead: true, canSuggest: false, canWrite: false, description: "" });
+  const [newKeyResult, setNewKeyResult] = useState<{ rawKey: string; warning: string } | null>(null);
+  const [filterSuggestions, setFilterSuggestions] = useState("pending");
+
+  const loadKeys = useCallback(() => {
+    setLoadingKeys(true);
+    api.agents.listKeys().then(setKeys).finally(() => setLoadingKeys(false));
+  }, []);
+
+  const loadSuggestions = useCallback(() => {
+    setLoadingSuggestions(true);
+    api.agents.listSuggestions({ status: filterSuggestions }).then((r) => setSuggestions(r.data)).finally(() => setLoadingSuggestions(false));
+  }, [filterSuggestions]);
+
+  useEffect(() => { loadKeys(); }, [loadKeys]);
+  useEffect(() => { if (subTab === "suggestions") loadSuggestions(); }, [subTab, loadSuggestions]);
+
+  const AGENT_ROLES = [
+    { value: "reader", label: "Reader — nur lesen" },
+    { value: "content_agent", label: "Content Agent — Inhalte vorschlagen" },
+    { value: "research_agent", label: "Research Agent — Studien importieren" },
+    { value: "relation_agent", label: "Relation Agent — Verbindungen vorschlagen" },
+    { value: "admin_agent", label: "Admin Agent — voller Zugriff" },
+  ];
+
+  return (
+    <div>
+      <SectionHeader title="Agent Architecture" subtitle="API-Keys, Berechtigungen und Suggestion Review Queue" />
+
+      {/* Sub-Tabs */}
+      <div style={{ display: "flex", gap: "0.375rem", marginBottom: "1.5rem" }}>
+        {[
+          { id: "keys" as const, label: "API Keys", count: keys.length },
+          { id: "suggestions" as const, label: "Suggestions", count: suggestions.length },
+          { id: "logs" as const, label: "Access Log" },
+        ].map((t) => (
+          <button key={t.id} onClick={() => setSubTab(t.id)}
+            className={`btn ${subTab === t.id ? "btn-primary" : "btn-outline"}`}
+            style={{ fontSize: "0.8125rem", padding: "0.375rem 0.875rem" }}>
+            {t.label}
+            {t.count !== undefined && t.count > 0 && (
+              <span style={{ marginLeft: "0.375rem", background: "rgba(255,255,255,0.15)", borderRadius: "10px", padding: "0.1rem 0.4rem", fontSize: "0.7rem" }}>{t.count}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* API Keys */}
+      {subTab === "keys" && (
+        <div>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+            <button onClick={() => setShowCreateKey(true)} className="btn btn-gold" style={{ fontSize: "0.8125rem" }}>+ Neuer API Key</button>
+          </div>
+
+          {/* New Key Result */}
+          {newKeyResult && (
+            <div className="card" style={{ marginBottom: "1.5rem", padding: "1.25rem", border: "1px solid rgba(74,222,128,0.3)" }}>
+              <h3 style={{ color: "#4ade80", fontSize: "0.9375rem", marginBottom: "0.75rem" }}>✅ API Key erstellt — einmalig sichtbar!</h3>
+              <div style={{ background: "rgba(0,0,0,0.4)", borderRadius: "6px", padding: "0.75rem", fontFamily: "monospace", fontSize: "0.875rem", color: "white", wordBreak: "break-all" }}>
+                {newKeyResult.rawKey}
+              </div>
+              <p style={{ color: "#f87171", fontSize: "0.8125rem", marginTop: "0.5rem" }}>{newKeyResult.warning}</p>
+              <button onClick={() => setNewKeyResult(null)} className="btn btn-outline" style={{ marginTop: "0.75rem", fontSize: "0.8125rem" }}>Verstanden — schließen</button>
+            </div>
+          )}
+
+          {/* Create Form */}
+          {showCreateKey && (
+            <div className="card" style={{ marginBottom: "1.5rem", padding: "1.25rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+                <h3 style={{ color: "white", fontSize: "0.9375rem", fontFamily: "var(--font-condensed)", margin: 0 }}>Neuer Agent API Key</h3>
+                <button onClick={() => setShowCreateKey(false)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: "1.25rem" }}>×</button>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                <div>
+                  <label className="form-label">Name (z.B. "Content Agent v1")</label>
+                  <input type="text" value={newKey.name} onChange={(e) => setNewKey({ ...newKey, name: e.target.value })} className="form-input" />
+                </div>
+                <div>
+                  <label className="form-label">Rolle</label>
+                  <select value={newKey.agentRole} onChange={(e) => setNewKey({ ...newKey, agentRole: e.target.value })} className="form-input">
+                    {AGENT_ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+                  </select>
+                </div>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <label className="form-label">Beschreibung</label>
+                  <input type="text" value={newKey.description} onChange={(e) => setNewKey({ ...newKey, description: e.target.value })} className="form-input" placeholder="Wofür wird dieser Key verwendet?" />
+                </div>
+                <div style={{ display: "flex", gap: "1.5rem", gridColumn: "1 / -1" }}>
+                  {[
+                    { key: "canRead", label: "Lesen" },
+                    { key: "canSuggest", label: "Vorschlagen" },
+                    { key: "canWrite", label: "Schreiben" },
+                  ].map((p) => (
+                    <label key={p.key} style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+                      <input type="checkbox" checked={(newKey as any)[p.key]} onChange={(e) => setNewKey({ ...newKey, [p.key]: e.target.checked })} />
+                      <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem" }}>{p.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <button onClick={async () => {
+                const r = await api.agents.createKey(newKey);
+                setNewKeyResult({ rawKey: r.rawKey, warning: r.warning });
+                setShowCreateKey(false);
+                setNewKey({ name: "", agentRole: "reader", canRead: true, canSuggest: false, canWrite: false, description: "" });
+                loadKeys();
+              }} className="btn btn-primary" style={{ marginTop: "1rem", fontSize: "0.875rem" }}>Key erstellen</button>
+            </div>
+          )}
+
+          {/* Keys Table */}
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+            {loadingKeys ? <LoadingState /> : keys.length === 0 ? (
+              <div style={{ padding: "3rem", textAlign: "center", color: "rgba(255,255,255,0.3)" }}>Noch keine API Keys erstellt.</div>
+            ) : (
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    {["Name", "Rolle", "Berechtigungen", "Anfragen", "Zuletzt aktiv", "Status", ""].map((h) => (
+                      <th key={h} style={{ padding: "0.625rem 0.875rem", textAlign: "left", fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {keys.map((k) => (
+                    <tr key={k.id} style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                      <td style={{ padding: "0.625rem 0.875rem" }}>
+                        <div style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.875rem" }}>{k.name}</div>
+                        {k.description && <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.75rem" }}>{k.description}</div>}
+                      </td>
+                      <td style={{ padding: "0.625rem 0.875rem" }}>
+                        <span style={{ background: "rgba(37,99,235,0.2)", color: "var(--color-blue-bright)", fontSize: "0.7rem", padding: "0.125rem 0.5rem", borderRadius: "4px", fontFamily: "monospace" }}>{k.agentRole}</span>
+                      </td>
+                      <td style={{ padding: "0.625rem 0.875rem" }}>
+                        <div style={{ display: "flex", gap: "0.25rem" }}>
+                          {k.canRead && <span style={{ background: "rgba(74,222,128,0.15)", color: "#4ade80", fontSize: "0.65rem", padding: "0.1rem 0.375rem", borderRadius: "3px" }}>R</span>}
+                          {k.canSuggest && <span style={{ background: "rgba(251,191,36,0.15)", color: "#fbbf24", fontSize: "0.65rem", padding: "0.1rem 0.375rem", borderRadius: "3px" }}>S</span>}
+                          {k.canWrite && <span style={{ background: "rgba(248,113,113,0.15)", color: "#f87171", fontSize: "0.65rem", padding: "0.1rem 0.375rem", borderRadius: "3px" }}>W</span>}
+                        </div>
+                      </td>
+                      <td style={{ padding: "0.625rem 0.875rem", color: "rgba(255,255,255,0.5)", fontSize: "0.8125rem" }}>{k.requestCount}</td>
+                      <td style={{ padding: "0.625rem 0.875rem", color: "rgba(255,255,255,0.3)", fontSize: "0.8125rem" }}>
+                        {k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleDateString("de-DE") : "Nie"}
+                      </td>
+                      <td style={{ padding: "0.625rem 0.875rem" }}>
+                        <span style={{ background: k.active ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.08)", color: k.active ? "#4ade80" : "rgba(255,255,255,0.3)", fontSize: "0.7rem", padding: "0.125rem 0.5rem", borderRadius: "4px" }}>
+                          {k.active ? "Aktiv" : "Inaktiv"}
+                        </span>
+                      </td>
+                      <td style={{ padding: "0.625rem 0.875rem" }}>
+                        {k.active && (
+                          <button onClick={async () => {
+                            if (!confirm(`Key "${k.name}" wirklich deaktivieren?`)) return;
+                            await api.agents.revokeKey(k.id);
+                            loadKeys();
+                          }} className="btn btn-outline" style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", color: "#f87171" }}>Deaktivieren</button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Suggestions */}
+      {subTab === "suggestions" && (
+        <div>
+          <div style={{ display: "flex", gap: "0.375rem", marginBottom: "1.25rem" }}>
+            {["pending", "under_review", "approved", "rejected", "all"].map((s) => (
+              <button key={s} onClick={() => setFilterSuggestions(s)}
+                className={`btn ${filterSuggestions === s ? "btn-primary" : "btn-outline"}`}
+                style={{ fontSize: "0.8125rem", padding: "0.375rem 0.75rem" }}>
+                {s === "pending" ? "Ausstehend" : s === "under_review" ? "In Review" : s === "approved" ? "Genehmigt" : s === "rejected" ? "Abgelehnt" : "Alle"}
+              </button>
+            ))}
+          </div>
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+            {loadingSuggestions ? <LoadingState /> : suggestions.length === 0 ? (
+              <div style={{ padding: "3rem", textAlign: "center", color: "rgba(255,255,255,0.3)" }}>Keine Suggestions in diesem Status.</div>
+            ) : (
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    {["Typ", "Agent", "Ziel", "Konfidenz", "Status", "Erstellt", ""].map((h) => (
+                      <th key={h} style={{ padding: "0.625rem 0.875rem", textAlign: "left", fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {suggestions.map((s) => (
+                    <tr key={s.id} style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                      <td style={{ padding: "0.625rem 0.875rem" }}>
+                        <span style={{ background: "rgba(37,99,235,0.2)", color: "var(--color-blue-bright)", fontSize: "0.7rem", padding: "0.125rem 0.5rem", borderRadius: "4px", fontFamily: "monospace" }}>{s.suggestionType}</span>
+                      </td>
+                      <td style={{ padding: "0.625rem 0.875rem", color: "rgba(255,255,255,0.5)", fontSize: "0.8125rem" }}>{s.agentRole}</td>
+                      <td style={{ padding: "0.625rem 0.875rem", color: "rgba(255,255,255,0.5)", fontFamily: "monospace", fontSize: "0.75rem" }}>{s.targetEntityId?.substring(0, 8)}...</td>
+                      <td style={{ padding: "0.625rem 0.875rem" }}>
+                        {s.confidence !== undefined && (
+                          <span style={{ color: s.confidence > 0.8 ? "#4ade80" : s.confidence > 0.5 ? "#fbbf24" : "#f87171", fontSize: "0.8125rem" }}>
+                            {Math.round(s.confidence * 100)}%
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: "0.625rem 0.875rem" }}><StatusBadge status={s.status} /></td>
+                      <td style={{ padding: "0.625rem 0.875rem", color: "rgba(255,255,255,0.3)", fontSize: "0.8125rem" }}>
+                        {new Date(s.createdAt).toLocaleDateString("de-DE")}
+                      </td>
+                      <td style={{ padding: "0.625rem 0.875rem" }}>
+                        {s.status === "pending" && (
+                          <div style={{ display: "flex", gap: "0.375rem" }}>
+                            <button onClick={async () => {
+                              await api.agents.reviewSuggestion(s.id, { status: "approved", reviewedBy: "admin" });
+                              loadSuggestions();
+                            }} className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "0.2rem 0.5rem", color: "#4ade80" }}>✓</button>
+                            <button onClick={async () => {
+                              await api.agents.reviewSuggestion(s.id, { status: "rejected", reviewedBy: "admin" });
+                              loadSuggestions();
+                            }} className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "0.2rem 0.5rem", color: "#f87171" }}>✗</button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Logs */}
+      {subTab === "logs" && (
+        <div className="card" style={{ padding: "1.5rem", textAlign: "center", color: "rgba(255,255,255,0.3)" }}>
+          <p>Access Logs werden in Kürze implementiert.</p>
+          <p style={{ fontSize: "0.8125rem", marginTop: "0.5rem" }}>Alle API-Anfragen werden in der Datenbank protokolliert.</p>
+        </div>
+      )}
     </div>
   );
 }

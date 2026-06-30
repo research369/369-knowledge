@@ -154,6 +154,67 @@ export const api = {
       request<Collection>(`/collections/${id}/publish`, { method: "POST" }),
   },
 
+  sources: {
+    list: (params?: { search?: string; status?: string; evidenceLevel?: string; limit?: string; offset?: string }) => {
+      const qs = new URLSearchParams((params ?? {}) as Record<string, string>).toString();
+      return request<{ data: Source[]; total: number; limit: number; offset: number }>(`/sources${qs ? `?${qs}` : ""}`);
+    },
+    get: (id: string) => request<Source & { linkedBlocks: unknown[] }>(`/sources/${id}`),
+    create: (data: Partial<Source>) =>
+      request<Source>("/sources", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<Source>) =>
+      request<Source>(`/sources/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      request<{ success: boolean }>(`/sources/${id}`, { method: "DELETE" }),
+    importPmid: (pmid: string) =>
+      request<{ source: Source; imported: boolean; message?: string }>("/sources/import/pmid", {
+        method: "POST", body: JSON.stringify({ pmid }),
+      }),
+    importDoi: (doi: string) =>
+      request<{ source: Source; imported: boolean; message?: string }>("/sources/import/doi", {
+        method: "POST", body: JSON.stringify({ doi }),
+      }),
+    importBatch: (pmids: string[], dois: string[]) =>
+      request<{ results: Array<{ id: string; success: boolean; error?: string }>; imported: number; failed: number }>("/sources/import/batch", {
+        method: "POST", body: JSON.stringify({ pmids, dois }),
+      }),
+  },
+
+  prompts: {
+    list: (params?: { promptType?: string; active?: string; search?: string; limit?: string }) => {
+      const qs = new URLSearchParams((params ?? {}) as Record<string, string>).toString();
+      return request<{ data: AiPrompt[]; total: number }>(`/prompts${qs ? `?${qs}` : ""}`);
+    },
+    get: (idOrSlug: string) => request<AiPrompt>(`/prompts/${idOrSlug}`),
+    create: (data: Partial<AiPrompt>) =>
+      request<AiPrompt>("/prompts", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<AiPrompt>) =>
+      request<AiPrompt>(`/prompts/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    deactivate: (id: string) =>
+      request<{ success: boolean }>(`/prompts/${id}`, { method: "DELETE" }),
+    logs: (id: string) => request<unknown[]>(`/prompts/${id}/logs`),
+  },
+
+  agents: {
+    listKeys: () => request<AgentKey[]>("/agents/keys"),
+    createKey: (data: { name: string; agentRole: string; canRead?: boolean; canSuggest?: boolean; canWrite?: boolean; description?: string }) =>
+      request<AgentKey & { rawKey: string; warning: string }>("/agents/keys", { method: "POST", body: JSON.stringify(data) }),
+    updateKey: (id: string, data: Partial<AgentKey>) =>
+      request<AgentKey>(`/agents/keys/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    revokeKey: (id: string) =>
+      request<{ success: boolean }>(`/agents/keys/${id}`, { method: "DELETE" }),
+    listSuggestions: (params?: { status?: string; limit?: string; offset?: string }) => {
+      const qs = new URLSearchParams((params ?? {}) as Record<string, string>).toString();
+      return request<{ data: AgentSuggestion[]; total: number }>(`/agents/suggestions${qs ? `?${qs}` : ""}`);
+    },
+    reviewSuggestion: (id: string, data: { status: string; reviewNote?: string; reviewedBy?: string }) =>
+      request<AgentSuggestion>(`/agents/suggestions/${id}/review`, { method: "PUT", body: JSON.stringify(data) }),
+    logs: (params?: { limit?: string }) => {
+      const qs = new URLSearchParams((params ?? {}) as Record<string, string>).toString();
+      return request<unknown[]>(`/agents/logs${qs ? `?${qs}` : ""}`);
+    },
+  },
+
   admin: {
     login: (password: string) =>
       request<{ message: string; expiresAt: string }>("/admin/login", {
@@ -298,6 +359,90 @@ export interface Collection {
   excludeEntityIds?: string[];
   sortBy?: string;
   status: "draft" | "review" | "published" | "archived";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Source {
+  id: string;
+  pmid?: string;
+  doi?: string;
+  crossrefUrl?: string;
+  pubmedUrl?: string;
+  title: string;
+  authors?: string[];
+  journal?: string;
+  year?: number;
+  volume?: string;
+  issue?: string;
+  pages?: string;
+  abstract?: string;
+  aiSummaryDe?: string;
+  evidenceLevel?: string;
+  studyType?: string;
+  biasRisk?: string;
+  fundingSource?: string;
+  isOpenAccess?: boolean;
+  impactFactor?: number;
+  qualityScore?: number;
+  status: "draft" | "review" | "published" | "archived";
+  importedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AiPrompt {
+  id: string;
+  name: string;
+  slug: string;
+  promptType: string;
+  targetEntityType?: string;
+  targetLayer?: string;
+  systemPrompt: string;
+  userPromptTemplate: string;
+  variables?: unknown[];
+  outputFormat?: string;
+  expectedLength?: string;
+  language: string;
+  version: number;
+  active: boolean;
+  description?: string;
+  tags?: string[];
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AgentKey {
+  id: string;
+  name: string;
+  agentRole: string;
+  canRead: boolean;
+  canSuggest: boolean;
+  canWrite: boolean;
+  active: boolean;
+  lastUsedAt?: string;
+  requestCount: number;
+  createdAt: string;
+  expiresAt?: string;
+  description?: string;
+  rateLimit?: number;
+}
+
+export interface AgentSuggestion {
+  id: string;
+  agentKeyId: string;
+  agentRole: string;
+  suggestionType: string;
+  targetEntityId?: string;
+  payload?: unknown;
+  reasoning?: string;
+  confidence?: number;
+  sourceIds?: string[];
+  status: "pending" | "approved" | "rejected" | "under_review" | "merged";
+  reviewNote?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
