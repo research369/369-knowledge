@@ -1,5 +1,4 @@
 [build]
-  base = "packages/frontend"
   command = "pnpm build"
   publish = "dist"
 
@@ -8,13 +7,6 @@
   PNPM_VERSION = "9"
 
 # SPA routing — alle Pfade zum index.html
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  conditions = {Role = ["admin"]}
-  force = false
-
 [[redirects]]
   from = "/*"
   to = "/index.html"
