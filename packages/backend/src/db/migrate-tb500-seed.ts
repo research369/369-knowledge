@@ -331,14 +331,14 @@ TB-500 ist nicht für die Anwendung am Menschen zugelassen und nicht als Arzneim
       await db.execute(sql`
         INSERT INTO content_blocks (
           id, entity_id, layer, block_type, comprehension_level,
-          title, content, scope, language, status, version,
-          is_ai_generated, reading_time_seconds, word_count
+          title, body, scope, lifecycle_status, version,
+          generated_by_ai, reading_time_seconds
         ) VALUES (
           ${block.id}, ${block.entity_id}, ${block.layer}, ${block.block_type},
           ${block.comprehension_level}, ${block.title}, ${block.content},
-          ${block.scope}::jsonb, ${block.language}, ${block.status},
+          ${block.scope}::jsonb, 'published',
           ${block.version}, ${block.is_ai_generated},
-          ${block.reading_time_seconds}, ${block.word_count}
+          ${block.reading_time_seconds}
         )
       `);
     }
