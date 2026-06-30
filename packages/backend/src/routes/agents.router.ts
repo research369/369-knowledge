@@ -153,10 +153,23 @@ router.post("/suggestions", async (req: Request, res: Response) => {
     if (!agentKey) return res.status(401).json({ error: "Invalid or inactive API key" });
     if (!agentKey.canSuggest) return res.status(403).json({ error: "This key does not have suggestion permissions" });
 
-    // Validate: suggestions must cite at least one source
+    // Validate suggestion type
+    const VALID_SUGGESTION_TYPES = [
+      "new_faq", "new_guide", "new_source", "new_module",
+      "new_relation", "new_stack", "update_block", "new_glossar",
+      "new_entity", "update_entity", "new_protocol", "new_collection",
+    ];
+    if (!req.body.suggestionType || !VALID_SUGGESTION_TYPES.includes(req.body.suggestionType)) {
+      return res.status(400).json({
+        error: `Invalid suggestionType. Must be one of: ${VALID_SUGGESTION_TYPES.join(", ")}`,
+      });
+    }
+
+    // Sources are required for content suggestions, optional for structural suggestions
+    const SOURCE_OPTIONAL_TYPES = ["new_relation", "new_stack", "new_module", "new_collection"];
     const sourceIds: string[] = req.body.sourceIds || [];
-    if (sourceIds.length === 0) {
-      return res.status(400).json({ error: "Suggestions must cite at least one source (sourceIds required)" });
+    if (sourceIds.length === 0 && !SOURCE_OPTIONAL_TYPES.includes(req.body.suggestionType)) {
+      return res.status(400).json({ error: `Suggestions of type '${req.body.suggestionType}' must cite at least one source (sourceIds required)` });
     }
 
     // Validate sources exist
