@@ -11,6 +11,7 @@ import { runPhase2bMigration } from "./db/migrate-phase2b-auto.js";
 import { runGoldstandardMigration } from "./db/migrate-goldstandard-auto.js";
 import { runBpc157SeedMigration } from "./db/migrate-bpc157-seed.js";
 import { runTb500Seed } from "./db/migrate-tb500-seed.js";
+import { runPhase3BaseEntities } from "./db/migrate-phase3-base-entities.js";
 import { runAllMigrations } from "./db/migration-runner.js";
 
 import { entitiesRouter } from "./routes/entities.router.js";
@@ -141,6 +142,7 @@ async function startServer() {
     { name: "Goldstandard",    fn: runGoldstandardMigration },
     { name: "BPC-157 Seed",    fn: runBpc157SeedMigration },
     { name: "TB-500 Seed",     fn: runTb500Seed },
+    { name: "Phase 3 Base Entities", fn: runPhase3BaseEntities },
   ]);
 
   app.listen(PORT, () => {
