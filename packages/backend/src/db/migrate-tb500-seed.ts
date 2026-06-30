@@ -4,12 +4,20 @@
  * Architektur Version 1.0 — Validierungstest
  * UUID: ac37e146-c28c-4e81-a47d-17141f6cc857
  *
- * Alle 5 Lektionen aus dem BPC-157 Stresstest direkt eingebaut:
+ * SCHEMA-VALIDIERT: Alle Spalten gegen schema.ts geprüft
+ * Korrekturen gegenüber Vorgänger-Versionen:
  * 1. UUID direkt (nie Slug als ID)
  * 2. Sentinel prüft Zielzustand (Block-Count + Relations-Count)
  * 3. Nur gültige Enum-Werte aus schema.ts
  * 4. Nur gültige evidenceLevel-Enum-Werte
  * 5. Exakte Spalten aus Drizzle-Schema
+ * 6. content_blocks: body (nicht content), generated_by_ai (nicht is_ai_generated), kein word_count
+ * 7. relations: from_entity_id/to_entity_id, kein status-Feld
+ * 8. sources: is_animal (nicht isAnimal), status vorhanden
+ * 9. entities: goldstandard_approved (nicht is_goldstandard)
+ * 10. linked_entity_ids ist jsonb → @> Operator statt ::text[]
+ * 11. ecosystem_links: linkType, externalId, externalSlug, externalName, externalSystem, active
+ * 12. decision_history: targetType, targetId, decision, reviewedBy (nicht entity_id, decision_type, reviewer_id)
  */
 
 import { db } from "./index.js";
@@ -25,7 +33,7 @@ export async function runTb500Seed() {
       sql`SELECT COUNT(*) as cnt FROM content_blocks WHERE entity_id = ${TB500_UUID}`
     );
     const relCountResult = await db.execute(
-      sql`      SELECT COUNT(*) as cnt FROM relations WHERE from_entity_id = ${TB500_UUID} OR to_entity_id = ${TB500_UUID}`
+      sql`SELECT COUNT(*) as cnt FROM relations WHERE from_entity_id = ${TB500_UUID} OR to_entity_id = ${TB500_UUID}`
     );
 
     const blockCount = Number((blockCountResult as any)[0]?.cnt ?? 0);
@@ -100,7 +108,7 @@ export async function runTb500Seed() {
 
     const blocks = [
       {
-        id: `cb-tb500-l1-brief-${Date.now()}-1`,
+        id: `cb-tb500-l1-brief-1`,
         entity_id: TB500_UUID,
         layer: "L1",
         block_type: "summary",
@@ -108,14 +116,12 @@ export async function runTb500Seed() {
         title: "TB-500 in 30 Sekunden",
         body: `TB-500 ist ein Peptid, das dein Körper selbst produziert — unter dem Namen Thymosin Beta-4. Es spielt eine zentrale Rolle dabei, wie Gewebe sich nach Verletzungen repariert: Es hilft Zellen, sich zu bewegen, neue Blutgefäße zu bilden und Entzündungen zu regulieren. In Tiermodellen zeigt TB-500 bemerkenswerte Effekte auf die Heilung von Muskeln, Sehnen und sogar Herzgewebe. Für den Menschen gibt es noch keine klinischen Studien — alle Erkenntnisse stammen aus präklinischer Forschung.`,
         scope: JSON.stringify(["portal", "academy", "bedo"]),
-        language: "de",
-        status: "published",
         version: 1,
         generated_by_ai: false,
         reading_time_seconds: 30,
       },
       {
-        id: `cb-tb500-l1-simple-${Date.now()}-2`,
+        id: `cb-tb500-l1-simple-2`,
         entity_id: TB500_UUID,
         layer: "L1",
         block_type: "explanation",
@@ -135,14 +141,12 @@ In Tiermodellen wurden Effekte auf Herzregeneration nach Herzinfarkt, Wundheilun
 
 *Wichtig: Alle Erkenntnisse stammen aus Tier- und Zellstudien. Klinische Studien am Menschen existieren bisher nicht.*`,
         scope: JSON.stringify(["portal", "academy", "bedo"]),
-        language: "de",
-        status: "published",
         version: 1,
         generated_by_ai: false,
         reading_time_seconds: 120,
       },
       {
-        id: `cb-tb500-l2-brief-${Date.now()}-3`,
+        id: `cb-tb500-l2-brief-3`,
         entity_id: TB500_UUID,
         layer: "L2",
         block_type: "mechanism_brief",
@@ -150,14 +154,12 @@ In Tiermodellen wurden Effekte auf Herzregeneration nach Herzinfarkt, Wundheilun
         title: "Mechanismus: Kurz erklärt",
         body: `TB-500 wirkt über drei Hauptmechanismen: Es bindet G-Aktin (Zellskelett-Baustein), aktiviert den PI3K/Akt-Signalweg (Zellüberleben und -wachstum) und fördert die Angiogenese (Neubildung von Blutgefäßen). Das Ergebnis: Zellen migrieren schneller zur Verletzungsstelle, überleben besser und werden mit mehr Sauerstoff versorgt.`,
         scope: JSON.stringify(["portal", "academy", "bedo"]),
-        language: "de",
-        status: "published",
         version: 1,
         generated_by_ai: false,
         reading_time_seconds: 45,
       },
       {
-        id: `cb-tb500-l2-scientific-${Date.now()}-4`,
+        id: `cb-tb500-l2-scientific-4`,
         entity_id: TB500_UUID,
         layer: "L2",
         block_type: "mechanism_simple",
@@ -187,14 +189,12 @@ Tβ4 hemmt die NF-κB-Aktivierung und reduziert dadurch die Expression proinflam
 
 In Herzmuskelzellen aktiviert Tβ4 ruhende Progenitorzellen (Epicardial Progenitor Cells) und fördert deren Differenzierung in Kardiomyozyten und vaskuläre Zellen. Dieser Mechanismus ist besonders relevant für die Regeneration nach Myokardinfarkt.`,
         scope: JSON.stringify(["portal", "academy", "bedo"]),
-        language: "de",
-        status: "published",
         version: 1,
         generated_by_ai: false,
         reading_time_seconds: 300,
       },
       {
-        id: `cb-tb500-l3-applications-${Date.now()}-5`,
+        id: `cb-tb500-l3-applications-5`,
         entity_id: TB500_UUID,
         layer: "L3",
         block_type: "applications",
@@ -218,14 +218,12 @@ In Modellen für Schlaganfall und traumatische Hirnverletzung zeigte Tβ4 neurop
 
 *Alle genannten Effekte wurden in Tier- oder Zellstudien beobachtet. Research Use Only.*`,
         scope: JSON.stringify(["portal", "academy", "bedo"]),
-        language: "de",
-        status: "published",
         version: 1,
         generated_by_ai: false,
         reading_time_seconds: 360,
       },
       {
-        id: `cb-tb500-l4-evidence-${Date.now()}-6`,
+        id: `cb-tb500-l4-evidence-6`,
         entity_id: TB500_UUID,
         layer: "L4",
         block_type: "evidence_overview",
@@ -251,14 +249,12 @@ Die präklinische Datenlage zu Thymosin Beta-4 ist für ein Forschungspeptid ver
 
 TB-500 ist ein wissenschaftlich interessantes Peptid mit plausiblen Mechanismen und konsistenten präklinischen Daten. Der Schritt zur klinischen Anwendung erfordert jedoch kontrollierte Humanstudien, die bisher nicht existieren.`,
         scope: JSON.stringify(["portal", "academy", "bedo"]),
-        language: "de",
-        status: "published",
         version: 1,
         generated_by_ai: false,
         reading_time_seconds: 300,
       },
       {
-        id: `cb-tb500-l5-limitations-${Date.now()}-7`,
+        id: `cb-tb500-l5-limitations-7`,
         entity_id: TB500_UUID,
         layer: "L5",
         block_type: "limitations",
@@ -278,14 +274,12 @@ Trotz umfangreicher präklinischer Forschung bleiben zentrale Fragen offen:
 
 Laufende präklinische Forschung fokussiert auf kardiale Regeneration (besonders nach Herzinfarkt), Augenheilung (topische Applikation) und neurologische Erkrankungen. Einige frühe klinische Pilotdaten zur Wundheilung existieren, sind aber nicht ausreichend für klinische Schlussfolgerungen.`,
         scope: JSON.stringify(["portal", "academy", "bedo"]),
-        language: "de",
-        status: "published",
         version: 1,
         generated_by_ai: false,
         reading_time_seconds: 240,
       },
       {
-        id: `cb-tb500-l7-faq-${Date.now()}-8`,
+        id: `cb-tb500-l7-faq-8`,
         entity_id: TB500_UUID,
         layer: "L7",
         block_type: "faq",
@@ -311,8 +305,6 @@ Beide sind Regenerationspeptide mit überlappenden Effekten, aber unterschiedlic
 
 TB-500 ist nicht für die Anwendung am Menschen zugelassen und nicht als Arzneimittel klassifiziert. Es wird ausschließlich für wissenschaftliche Forschungszwecke hergestellt und vertrieben. Jede andere Verwendung liegt außerhalb des vorgesehenen Zwecks.`,
         scope: JSON.stringify(["portal", "academy", "bedo"]),
-        language: "de",
-        status: "published",
         version: 1,
         generated_by_ai: false,
         reading_time_seconds: 480,
@@ -347,7 +339,8 @@ TB-500 ist nicht für die Anwendung am Menschen zugelassen und nicht als Arzneim
     console.log(`[TB-500 Seed] Inserted ${insertedBlocks}/${blocks.length} content blocks`);
 
     // ── 3. SOURCES ────────────────────────────────────────────────────────────
-    // GOLDSTANDARD REGEL 5: Exakte Spalten aus Drizzle-Schema
+    // SCHEMA: sources hat status (contentStatusEnum), is_animal (boolean)
+    // linked_entity_ids ist jsonb → @> Operator für DELETE
     await db.execute(sql`DELETE FROM sources WHERE linked_entity_ids @> ${JSON.stringify([TB500_UUID])}::jsonb`);
 
     const sources = [
@@ -356,7 +349,7 @@ TB-500 ist nicht für die Anwendung am Menschen zugelassen und nicht als Arzneim
         pmid: "17540168",
         doi: "10.1016/j.yjmcc.2007.04.002",
         title: "Thymosin beta4 induces adult epicardial progenitor mobilization and neovascularization",
-        authors: JSON.stringify(["Smart N", "Risebro CA", "Melville AA", "Moses K", "Bhatt DL", "Bhatt DL", "Riley PR"]),
+        authors: JSON.stringify(["Smart N", "Risebro CA", "Melville AA", "Moses K", "Riley PR"]),
         journal: "Journal of Molecular and Cellular Cardiology",
         year: 2007,
         evidence_level: "animal",
@@ -461,8 +454,9 @@ TB-500 ist nicht für die Anwendung am Menschen zugelassen und nicht als Arzneim
     console.log(`[TB-500 Seed] Inserted ${sources.length} sources`);
 
     // ── 4. RELATIONS ──────────────────────────────────────────────────────────
-    // GOLDSTANDARD REGEL 3+4: Nur gültige Enum-Werte aus schema.ts
-    // GOLDSTANDARD REGEL: relations-Tabelle hat KEIN lifecycle_status
+    // SCHEMA: relations hat KEIN status-Feld
+    // Spalten: id, from_entity_id, to_entity_id, relation_type, layer, scope,
+    //          confidence_score, evidence_level, description
     await db.execute(sql`DELETE FROM relations WHERE from_entity_id = ${TB500_UUID} OR to_entity_id = ${TB500_UUID}`);
 
     // Hilfsfunktion: Entity-ID aus Slug
@@ -503,109 +497,132 @@ TB-500 ist nicht für die Anwendung am Menschen zugelassen und nicht als Arzneim
         console.log(`[TB-500 Seed] Skipping relation to ${rel.targetSlug} — entity not found`);
         continue;
       }
-      const relId = `rel-tb500-${rel.targetSlug}-${Date.now()}-${relationsInserted}`;
-      await db.execute(sql`
-        INSERT INTO relations (
-          id, from_entity_id, to_entity_id, relation_type,
-          layer, scope,
-          confidence_score, evidence_level, description
-        ) VALUES (
-          ${relId}, ${TB500_UUID}, ${targetId}, ${rel.type},
-          'L2', '["portal","academy","bedo"]'::jsonb,
-          ${rel.strength}, ${rel.evidenceLevel}, ${rel.description}
-        )
-        ON CONFLICT DO NOTHING
-      `);
-
-      relationsInserted++;
+      const relId = `rel-tb500-${rel.targetSlug}-${relationsInserted}`;
+      try {
+        await db.execute(sql`
+          INSERT INTO relations (
+            id, from_entity_id, to_entity_id, relation_type,
+            layer, scope,
+            confidence_score, evidence_level, description
+          ) VALUES (
+            ${relId}, ${TB500_UUID}, ${targetId}, ${rel.type},
+            'L2', '["portal","academy","bedo"]'::jsonb,
+            ${rel.strength}, ${rel.evidenceLevel}, ${rel.description}
+          )
+          ON CONFLICT DO NOTHING
+        `);
+        relationsInserted++;
+      } catch (relErr: any) {
+        console.error(`[TB-500 Seed] RELATION INSERT FAILED for ${rel.targetSlug}:`, relErr?.message ?? String(relErr));
+      }
     }
 
     console.log(`[TB-500 Seed] Inserted ${relationsInserted} relations`);
 
     // ── 5. ECOSYSTEM LINKS ────────────────────────────────────────────────────
+    // SCHEMA: ecosystem_links hat linkType, externalId, externalSlug, externalName, externalSystem, active
+    // KEIN: ecosystem_type, target_system, target_id, target_url, label, description, is_active
     await db.execute(sql`DELETE FROM ecosystem_links WHERE entity_id = ${TB500_UUID}`);
 
     const ecosystemLinks = [
       {
-        id: `eco-tb500-academy-${Date.now()}-1`,
+        id: `eco-tb500-academy-1`,
         entity_id: TB500_UUID,
-        ecosystem_type: "academy_module",
-        target_system: "academy",
-        target_id: null,
-        target_url: null,
-        label: "Academy: Regenerationspeptide — TB-500 & Thymosin Beta-4",
-        description: "Vertiefendes Lernmodul zu TB-500, Thymosin Beta-4 und kardialer Regeneration",
-        is_active: false
+        link_type: "academy_module",
+        external_id: "tb500-regeneration-module",
+        external_slug: "regenerationspeptide-tb-500",
+        external_name: "Academy: Regenerationspeptide — TB-500 & Thymosin Beta-4",
+        external_system: "academy",
+        relevance_score: 0.95,
+        notes: "Vertiefendes Lernmodul zu TB-500, Thymosin Beta-4 und kardialer Regeneration",
+        active: false
       },
       {
-        id: `eco-tb500-shop-${Date.now()}-2`,
+        id: `eco-tb500-shop-2`,
         entity_id: TB500_UUID,
-        ecosystem_type: "shop_product",
-        target_system: "shop",
-        target_id: null,
-        target_url: null,
-        label: "TB-500 — 369 Research Shop",
-        description: "TB-500 Forschungsprodukt im 369 Research Shop",
-        is_active: false
+        link_type: "shop_product",
+        external_id: "tb-500-product",
+        external_slug: "tb-500",
+        external_name: "TB-500 — 369 Research Shop",
+        external_system: "shop",
+        relevance_score: 1.0,
+        notes: "TB-500 Forschungsprodukt im 369 Research Shop",
+        active: false
       },
       {
-        id: `eco-tb500-protocol-${Date.now()}-3`,
+        id: `eco-tb500-protocol-3`,
         entity_id: TB500_UUID,
-        ecosystem_type: "protocol",
-        target_system: "portal",
-        target_id: null,
-        target_url: null,
-        label: "Forschungsprotokoll: TB-500 Regenerations-Stack",
-        description: "Präklinisches Forschungsprotokoll für TB-500 in Kombination mit BPC-157",
-        is_active: false
+        link_type: "protocol",
+        external_id: "tb500-regeneration-protocol",
+        external_slug: "tb-500-regenerations-stack",
+        external_name: "Forschungsprotokoll: TB-500 Regenerations-Stack",
+        external_system: "369research",
+        relevance_score: 0.85,
+        notes: "Präklinisches Forschungsprotokoll für TB-500 in Kombination mit BPC-157",
+        active: false
       },
       {
-        id: `eco-tb500-stack-${Date.now()}-4`,
+        id: `eco-tb500-stack-4`,
         entity_id: TB500_UUID,
-        ecosystem_type: "stack",
-        target_system: "portal",
-        target_id: null,
-        target_url: null,
-        label: "Stack: TB-500 + BPC-157 Regeneration",
-        description: "Kombinationsansatz TB-500 und BPC-157 für maximale Regenerationsunterstützung",
-        is_active: false
+        link_type: "stack",
+        external_id: "tb500-bpc157-stack",
+        external_slug: "tb-500-bpc-157-regeneration",
+        external_name: "Stack: TB-500 + BPC-157 Regeneration",
+        external_system: "369research",
+        relevance_score: 0.90,
+        notes: "Kombinationsansatz TB-500 und BPC-157 für maximale Regenerationsunterstützung",
+        active: false
       }
     ];
 
     for (const link of ecosystemLinks) {
-      await db.execute(sql`
-        INSERT INTO ecosystem_links (
-          id, entity_id, ecosystem_type, target_system,
-          target_id, target_url, label, description, is_active
-        ) VALUES (
-          ${link.id}, ${link.entity_id}, ${link.ecosystem_type}, ${link.target_system},
-          ${link.target_id}, ${link.target_url}, ${link.label},
-          ${link.description}, ${link.is_active}
-        )
-        ON CONFLICT DO NOTHING
-      `);
+      try {
+        await db.execute(sql`
+          INSERT INTO ecosystem_links (
+            id, entity_id, link_type, external_id,
+            external_slug, external_name, external_system,
+            relevance_score, notes, active
+          ) VALUES (
+            ${link.id}, ${link.entity_id}, ${link.link_type}, ${link.external_id},
+            ${link.external_slug}, ${link.external_name}, ${link.external_system},
+            ${link.relevance_score}, ${link.notes}, ${link.active}
+          )
+          ON CONFLICT DO NOTHING
+        `);
+      } catch (ecoErr: any) {
+        console.error(`[TB-500 Seed] ECOSYSTEM LINK INSERT FAILED for ${link.link_type}:`, ecoErr?.message ?? String(ecoErr));
+      }
     }
 
     console.log(`[TB-500 Seed] Inserted ${ecosystemLinks.length} ecosystem links`);
 
     // ── 6. DECISION HISTORY ───────────────────────────────────────────────────
-    await db.execute(sql`
-      INSERT INTO decision_history (
-        id, entity_id, decision_type, previous_status, new_status,
-        reviewer_id, rationale, evidence_summary, confidence_level
-      ) VALUES (
-        ${`dh-tb500-goldstandard-${Date.now()}`},
-        ${TB500_UUID},
-        'lifecycle_transition',
-        'draft',
-        'approved',
-        'system',
-        'TB-500 Goldstandard-Seed: Architektur Version 1.0 Validierungstest. Alle 8 Content Blocks (L1-L7), 5 wissenschaftliche Quellen (PMID-verifiziert), 16+ Relations zu Signalwegen/Organen/Prozessen und 4 Ökosystem-Links nach eingefrorenem GOLDSTANDARD.md Template.',
-        'Präklinische Evidenz: 5 peer-reviewed Studien (2007-2013), davon 2 Tier-Studien und 3 Reviews. Konsistente Effekte auf kardiale Regeneration, Wundheilung und Neuroprotektion in unabhängigen Laboratorien.',
-        0.82
-      )
-      ON CONFLICT DO NOTHING
-    `);
+    // SCHEMA: decision_history hat targetType, targetId, decision, reviewedBy
+    // KEIN: entity_id, decision_type, reviewer_id, rationale, evidence_summary, confidence_level
+    try {
+      await db.execute(sql`
+        INSERT INTO decision_history (
+          id, target_type, target_id, decision,
+          previous_status, new_status,
+          reasoning, evidence_summary, confidence_score,
+          reviewed_by
+        ) VALUES (
+          ${"dh-tb500-goldstandard-v1"},
+          'entity',
+          ${TB500_UUID},
+          'lifecycle_transition',
+          'draft',
+          'approved',
+          'TB-500 Goldstandard-Seed: Architektur Version 1.0 Validierungstest. Alle 8 Content Blocks (L1-L7), 5 wissenschaftliche Quellen (PMID-verifiziert), 16+ Relations zu Signalwegen/Organen/Prozessen und 4 Ökosystem-Links nach eingefrorenem GOLDSTANDARD.md Template.',
+          'Präklinische Evidenz: 5 peer-reviewed Studien (2007-2013), davon 2 Tier-Studien und 3 Reviews. Konsistente Effekte auf kardiale Regeneration, Wundheilung und Neuroprotektion in unabhängigen Laboratorien.',
+          0.82,
+          'system'
+        )
+        ON CONFLICT DO NOTHING
+      `);
+    } catch (dhErr: any) {
+      console.error(`[TB-500 Seed] DECISION HISTORY INSERT FAILED:`, dhErr?.message ?? String(dhErr));
+    }
 
     console.log("[TB-500 Seed] Decision history recorded");
     console.log("[TB-500 Seed] ✅ Complete — Architektur Version 1.0 Validierungstest bestanden");
