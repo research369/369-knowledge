@@ -3,26 +3,32 @@ import { api, Entity, Topic } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type AdminTab = "dashboard" | "entities" | "topics" | "generate";
+type AdminTab = "dashboard" | "entities" | "review" | "topics" | "generate" | "ontologie";
 
 const ENTITY_TYPES = [
+  // Substanzen
   { value: "compound", label: "Compound" },
   { value: "peptide", label: "Peptid" },
   { value: "steroid", label: "Steroid" },
   { value: "supplement", label: "Supplement" },
-  { value: "cosmetic", label: "Kosmetik" },
-  { value: "mechanism", label: "Mechanismus" },
-  { value: "receptor", label: "Rezeptor" },
-  { value: "gene", label: "Gen" },
+  { value: "kosmetik", label: "Kosmetik" },
+  // Biologie
+  { value: "mechanismus", label: "Mechanismus" },
+  { value: "signalweg", label: "Signalweg" },
+  { value: "rezeptor", label: "Rezeptor" },
+  { value: "gen", label: "Gen" },
+  { value: "protein", label: "Protein" },
   { value: "organ", label: "Organ" },
-  { value: "disease", label: "Krankheit" },
-  { value: "faq", label: "FAQ" },
-  { value: "glossary", label: "Glossar" },
+  { value: "biomarker", label: "Biomarker" },
+  // Klinik
+  { value: "erkrankung", label: "Erkrankung" },
+  { value: "symptom", label: "Symptom" },
+  { value: "studie", label: "Studie" },
+  // Wissen
+  { value: "glossar", label: "Glossar" },
   { value: "guide", label: "Guide" },
   { value: "stack", label: "Stack" },
-  { value: "study", label: "Studie" },
-  { value: "academy_module", label: "Academy Modul" },
-  { value: "video", label: "Video" },
+  { value: "faq", label: "FAQ" },
 ];
 
 const STATUS_COLORS: Record<string, string> = {
@@ -108,8 +114,10 @@ function AdminShell({ onLogout }: { onLogout: () => Promise<void> }) {
   const tabs: { id: AdminTab; label: string; icon: string }[] = [
     { id: "dashboard", label: "Dashboard", icon: "⬡" },
     { id: "entities", label: "Entities", icon: "◈" },
+    { id: "review", label: "Review Queue", icon: "◉" },
     { id: "topics", label: "Topics", icon: "◎" },
     { id: "generate", label: "KI-Workflow", icon: "✦" },
+    { id: "ontologie", label: "Ontologie", icon: "⬢" },
   ];
 
   return (
@@ -166,8 +174,10 @@ function AdminShell({ onLogout }: { onLogout: () => Promise<void> }) {
       <main style={{ flex: 1, padding: "1.75rem 1.5rem", maxWidth: "1280px", margin: "0 auto", width: "100%" }}>
         {tab === "dashboard" && <DashboardTab />}
         {tab === "entities" && <EntitiesTab />}
+        {tab === "review" && <ReviewTab />}
         {tab === "topics" && <TopicsTab />}
         {tab === "generate" && <GenerateTab />}
+        {tab === "ontologie" && <OntologieTab />}
       </main>
     </div>
   );
@@ -938,6 +948,286 @@ function LoadingState() {
     <div style={{ padding: "3rem", textAlign: "center", color: "rgba(255,255,255,0.3)" }}>
       <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem", animation: "spin 1s linear infinite", display: "inline-block" }}>⟳</div>
       <div>Lade...</div>
+    </div>
+  );
+}
+
+// ─── Review Queue Tab ─────────────────────────────────────────────────────────
+function ReviewTab() {
+  const [entities, setEntities] = useState<Entity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await api.entities.list({ status: "review" });
+      setEntities(res.data || []);
+    } catch {
+      setEntities([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleApprove = async (id: string) => {
+    setProcessing(id);
+    try {
+      await api.entities.publish(id);
+      await load();
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    setProcessing(id);
+    try {
+      await api.entities.update(id, { status: "draft" } as any);
+      await load();
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  return (
+    <div>
+      <SectionHeader title="Review Queue" subtitle="Alle Einträge die auf Freigabe warten." />
+      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+        {loading ? (
+          <LoadingState />
+        ) : entities.length === 0 ? (
+          <div style={{ padding: "3rem", textAlign: "center" }}>
+            <div style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>✓</div>
+            <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.9375rem" }}>Review Queue ist leer — alle Einträge sind geprüft.</div>
+          </div>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                {["Name", "Typ", "KI", "Erstellt", "Aktionen"].map((h) => (
+                  <th key={h} style={{ padding: "0.75rem 1rem", textAlign: "left", fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {entities.map((entity) => {
+                const eType = entity.entityType || (entity as any).type || "";
+                const isProcessing = processing === entity.id;
+                return (
+                  <tr key={entity.id} style={{ borderTop: "1px solid rgba(255,255,255,0.05)", background: "rgba(245,158,11,0.03)" }}>
+                    <td style={{ padding: "0.875rem 1rem" }}>
+                      <div style={{ color: "rgba(255,255,255,0.9)", fontSize: "0.875rem", fontWeight: 500 }}>{entity.canonicalName}</div>
+                      {entity.slug && <div style={{ color: "rgba(255,255,255,0.25)", fontSize: "0.75rem", marginTop: "0.125rem" }}>/{entity.slug}</div>}
+                    </td>
+                    <td style={{ padding: "0.875rem 1rem", color: "rgba(255,255,255,0.4)", fontSize: "0.8125rem" }}>
+                      {ENTITY_TYPES.find((t) => t.value === eType)?.label || eType}
+                    </td>
+                    <td style={{ padding: "0.875rem 1rem", color: entity.generatedByAi ? "var(--color-gold)" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                      {entity.generatedByAi ? "✦ KI" : "Manuell"}
+                    </td>
+                    <td style={{ padding: "0.875rem 1rem", color: "rgba(255,255,255,0.3)", fontSize: "0.8125rem" }}>
+                      {entity.createdAt ? new Date(entity.createdAt).toLocaleDateString("de-DE") : "—"}
+                    </td>
+                    <td style={{ padding: "0.875rem 1rem" }}>
+                      <div style={{ display: "flex", gap: "0.5rem" }}>
+                        <button
+                          disabled={isProcessing}
+                          onClick={() => handleApprove(entity.id)}
+                          style={{ background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.3)", borderRadius: "5px", color: "#4ade80", cursor: "pointer", fontSize: "0.8125rem", padding: "0.375rem 0.875rem", fontWeight: 600 }}
+                        >
+                          {isProcessing ? "..." : "✓ Freigeben"}
+                        </button>
+                        <button
+                          disabled={isProcessing}
+                          onClick={() => handleReject(entity.id)}
+                          style={{ background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)", borderRadius: "5px", color: "#f87171", cursor: "pointer", fontSize: "0.8125rem", padding: "0.375rem 0.875rem" }}
+                        >
+                          Zurück zu Entwurf
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+      {entities.length > 0 && (
+        <div style={{ marginTop: "1rem", display: "flex", justifyContent: "flex-end" }}>
+          <button
+            onClick={async () => {
+              if (!confirm(`Alle ${entities.length} Einträge freigeben?`)) return;
+              for (const e of entities) await api.entities.publish(e.id);
+              await load();
+            }}
+            className="btn btn-primary"
+          >
+            Alle {entities.length} freigeben
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Ontologie Tab ────────────────────────────────────────────────────────────
+function OntologieTab() {
+  const [stats, setStats] = useState<{ type: string; count: number; published: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await api.entities.list({});
+        const all: Entity[] = res.data || [];
+        setTotal(all.length);
+        const map: Record<string, { count: number; published: number }> = {};
+        for (const e of all) {
+          const t = e.entityType || (e as any).type || "unbekannt";
+          if (!map[t]) map[t] = { count: 0, published: 0 };
+          map[t].count++;
+          if (e.status === "published") map[t].published++;
+        }
+        const sorted = Object.entries(map)
+          .map(([type, v]) => ({ type, ...v }))
+          .sort((a, b) => b.count - a.count);
+        setStats(sorted);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const RELATION_TYPES = [
+    { value: "activates", label: "Aktiviert", color: "#4ade80" },
+    { value: "inhibits", label: "Inhibiert", color: "#f87171" },
+    { value: "binds_to", label: "Bindet an", color: "#60a5fa" },
+    { value: "synergizes_with", label: "Synergiert mit", color: "#a78bfa" },
+    { value: "antagonizes", label: "Antagonisiert", color: "#fb923c" },
+    { value: "upregulates", label: "Hochreguliert", color: "#34d399" },
+    { value: "downregulates", label: "Herunterreguliert", color: "#f472b6" },
+    { value: "treats", label: "Behandelt", color: "#fbbf24" },
+    { value: "causes", label: "Verursacht", color: "#f87171" },
+    { value: "biomarker_for", label: "Biomarker für", color: "#38bdf8" },
+    { value: "part_of", label: "Teil von", color: "#a3a3a3" },
+    { value: "related_to", label: "Verwandt mit", color: "#d1d5db" },
+  ];
+
+  const EVIDENCE_LEVELS = [
+    { level: "1", label: "L1 — Tier 1 RCT / Meta-Analyse", color: "#4ade80" },
+    { level: "2", label: "L2 — Tier 2 Klinische Studie", color: "#a3e635" },
+    { level: "3", label: "L3 — Tier 3 Tierversuch", color: "#fbbf24" },
+    { level: "4", label: "L4 — Tier 4 In-vitro", color: "#fb923c" },
+    { level: "5", label: "L5 — Tier 5 Anekdotisch", color: "#f87171" },
+  ];
+
+  return (
+    <div>
+      <SectionHeader title="Ontologie" subtitle="Übersicht aller Inhaltstypen, Relationen und Evidenzebenen." />
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+        {/* Entity-Typen */}
+        <div>
+          <h3 style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.8125rem", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.875rem" }}>
+            Entity-Typen ({total} gesamt)
+          </h3>
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+            {loading ? <LoadingState /> : (
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                    {["Typ", "Gesamt", "Live", "Fortschritt"].map((h) => (
+                      <th key={h} style={{ padding: "0.625rem 1rem", textAlign: "left", fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.map((s) => {
+                    const pct = s.count > 0 ? Math.round((s.published / s.count) * 100) : 0;
+                    return (
+                      <tr key={s.type} style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                        <td style={{ padding: "0.625rem 1rem", color: "rgba(255,255,255,0.8)", fontSize: "0.875rem" }}>
+                          {ENTITY_TYPES.find((t) => t.value === s.type)?.label || s.type}
+                        </td>
+                        <td style={{ padding: "0.625rem 1rem", color: "rgba(255,255,255,0.5)", fontSize: "0.875rem" }}>{s.count}</td>
+                        <td style={{ padding: "0.625rem 1rem", color: "#4ade80", fontSize: "0.875rem" }}>{s.published}</td>
+                        <td style={{ padding: "0.625rem 1rem" }}>
+                          <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: "4px", height: "6px", width: "80px", overflow: "hidden" }}>
+                            <div style={{ background: "var(--color-blue-bright)", height: "100%", width: `${pct}%`, borderRadius: "4px", transition: "width 0.3s" }} />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {stats.length === 0 && (
+                    <tr><td colSpan={4} style={{ padding: "2rem", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: "0.875rem" }}>Noch keine Einträge vorhanden.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
+        {/* Relationstypen */}
+        <div>
+          <h3 style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.8125rem", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.875rem" }}>
+            Relationstypen ({RELATION_TYPES.length})
+          </h3>
+          <div className="card" style={{ padding: "1rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            {RELATION_TYPES.map((r) => (
+              <div key={r.value} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: r.color, flexShrink: 0 }} />
+                <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem" }}>{r.label}</span>
+                <span style={{ color: "rgba(255,255,255,0.25)", fontSize: "0.75rem", marginLeft: "auto", fontFamily: "monospace" }}>{r.value}</span>
+              </div>
+            ))}
+          </div>
+
+          <h3 style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.8125rem", textTransform: "uppercase", letterSpacing: "0.06em", margin: "1.25rem 0 0.875rem" }}>
+            Evidenzebenen
+          </h3>
+          <div className="card" style={{ padding: "1rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            {EVIDENCE_LEVELS.map((e) => (
+              <div key={e.level} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: e.color, flexShrink: 0 }} />
+                <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem" }}>{e.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* URL-Struktur Referenz */}
+      <div style={{ marginTop: "1.5rem" }}>
+        <h3 style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.8125rem", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.875rem" }}>
+          URL-Struktur
+        </h3>
+        <div className="card" style={{ padding: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.75rem" }}>
+            {[
+              { path: "/compounds/:slug", desc: "Compounds, Peptide, Steroide" },
+              { path: "/mechanismen/:slug", desc: "Mechanismen & Signalwege" },
+              { path: "/studien/:slug", desc: "Studien & Publikationen" },
+              { path: "/themen/:slug", desc: "Themengebiete (Hub-Seiten)" },
+              { path: "/glossar/:slug", desc: "Glossar-Einträge" },
+              { path: "/guides/:slug", desc: "Guides & Protokolle" },
+              { path: "/suche", desc: "Volltextsuche" },
+              { path: "/admin", desc: "Admin-Panel (geschützt)" },
+            ].map((u) => (
+              <div key={u.path} style={{ background: "rgba(255,255,255,0.04)", borderRadius: "6px", padding: "0.625rem 0.875rem" }}>
+                <div style={{ color: "var(--color-gold)", fontSize: "0.8125rem", fontFamily: "monospace", marginBottom: "0.25rem" }}>{u.path}</div>
+                <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem" }}>{u.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
