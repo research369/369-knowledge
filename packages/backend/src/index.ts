@@ -33,6 +33,9 @@ import agentsRouter from "./routes/agents.router.js";
 import confidenceRouter from "./routes/confidence.router.js";
 import discussionRouter from "./routes/discussion.router.js";
 import tasksRouter from "./routes/tasks.router.js";
+import { compoundRouter } from "./routes/compound.router.js";
+import { stacksRouter } from "./routes/stacks.router.js";
+import { agentQueryRouter } from "./routes/agent-query.router.js";
 
 const app = express();
 const PORT = process.env.PORT || 4001;
@@ -122,6 +125,9 @@ app.use("/api/agents", agentsRouter);
 app.use("/api/confidence", confidenceRouter);
 app.use("/api/discussion", discussionRouter);
 app.use("/api/tasks", tasksRouter);
+app.use("/api/compound", compoundRouter);
+app.use("/api/stacks", stacksRouter);
+app.use("/api/agent", agentQueryRouter);
 app.use("/", sitemapRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
