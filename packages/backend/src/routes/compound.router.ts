@@ -103,14 +103,25 @@ async function getBlocks(
   }
 
   // 3. System-Scope-Filter
+  // Nutzt das 'scope' Feld der Blocks (gesetzt durch Factory: ["portal", "academy", "bedo"])
+  // Fallback: Alle nicht-archivierten Blocks sind für portal/shop/agent sichtbar
   if (system === "portal") return filtered.filter(b => b.lifecycleStatus !== "archived");
   if (system === "shop") return filtered.filter(b => {
-    const formats = (b as any).outputFormats ?? ["portal"];
-    return formats.includes("shop");
+    // scope-Feld prüfen (Factory setzt ["portal", "academy", "bedo"])
+    const scope = (b as any).scope ?? [];
+    const outputFormats = (b as any).outputFormats ?? [];
+    // Wenn scope oder outputFormats 'shop' enthält → sichtbar
+    if (scope.includes("shop") || outputFormats.includes("shop")) return true;
+    // Fallback: L1 und L2 Blocks sind immer für Shop sichtbar
+    const layer = b.layer ?? "L1";
+    return (layer === "L1" || layer === "L2") && b.lifecycleStatus !== "archived";
   });
   if (system === "academy") return filtered.filter(b => {
-    const formats = (b as any).outputFormats ?? ["portal", "academy"];
-    return formats.includes("academy");
+    const scope = (b as any).scope ?? [];
+    const outputFormats = (b as any).outputFormats ?? [];
+    if (scope.includes("academy") || outputFormats.includes("academy")) return true;
+    // Fallback: Alle Blocks sind für Academy sichtbar (Academy hat Zugriff auf alles)
+    return b.lifecycleStatus !== "archived";
   });
   return filtered;
 }
@@ -121,7 +132,11 @@ async function getRelations(entityId: string, system: SystemView, depth: number 
   );
 
   // Filter by system visibility
-  if (system === "shop") return rels.filter(r => (r as any).shopVisible === true);
+  // shopVisible/agentVisible/academyVisible sind optionale Felder — Fallback: alle Relations sichtbar
+  if (system === "shop") return rels.filter(r => {
+    const shopVisible = (r as any).shopVisible;
+    return shopVisible === undefined || shopVisible === null || shopVisible === true;
+  });
   if (system === "agent") return rels.filter(r => (r as any).agentVisible !== false);
   if (system === "academy") return rels.filter(r => (r as any).academyVisible !== false);
   return rels;
