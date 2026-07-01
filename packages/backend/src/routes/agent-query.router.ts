@@ -8,7 +8,7 @@
 
 import { Router, Request, Response } from "express";
 import { db } from "../db/index.js";
-import { entities, contentBlocks, relations, agentApiKeys, agentAccessLog } from "../db/schema.js";
+import { entities, contentBlocks, relations, agentApiKeys, agentAccessLog, apiKeys } from "../db/schema.js";
 import { eq, ilike, or, inArray, sql, and } from "drizzle-orm";
 import { createHash, randomUUID } from "crypto";
 
@@ -22,21 +22,35 @@ async function authenticateAgent(req: Request, res: Response): Promise<{ keyReco
     return null;
   }
   const keyHash = createHash("sha256").update(rawKey).digest("hex");
-  const [keyRecord] = await db.select().from(agentApiKeys).where(
+
+  // Prüfe agentApiKeys zuerst, dann apiKeys (Admin-erstellte Keys)
+  let keyRecord: any = null;
+  const [agentKey] = await db.select().from(agentApiKeys).where(
     and(eq(agentApiKeys.keyHash, keyHash), eq(agentApiKeys.active, true))
   ).limit(1);
+
+  if (agentKey) {
+    keyRecord = agentKey;
+    await db.execute(sql`
+      UPDATE agent_api_keys
+      SET last_used_at = NOW(), request_count = request_count + 1
+      WHERE id = ${keyRecord.id}
+    `);
+  } else {
+    // Fallback: apiKeys-Tabelle (via POST /api/admin/api-keys erstellt)
+    const [adminKey] = await db.select().from(apiKeys).where(
+      and(eq(apiKeys.keyHash, keyHash), eq(apiKeys.active, true))
+    ).limit(1);
+    if (adminKey) {
+      keyRecord = { ...adminKey, agentRole: "sales" }; // Default-Rolle für Admin-Keys
+      await db.execute(sql`UPDATE api_keys SET last_used_at = NOW() WHERE id = ${keyRecord.id}`);
+    }
+  }
 
   if (!keyRecord) {
     res.status(401).json({ error: "Invalid or inactive agent key" });
     return null;
   }
-
-  // Update last used
-  await db.execute(sql`
-    UPDATE agent_api_keys
-    SET last_used_at = NOW(), request_count = request_count + 1
-    WHERE id = ${keyRecord.id}
-  `);
 
   return { keyRecord };
 }
