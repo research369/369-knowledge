@@ -12,17 +12,10 @@ import { db } from "../db/index.js";
 import { entities } from "../db/schema.js";
 import { eq, inArray, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
+import { requireAdmin } from "../middleware/auth.js";
 
 const router = Router();
 
-// ─── Auth helper (reuse pattern from other routers) ───────────────────────────
-function requireAdmin(req: Request, res: Response, next: any) {
-  const token = req.headers["x-admin-token"] ?? req.headers.authorization?.replace("Bearer ", "");
-  if (!token || token !== process.env.ADMIN_TOKEN) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-  next();
-}
 
 // ─── GET /api/stacks ──────────────────────────────────────────────────────────
 router.get("/", async (req: Request, res: Response) => {

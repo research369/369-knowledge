@@ -1,6 +1,12 @@
-import OpenAI from "openai";
+/**
+ * ai-generate.service.ts
+ *
+ * Content-Generierung für das 369 Knowledge OS.
+ * Nutzt die LLM-Provider-Abstraktion — kein direkter OpenAI-Import mehr.
+ * Provider-Konfiguration über Environment Variables (siehe llm-provider.service.ts).
+ */
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+import { invokeLLM, getLLMProviderConfig } from "./llm-provider.service.js";
 
 export interface GeneratedContent {
   seoTitle: string;
@@ -54,22 +60,27 @@ export async function generateEntityContent(
   entityType: string,
   additionalContext?: string
 ): Promise<GeneratedContent> {
+  const config = getLLMProviderConfig();
+  if (!config.enabled) {
+    throw new Error(
+      `Knowledge Factory LLM nicht verfügbar: ${config.reason ?? "Kein API Key"}. ` +
+      `Bitte OPENAI_API_KEY in Railway Variables setzen.`
+    );
+  }
+
   const userPrompt = buildPrompt(entityName, entityType, additionalContext);
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
+  const response = await invokeLLM(
+    [
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: userPrompt },
     ],
-    response_format: { type: "json_object" },
-    temperature: 0.3,
-  });
+    { temperature: 0.3, responseFormat: "json" }
+  );
 
-  const raw = response.choices[0].message.content;
-  if (!raw) throw new Error("No content generated");
+  if (!response.content) throw new Error("No content generated");
 
-  return JSON.parse(raw) as GeneratedContent;
+  return JSON.parse(response.content) as GeneratedContent;
 }
 
 function buildPrompt(name: string, type: string, context?: string): string {
@@ -134,7 +145,7 @@ Antworte ausschließlich als JSON mit dieser Struktur:
       "relationType": "activates",
       "toEntityId": "vegf",
       "toEntityName": "VEGF",
-      "description": "BPC-157 aktiviert VEGF-Expression"
+      "description": "${name} aktiviert VEGF-Expression"
     }
   ]
 }`;
