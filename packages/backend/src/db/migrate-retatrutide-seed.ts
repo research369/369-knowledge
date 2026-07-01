@@ -105,9 +105,9 @@ export async function runRetatrutideSeedMigration() {
   if (parseInt(currentBlocks[0]?.count ?? "0") < 8) {
     await db.execute(sql`
       INSERT INTO content_blocks (
-        id, entity_id, block_type, layer, title, content,
-        lifecycle_status, is_primary, display_order, language,
-        output_formats, target_audience, comprehension_level,
+        id, entity_id, block_type, layer, title, body,
+        lifecycle_status, sort_order,
+        scope, target_audience, comprehension_level,
         generated_by_ai, created_at, updated_at
       ) VALUES
       -- L1: Was ist Retatrutide?
@@ -115,83 +115,83 @@ export async function runRetatrutideSeedMigration() {
         'ret-block-001', ${RETATRUTIDE_ID}, 'overview', 'L1',
         'Was ist Retatrutide?',
         'Retatrutide (LY3437943) ist ein Triple-Agonist der nächsten Generation, der gleichzeitig drei Rezeptoren aktiviert: GLP-1R, GIPR und GCGR. In Phase-2-Studien erzielte es die bisher stärkste Gewichtsreduktion aller getesteten Substanzen dieser Klasse — bis zu 24,2% Körpergewicht in 48 Wochen. Es kombiniert die Sättigungswirkung von GLP-1, die insulinotrope Wirkung von GIP und die lipolytische Wirkung von Glucagon.',
-        'published', true, 1, 'de',
+        'published', 1,
         '["portal", "shop", "academy", "agent"]'::jsonb,
-        '["beginner", "athlete", "biohacker", "researcher"]'::jsonb,
-        'beginner', false, NOW(), NOW()
+        'all', 'beginner',
+        false, NOW(), NOW()
       ),
       -- L1: Wirkmechanismus einfach
       (
         'ret-block-002', ${RETATRUTIDE_ID}, 'mechanism', 'L1',
         'Wie wirkt Retatrutide?',
         'Retatrutide aktiviert drei Rezeptoren gleichzeitig: (1) GLP-1R → Sättigung, verlangsamt Magenentleerung, reduziert Appetit; (2) GIPR → verstärkt Insulinausschüttung bei erhöhtem Blutzucker, verbessert Insulinsensitivität; (3) GCGR → erhöht Energieverbrauch, fördert Fettabbau in der Leber. Die Kombination dieser drei Wirkpfade führt zu synergistischen Effekten, die über jeden Einzelagonisten hinausgehen.',
-        'published', false, 2, 'de',
+        'published', 2,
         '["portal", "shop", "academy", "agent"]'::jsonb,
-        '["beginner", "athlete", "biohacker"]'::jsonb,
-        'beginner', false, NOW(), NOW()
+        'all', 'beginner',
+        false, NOW(), NOW()
       ),
       -- L2: Klinische Evidenz
       (
         'ret-block-003', ${RETATRUTIDE_ID}, 'evidence', 'L2',
         'Klinische Studien — Phase 2 Ergebnisse',
         'Die pivotale Phase-2-Studie (Jastreboff et al., NEJM 2023, n=338) zeigte: 12mg/Woche → -24,2% Körpergewicht in 48 Wochen; 8mg/Woche → -22,8%; 4mg/Woche → -17,5%. Zum Vergleich: Semaglutid 2,4mg (STEP-1) → -14,9%; Tirzepatid 15mg (SURMOUNT-1) → -22,5%. Zusätzlich: HbA1c-Reduktion um 2,2%, Triglyceride -42%, Blutdruck systolisch -8mmHg. Phase-3-Studien (TRIUMPH-1 bis -5) laufen aktuell.',
-        'published', false, 3, 'de',
+        'published', 3,
         '["portal", "academy", "agent"]'::jsonb,
-        '["athlete", "biohacker", "researcher"]'::jsonb,
-        'intermediate', false, NOW(), NOW()
+        'intermediate', 'intermediate',
+        false, NOW(), NOW()
       ),
-      -- L2: Vergleich mit anderen GLP-1-Agonisten
+      -- L2: Vergleich
       (
         'ret-block-004', ${RETATRUTIDE_ID}, 'comparison', 'L2',
         'Retatrutide vs. Semaglutid vs. Tirzepatid',
-        'Retatrutide übertrifft alle bisherigen GLP-1-Agonisten in der Gewichtsreduktion. Mechanistischer Unterschied: Semaglutid = GLP-1R Mono-Agonist; Tirzepatid = GLP-1R + GIPR Dual-Agonist; Retatrutide = GLP-1R + GIPR + GCGR Triple-Agonist. Der Glucagon-Rezeptor-Anteil erhöht den Grundumsatz und fördert die hepatische Fettoxidation — ein Effekt, den Semaglutid und Tirzepatid nicht haben. Für Bodybuilding/Physique relevant: Retatrutide zeigt bessere Muskelerhalt-Daten als Semaglutid (geringerer Lean-Mass-Verlust bei gleichem Fettabbau).',
-        'published', false, 4, 'de',
+        'Retatrutide übertrifft alle bisherigen GLP-1-Agonisten in der Gewichtsreduktion. Mechanistischer Unterschied: Semaglutid = GLP-1R Mono-Agonist; Tirzepatid = GLP-1R + GIPR Dual-Agonist; Retatrutide = GLP-1R + GIPR + GCGR Triple-Agonist. Der Glucagon-Rezeptor-Anteil erhöht den Grundumsatz und fördert die hepatische Fettoxidation — ein Effekt, den Semaglutid und Tirzepatid nicht haben. Für Bodybuilding/Physique relevant: Retatrutide zeigt bessere Muskelerhalt-Daten als Semaglutid.',
+        'published', 4,
         '["portal", "academy", "agent"]'::jsonb,
-        '["athlete", "biohacker", "researcher"]'::jsonb,
-        'intermediate', false, NOW(), NOW()
+        'intermediate', 'intermediate',
+        false, NOW(), NOW()
       ),
       -- L3: Molekularer Mechanismus
       (
         'ret-block-005', ${RETATRUTIDE_ID}, 'mechanism_advanced', 'L3',
         'Molekularer Mechanismus — Triple-Agonismus',
-        'GLP-1R-Aktivierung: cAMP-Anstieg → PKA-Aktivierung → Insulinsekretion (glukoseabhängig), Glukagonhemmung, ZNS-Sättigungssignale (Hypothalamus, Hirnstamm). GIPR-Aktivierung: synergistisch mit GLP-1R, verbessert β-Zell-Funktion, reduziert Insulinresistenz in Adipozyten. GCGR-Aktivierung: Glykogenolyse in der Leber, erhöhter Energieverbrauch (+15-20% Grundumsatz), Lipolyse in viszeralem Fettgewebe. AMPK-Aktivierung sekundär durch erhöhten Energieverbrauch → mitochondriale Biogenese, Fettsäureoxidation.',
-        'published', false, 5, 'de',
+        'GLP-1R-Aktivierung: cAMP-Anstieg → PKA-Aktivierung → Insulinsekretion (glukoseabhängig), Glukagonhemmung, ZNS-Sättigungssignale. GIPR-Aktivierung: synergistisch mit GLP-1R, verbessert β-Zell-Funktion, reduziert Insulinresistenz in Adipozyten. GCGR-Aktivierung: Glykogenolyse in der Leber, erhöhter Energieverbrauch (+15-20% Grundumsatz), Lipolyse in viszeralem Fettgewebe. AMPK-Aktivierung sekundär → mitochondriale Biogenese, Fettsäureoxidation.',
+        'published', 5,
         '["portal", "academy"]'::jsonb,
-        '["biohacker", "researcher"]'::jsonb,
-        'advanced', false, NOW(), NOW()
+        'expert', 'advanced',
+        false, NOW(), NOW()
       ),
       -- L3: Stack-Kontext
       (
         'ret-block-006', ${RETATRUTIDE_ID}, 'stack_context', 'L3',
         'Retatrutide im Stack — Metabolic Optimization',
-        'Optimaler Stack für Körperkomposition: Retatrutide (Fettabbau, Insulinsensitivität) + SS-31 (mitochondriale Effizienz, Muskelerhalt) + BPC-157 (GI-Protektion, Gewebereparatur). Rationale: Retatrutide erhöht Energieverbrauch und reduziert Fettmasse; SS-31 schützt Mitochondrien vor dem erhöhten oxidativen Stress; BPC-157 schützt die Magenschleimhaut (GLP-1-Agonisten können GI-Nebenwirkungen verursachen). Für Anti-Aging: Retatrutide + GHK-Cu (Hautregeneration bei Gewichtsverlust) + SS-31 (Longevity-Achse).',
-        'published', false, 6, 'de',
+        'Optimaler Stack für Körperkomposition: Retatrutide (Fettabbau, Insulinsensitivität) + SS-31 (mitochondriale Effizienz, Muskelerhalt) + BPC-157 (GI-Protektion, Gewebereparatur). Für Anti-Aging: Retatrutide + GHK-Cu (Hautregeneration bei Gewichtsverlust) + SS-31 (Longevity-Achse). Rationale: Retatrutide erhöht Energieverbrauch; SS-31 schützt Mitochondrien; BPC-157 schützt die Magenschleimhaut.',
+        'published', 6,
         '["portal", "academy", "agent"]'::jsonb,
-        '["athlete", "biohacker"]'::jsonb,
-        'advanced', false, NOW(), NOW()
+        'intermediate', 'advanced',
+        false, NOW(), NOW()
       ),
       -- L4: Sicherheitsprofil
       (
         'ret-block-007', ${RETATRUTIDE_ID}, 'safety', 'L4',
         'Sicherheitsprofil und Nebenwirkungen',
-        'Häufigste Nebenwirkungen (Phase-2-Daten): Übelkeit (45-65%, meist transient), Erbrechen (20-30%), Durchfall (15-25%), Obstipation (10-15%). Schwerwiegende Ereignisse: Gallensteine (erhöhtes Risiko bei schnellem Gewichtsverlust), Pankreatitis (selten, <1%). Kontraindikationen: Persönliche/familiäre Anamnese von medullärem Schilddrüsenkarzinom, MEN-2-Syndrom. Dosistitration obligatorisch (4mg → 8mg → 12mg über 12-24 Wochen) um GI-Nebenwirkungen zu minimieren. Herzfrequenzerhöhung +5-10 bpm (GCGR-Effekt) — bei kardiovaskulären Vorerkrankungen beachten.',
-        'published', false, 7, 'de',
+        'Häufigste Nebenwirkungen (Phase-2-Daten): Übelkeit (45-65%, meist transient), Erbrechen (20-30%), Durchfall (15-25%), Obstipation (10-15%). Schwerwiegende Ereignisse: Gallensteine (erhöhtes Risiko bei schnellem Gewichtsverlust), Pankreatitis (selten, <1%). Kontraindikationen: Medulläres Schilddrüsenkarzinom, MEN-2-Syndrom. Dosistitration obligatorisch (4mg → 8mg → 12mg über 12-24 Wochen). Herzfrequenzerhöhung +5-10 bpm (GCGR-Effekt).',
+        'published', 7,
         '["portal", "academy"]'::jsonb,
-        '["researcher", "clinician"]'::jsonb,
-        'advanced', false, NOW(), NOW()
+        'expert', 'advanced',
+        false, NOW(), NOW()
       ),
       -- L4: Forschungskontext
       (
         'ret-block-008', ${RETATRUTIDE_ID}, 'research_context', 'L4',
         'Forschungskontext und offene Fragen',
-        'Aktuelle Phase-3-Programme: TRIUMPH-1 (Adipositas, n=2500), TRIUMPH-2 (T2DM + Adipositas), TRIUMPH-3 (kardiovaskuläre Outcomes), TRIUMPH-4 (NASH/MASH), TRIUMPH-5 (Schlafapnoe). Offene Fragen: Langzeit-Sicherheit >2 Jahre, Effekte auf Muskelmasse bei Langzeitanwendung, Kombination mit Krafttraining, Rebound-Effekt nach Absetzen, Vergleich mit Orforglipron (oral). Für RUO-Kontext relevant: Mechanismus der Glucagon-Rezeptor-Aktivierung auf Körperkomposition bei trainierten Personen ist noch nicht vollständig verstanden.',
-        'published', false, 8, 'de',
+        'Aktuelle Phase-3-Programme: TRIUMPH-1 (Adipositas, n=2500), TRIUMPH-2 (T2DM + Adipositas), TRIUMPH-3 (kardiovaskuläre Outcomes), TRIUMPH-4 (NASH/MASH), TRIUMPH-5 (Schlafapnoe). Offene Fragen: Langzeit-Sicherheit >2 Jahre, Effekte auf Muskelmasse bei Langzeitanwendung, Kombination mit Krafttraining, Rebound-Effekt nach Absetzen. Für RUO-Forschung: Mechanismus der Glucagon-Rezeptor-Aktivierung auf Körperkomposition bei trainierten Personen.',
+        'published', 8,
         '["academy"]'::jsonb,
-        '["researcher"]'::jsonb,
-        'expert', false, NOW(), NOW()
+        'expert', 'advanced',
+        false, NOW(), NOW()
       )
       ON CONFLICT (id) DO UPDATE SET
-        content = EXCLUDED.content,
+        body = EXCLUDED.body,
         updated_at = NOW()
     `);
     console.log("[migrate-retatrutide] ✓ 8 Content Blocks inserted");
@@ -275,13 +275,13 @@ export async function runRetatrutideSeedMigration() {
       // Indikationen
       { id: "ret-rel-004", from: RETATRUTIDE_ID, to: ENTITIES.adipositas, type: "treats", strength: 0.95, desc: "Primäre Indikation — bis -24,2% Körpergewicht" },
       { id: "ret-rel-005", from: RETATRUTIDE_ID, to: ENTITIES.diabetesTyp2, type: "treats", strength: 0.90, desc: "HbA1c-Reduktion um 2,2% in Phase-2-Studie" },
-      { id: "ret-rel-006", from: RETATRUTIDE_ID, to: ENTITIES.sarkopenie, type: "prevents", strength: 0.65, desc: "Besserer Muskelerhalt als Semaglutid bei gleichem Fettabbau" },
+      { id: "ret-rel-006", from: RETATRUTIDE_ID, to: ENTITIES.sarkopenie, type: "improves", strength: 0.65, desc: "Besserer Muskelerhalt als Semaglutid bei gleichem Fettabbau" },
       // Organ-Targets
       { id: "ret-rel-007", from: RETATRUTIDE_ID, to: ENTITIES.leber, type: "improves", strength: 0.80, desc: "Hepatische Fettoxidation, NASH/MASH-Potenzial" },
-      { id: "ret-rel-008", from: RETATRUTIDE_ID, to: ENTITIES.skelettmuskel, type: "protects", strength: 0.60, desc: "Muskelerhalt durch verbesserte Insulinsensitivität" },
+      { id: "ret-rel-008", from: RETATRUTIDE_ID, to: ENTITIES.skelettmuskel, type: "improves", strength: 0.60, desc: "Muskelerhalt durch verbesserte Insulinsensitivität" },
       // Biologische Prozesse
       { id: "ret-rel-009", from: RETATRUTIDE_ID, to: ENTITIES.autophagie, type: "activates", strength: 0.55, desc: "Autophagie-Induktion durch kalorische Restriktion" },
-      { id: "ret-rel-010", from: RETATRUTIDE_ID, to: ENTITIES.mitoBiogenese, type: "promotes", strength: 0.65, desc: "Mitochondriale Biogenese durch AMPK-Aktivierung" },
+      { id: "ret-rel-010", from: RETATRUTIDE_ID, to: ENTITIES.mitoBiogenese, type: "activates", strength: 0.65, desc: "Mitochondriale Biogenese durch AMPK-Aktivierung" },
       // Synergien
       { id: "ret-rel-011", from: RETATRUTIDE_ID, to: SS31_ID, type: "synergizes_with", strength: 0.80, desc: "Metabolic Stack: Retatrutide (Fettabbau) + SS-31 (Mitochondrien-Schutz)" },
       // Biomarker
@@ -292,11 +292,11 @@ export async function runRetatrutideSeedMigration() {
       await db.execute(sql`
         INSERT INTO relations (
           id, from_entity_id, to_entity_id, relation_type,
-          strength, description, is_bidirectional,
+          confidence_score, description,
           evidence_level, created_at, updated_at
         ) VALUES (
           ${rel.id}, ${rel.from}, ${rel.to}, ${rel.type},
-          ${rel.strength}, ${rel.desc}, false,
+          ${rel.strength}, ${rel.desc},
           'rct', NOW(), NOW()
         )
         ON CONFLICT (id) DO NOTHING
