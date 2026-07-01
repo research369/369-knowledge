@@ -61,10 +61,13 @@ AGENT-FELDER (Pflicht):
 - agent_medical_disclaimer: Standard-Disclaimer (Research Use Only)
 
 RELATIONS (Pflicht, 8-15 Stück):
-Nutze nur diese validen Typen: activates, inhibits, modulates, upregulates, downregulates, 
-synergizes_with, antagonizes, treats, improves, reduces, increases, causes, prevents_in_research,
-part_of, component_of, biomarker_for, expressed_in, located_in, related_to, studied_in, 
-associated_with, interacts_with, regulates, promotes_in_research, involved_in
+Nutze NUR diese exakten validen Typen (keine anderen!):
+activates, inhibits, upregulates, downregulates, binds_to, influences, interacts_with, regulates, modulates,
+is_part_of, belongs_to, is_subtype_of, contains, relevant_for, treats, improves, worsens, studied_in,
+evidenced_by, contradicts, confirms, updates, combined_with, synergizes_with, antagonizes, requires,
+recommends, occurs_in, expressed_in, codes_for, measured_by, marker_for, answers, has_source,
+has_evidence, has_product, has_protocol, has_stack, has_guide, part_of_academy, available_in_shop,
+related_topic, suggested_next
 
 WICHTIG für Relations toEntityId:
 Nutze bekannte Basis-Entity-IDs aus dem Knowledge Graph:
@@ -268,6 +271,17 @@ router.post("/generate", requireAdmin, async (req: Request, res: Response) => {
       blockResults.push({ id: blockId, layer: b.layer, blockType: b.blockType });
     }
 
+    // Gültige Relation-Typen (aus Schema)
+    const VALID_RELATION_TYPES = new Set([
+      "activates","inhibits","upregulates","downregulates","binds_to","influences",
+      "interacts_with","regulates","modulates","is_part_of","belongs_to","is_subtype_of",
+      "contains","relevant_for","treats","improves","worsens","studied_in","evidenced_by",
+      "contradicts","confirms","updates","combined_with","synergizes_with","antagonizes",
+      "requires","recommends","occurs_in","expressed_in","codes_for","measured_by",
+      "marker_for","answers","has_source","has_evidence","has_product","has_protocol",
+      "has_stack","has_guide","part_of_academy","available_in_shop","related_topic","suggested_next"
+    ]);
+
     // 4. Relations einfügen (nur wenn Ziel-Entity existiert)
     const relResults: { id: string; toEntityId: string; type: string; inserted: boolean }[] = [];
     for (const r of generated.relations) {
@@ -276,12 +290,14 @@ router.post("/generate", requireAdmin, async (req: Request, res: Response) => {
         .where(eq(entities.id, r.toEntityId)).limit(1);
 
       if (targetExists.length > 0) {
+        // Ungültige Relation-Typen auf 'related_topic' mappen
+        const safeRelationType = VALID_RELATION_TYPES.has(r.relationType) ? r.relationType : "related_topic";
         const relId = uuidv4();
         await db.insert(relations).values({
           id: relId,
           fromEntityId: entityId,
           toEntityId: r.toEntityId,
-          relationType: r.relationType as any,
+          relationType: safeRelationType as any,
           confidenceScore: r.strength || 0.7,
           description: r.description || "",
         });
