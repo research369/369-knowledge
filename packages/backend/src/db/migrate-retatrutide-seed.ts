@@ -43,16 +43,15 @@ export async function runRetatrutideSeedMigration() {
   console.log("[migrate-retatrutide] Starting Retatrutide Goldstandard migration...");
 
   // Sentinel: Idempotenz-Check
-  const blockCount = await db.execute(sql`
-    SELECT COUNT(*) as count FROM content_blocks WHERE entity_id = ${RETATRUTIDE_ID}
-  `) as any[];
+    const blockCount = await db.execute(sql`
+    SELECT COUNT(*) as cnt FROM content_blocks WHERE entity_id = ${RETATRUTIDE_ID}
+  `);
   const relCount = await db.execute(sql`
-    SELECT COUNT(*) as count FROM relations
+    SELECT COUNT(*) as cnt FROM relations
     WHERE from_entity_id = ${RETATRUTIDE_ID} OR to_entity_id = ${RETATRUTIDE_ID}
-  `) as any[];
-
-  const blocks = parseInt(blockCount[0]?.count ?? "0");
-  const rels = parseInt(relCount[0]?.count ?? "0");
+  `);
+  const blocks = Number((blockCount as any)[0]?.cnt ?? 0);
+  const rels = Number((relCount as any)[0]?.cnt ?? 0);
 
   if (blocks >= 8 && rels >= 12) {
     console.log(`[migrate-retatrutide] Already complete (${blocks} blocks, ${rels} relations). Skipping.`);
@@ -101,8 +100,8 @@ export async function runRetatrutideSeedMigration() {
   console.log("[migrate-retatrutide] ✓ Entity updated");
 
   // ─── 2. Content Blocks ─────────────────────────────────────────────────────
-  const currentBlocks = await db.execute(sql`SELECT COUNT(*) as count FROM content_blocks WHERE entity_id = ${RETATRUTIDE_ID}`) as any[];
-  if (parseInt(currentBlocks[0]?.count ?? "0") < 8) {
+  const currentBlocks = await db.execute(sql`SELECT COUNT(*) as cnt FROM content_blocks WHERE entity_id = ${RETATRUTIDE_ID}`);
+  if (Number((currentBlocks as any)[0]?.cnt ?? 0) < 8) {
     await db.execute(sql`
       INSERT INTO content_blocks (
         id, entity_id, block_type, layer, title, body,
