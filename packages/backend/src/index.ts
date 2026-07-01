@@ -17,6 +17,7 @@ import { runSs31Seed } from "./db/migrate-ss31-seed.js";
 import { runPhase4SchemaMigration } from "./db/migrate-phase4-schema.js";
 import { runAgentFieldsMigration } from "./db/migrate-agent-fields.js";
 import { runStacksMigration } from "./db/migrate-stacks.js";
+import { runRetatrutideSeedMigration } from "./db/migrate-retatrutide-seed.js";
 import { runAllMigrations } from "./db/migration-runner.js";
 
 import { entitiesRouter } from "./routes/entities.router.js";
@@ -159,6 +160,7 @@ async function startServer() {
     { name: "Phase 4 Schema",        fn: runPhase4SchemaMigration },
     { name: "Agent Fields",           fn: runAgentFieldsMigration },
     { name: "Stacks",                  fn: runStacksMigration },
+    { name: "Retatrutide Seed",         fn: runRetatrutideSeedMigration },
   ]);
 
   app.listen(PORT, () => {
