@@ -168,7 +168,7 @@ Antworte NUR als JSON mit dieser exakten Struktur:
       "isHuman": true,
       "isRct": true,
       "isMetaAnalysis": false,
-      "evidenceLevel": "high",
+      "evidenceLevel": "clinical",
       "summary": "Kurze Zusammenfassung der Studie"
     }
   ]
@@ -319,11 +319,11 @@ router.post("/generate", requireAdmin, async (req: Request, res: Response) => {
         year: s.year || undefined,
         pmid: s.pmid || undefined,
         doi: s.doi || undefined,
-        studyType: (s.studyType || "review") as any,
+        studyType: (["human","animal","in_vitro","rct","meta_analysis","review","case_study","observational"].includes(s.studyType) ? s.studyType : "review") as any,
         isHuman: s.isHuman || false,
         isRct: s.isRct || false,
         isMetaAnalysis: s.isMetaAnalysis || false,
-        evidenceLevel: (s.evidenceLevel || "moderate") as any,
+        evidenceLevel: (["preclinical","in_vitro","animal","pilot_human","clinical","rct","review","meta_analysis","anecdotal"].includes(s.evidenceLevel) ? s.evidenceLevel : "preclinical") as any,
         linkedEntityIds: [entityId],
         abstract: s.summary || undefined,
       });
@@ -431,11 +431,11 @@ router.post("/generate-for/:id", requireAdmin, async (req: Request, res: Respons
         year: s.year || undefined,
         pmid: s.pmid || undefined,
         doi: s.doi || undefined,
-        studyType: (s.studyType || "review") as any,
+        studyType: (["human","animal","in_vitro","rct","meta_analysis","review","case_study","observational"].includes(s.studyType) ? s.studyType : "review") as any,
         isHuman: s.isHuman || false,
         isRct: s.isRct || false,
         isMetaAnalysis: s.isMetaAnalysis || false,
-        evidenceLevel: (s.evidenceLevel || "moderate") as any,
+        evidenceLevel: (["preclinical","in_vitro","animal","pilot_human","clinical","rct","review","meta_analysis","anecdotal"].includes(s.evidenceLevel) ? s.evidenceLevel : "preclinical") as any,
         linkedEntityIds: [id],
         abstract: s.summary || undefined,
       });
