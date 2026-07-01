@@ -306,7 +306,7 @@ router.post(
   }
 );
 
-// ─── Protected: Update entity ─────────────────────────────────────────────────
+// ─── Protected: Update entity (with versioning trigger) ──────────────────────
 
 router.patch(
   "/:id",
@@ -315,15 +315,41 @@ router.patch(
     try {
       const { id } = req.params;
       const updates = req.body;
+      const changedBy = req.headers["x-changed-by"] as string ?? "api";
+      const changeNote = updates._changeNote as string | undefined;
 
       // Prevent status manipulation through this endpoint
       delete updates.id;
       delete updates.createdAt;
+      delete updates._changeNote;
 
+      // 1. Snapshot der aktuellen Version VOR dem Update
+      const [current] = await db
+        .select()
+        .from(entities)
+        .where(eq(entities.id, id))
+        .limit(1);
+
+      if (!current) return res.status(404).json({ error: "Entity not found" });
+
+      // 2. Entity updaten (Version inkrementieren)
       await db
         .update(entities)
-        .set({ ...updates, updatedAt: new Date() })
+        .set({ ...updates, updatedAt: new Date(), version: (current.version ?? 0) + 1 })
         .where(eq(entities.id, id));
+
+      // 3. Versionseintrag anlegen (Snapshot des Zustands VOR dem Update)
+      await db.insert(entityVersions).values({
+        id: uuidv4(),
+        entityId: id,
+        version: current.version ?? 1,
+        snapshot: current as any,
+        changedBy: changedBy,
+        changeNote: changeNote ?? null,
+        isAiGenerated: updates.generatedByAi === true,
+        isManualEdit: !updates.generatedByAi,
+        createdAt: new Date(),
+      });
 
       const updated = await db
         .select()
@@ -331,7 +357,7 @@ router.patch(
         .where(eq(entities.id, id))
         .limit(1);
 
-      res.json({ entity: updated[0] });
+      res.json({ entity: updated[0], versionSaved: true, newVersion: (current.version ?? 0) + 1 });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
