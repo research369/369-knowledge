@@ -79,7 +79,12 @@ router.get("/:slug", async (req: Request, res: Response) => {
     }
 
     // Resolve entity details
-    const entityIds: string[] = stack.entity_ids ?? [];
+    // JSONB kommt als String oder Array — sicher parsen
+    let rawEntityIds = stack.entity_ids ?? [];
+    if (typeof rawEntityIds === 'string') {
+      try { rawEntityIds = JSON.parse(rawEntityIds); } catch { rawEntityIds = []; }
+    }
+    const entityIds: string[] = Array.isArray(rawEntityIds) ? rawEntityIds : [];
     let entityDetails: any[] = [];
     if (entityIds.length > 0) {
       entityDetails = await db.select({
