@@ -14,6 +14,7 @@ import { runTb500Seed } from "./db/migrate-tb500-seed.js";
 import { runPhase3BaseEntities } from "./db/migrate-phase3-base-entities.js";
 import { runGhkCuSeed } from "./db/migrate-ghkcu-seed.js";
 import { runSs31Seed } from "./db/migrate-ss31-seed.js";
+import { runPhase4SchemaMigration } from "./db/migrate-phase4-schema.js";
 import { runAllMigrations } from "./db/migration-runner.js";
 
 import { entitiesRouter } from "./routes/entities.router.js";
@@ -147,6 +148,7 @@ async function startServer() {
     { name: "Phase 3 Base Entities", fn: runPhase3BaseEntities },
     { name: "GHK-Cu Seed",          fn: runGhkCuSeed },
     { name: "SS-31 Seed",           fn: runSs31Seed },
+    { name: "Phase 4 Schema",        fn: runPhase4SchemaMigration },
   ]);
 
   app.listen(PORT, () => {
