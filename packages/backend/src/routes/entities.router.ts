@@ -7,6 +7,7 @@ import { validateEntity } from "../services/ontology.service.js";
 import { generateEntityContent } from "../services/ai-generate.service.js";
 import { requireAdmin, requireApiKey } from "../middleware/auth.js";
 import { z } from "zod";
+import { onEntityPublished, onEntityUpdated } from "../services/webhook.service.js";
 
 const router = Router();
 
@@ -299,6 +300,20 @@ router.post(
         })
         .where(eq(entities.id, id));
 
+      // Webhook Auto-Sync: entity.published event feuern (non-blocking)
+      const [publishedEntity] = await db.select().from(entities).where(eq(entities.id, id)).limit(1);
+      if (publishedEntity) {
+        onEntityPublished({
+          id: publishedEntity.id,
+          slug: publishedEntity.slug ?? undefined,
+          type: publishedEntity.type ?? undefined,
+          canonicalName: publishedEntity.canonicalName,
+          publishedAt: now.toISOString(),
+          contentCompleteness: publishedEntity.contentCompleteness ?? undefined,
+          goldstandardApproved: publishedEntity.goldstandardApproved ?? undefined,
+        }).catch(() => {});
+      }
+
       res.json({ message: "Entity published successfully", publishedAt: now });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -345,7 +360,7 @@ router.patch(
         version: current.version ?? 1,
         snapshot: current as any,
         changedBy: changedBy,
-        changeNote: changeNote ?? null,
+        changeNote: changeNote ?? undefined,
         isAiGenerated: updates.generatedByAi === true,
         isManualEdit: !updates.generatedByAi,
         createdAt: new Date(),
@@ -356,6 +371,16 @@ router.patch(
         .from(entities)
         .where(eq(entities.id, id))
         .limit(1);
+
+      // Webhook Auto-Sync: entity.updated event feuern (non-blocking)
+      const updatedEntity = updated[0];
+      onEntityUpdated({
+        id: updatedEntity.id,
+        slug: updatedEntity.slug ?? undefined,
+        type: updatedEntity.type ?? undefined,
+        canonicalName: updatedEntity.canonicalName,
+        version: (current.version ?? 0) + 1,
+      }).catch(() => {});
 
       res.json({ entity: updated[0], versionSaved: true, newVersion: (current.version ?? 0) + 1 });
     } catch (err: any) {
