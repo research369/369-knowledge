@@ -30,7 +30,7 @@ const ENTITIES = {
   mTorSignalweg:      "mtor-signalweg",
   adipositas:         "adipositas",
   diabetesTyp2:       "diabetes-typ-2",
-  sarkopenie:         "sarkopenie",
+  sarkopenie:       "sarcopenie",
   herz:               "herz",
   leber:              "leber",
   skelettmuskel:      "skelettmuskel",
