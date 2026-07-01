@@ -19,10 +19,52 @@ const router = Router();
 
 type SystemView = "portal" | "shop" | "academy" | "agent" | "content" | "seo" | "full";
 
+// Valid knowledge layers
+const VALID_LAYERS = ["L1", "L2", "L3", "L4", "L5", "L6", "L7"] as const;
+type KnowledgeLayer = typeof VALID_LAYERS[number];
+
+// Valid audience values
+const VALID_AUDIENCES = ["beginner", "athlete", "biohacker", "researcher", "clinician", "all"] as const;
+type AudienceType = typeof VALID_AUDIENCES[number];
+
+// Layer access by system (default if no layer param)
+const SYSTEM_LAYER_DEFAULTS: Record<SystemView, KnowledgeLayer[]> = {
+  portal:  ["L1", "L2", "L3"],
+  shop:    ["L1", "L2"],
+  academy: ["L1", "L2", "L3", "L4", "L5", "L6"],
+  agent:   ["L1", "L2", "L3", "L4"],
+  content: ["L1", "L2", "L3"],
+  seo:     ["L1", "L2"],
+  full:    ["L1", "L2", "L3", "L4", "L5", "L6", "L7"],
+};
+
 function getSystemView(req: Request): SystemView {
   const s = req.query.system as string;
   const valid: SystemView[] = ["portal", "shop", "academy", "agent", "content", "seo", "full"];
   return valid.includes(s as SystemView) ? (s as SystemView) : "portal";
+}
+
+/**
+ * Layer-Filter: Gibt die erlaubten Layers zurück.
+ * Priorität: ?layer=L1,L2 > System-Default
+ */
+function getLayerFilter(req: Request, system: SystemView): KnowledgeLayer[] {
+  const layerParam = req.query.layer as string;
+  if (layerParam) {
+    const requested = layerParam.split(",").map(l => l.trim().toUpperCase()) as KnowledgeLayer[];
+    return requested.filter(l => VALID_LAYERS.includes(l));
+  }
+  return SYSTEM_LAYER_DEFAULTS[system] ?? ["L1", "L2", "L3"];
+}
+
+/**
+ * Audience-Filter: Gibt den gewünschten Audience-Typ zurück.
+ * Wenn 'all' oder nicht gesetzt → kein Filter.
+ */
+function getAudienceFilter(req: Request): AudienceType | null {
+  const aud = req.query.audience as string;
+  if (!aud || aud === "all") return null;
+  return VALID_AUDIENCES.includes(aud as AudienceType) ? (aud as AudienceType) : null;
 }
 
 async function getEntityBySlug(slug: string) {
@@ -34,20 +76,43 @@ async function getEntityBySlug(slug: string) {
   return entity;
 }
 
-async function getBlocks(entityId: string, system: SystemView) {
-  const blocks = await db.select().from(contentBlocks).where(eq(contentBlocks.entityId, entityId));
+async function getBlocks(
+  entityId: string,
+  system: SystemView,
+  layers: KnowledgeLayer[],
+  audience: AudienceType | null
+) {
+  const allBlocks = await db.select().from(contentBlocks).where(eq(contentBlocks.entityId, entityId));
 
-  // Filter by system scope
-  if (system === "portal") return blocks.filter(b => b.lifecycleStatus !== "archived");
-  if (system === "shop") return blocks.filter(b => {
+  let filtered = allBlocks;
+
+  // 1. Layer-Filter
+  if (layers.length > 0) {
+    filtered = filtered.filter(b => layers.includes((b.layer ?? "L1") as KnowledgeLayer));
+  }
+
+  // 2. Audience-Filter (comprehensionLevel oder targetAudience im Block)
+  if (audience && audience !== "all") {
+    filtered = filtered.filter(b => {
+      const blockAudience = (b as any).targetAudience;
+      // Wenn kein Audience-Feld gesetzt → für alle sichtbar
+      if (!blockAudience || blockAudience === "all") return true;
+      if (Array.isArray(blockAudience)) return blockAudience.includes(audience) || blockAudience.includes("all");
+      return blockAudience === audience || blockAudience === "all";
+    });
+  }
+
+  // 3. System-Scope-Filter
+  if (system === "portal") return filtered.filter(b => b.lifecycleStatus !== "archived");
+  if (system === "shop") return filtered.filter(b => {
     const formats = (b as any).outputFormats ?? ["portal"];
     return formats.includes("shop");
   });
-  if (system === "academy") return blocks.filter(b => {
+  if (system === "academy") return filtered.filter(b => {
     const formats = (b as any).outputFormats ?? ["portal", "academy"];
     return formats.includes("academy");
   });
-  return blocks;
+  return filtered;
 }
 
 async function getRelations(entityId: string, system: SystemView, depth: number = 1) {
@@ -89,8 +154,18 @@ router.get("/:slug", async (req: Request, res: Response) => {
     // Build system-specific view
     const view: Record<string, any> = { system, entity };
 
+    // Layer- und Audience-Filter aus Query-Params
+    const layers = getLayerFilter(req, system);
+    const audience = getAudienceFilter(req);
+
     if (includeBlocks) {
-      view.blocks = await getBlocks(entity.id, system);
+      view.blocks = await getBlocks(entity.id, system, layers, audience);
+      view.meta = {
+        system,
+        layers,
+        audience: audience ?? "all",
+        blockCount: view.blocks.length,
+      };
     }
 
     if (includeRelations) {
