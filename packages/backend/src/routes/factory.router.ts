@@ -236,7 +236,7 @@ router.post("/generate", requireAdmin, async (req: Request, res: Response) => {
       categories: generated.entity.categories || [],
       metrics: generated.entity.metrics || [],
       generatedByAi: true,
-      lifecycleStatus: "pending_review" as any,
+      lifecycleStatus: "review" as any,
       agentSalesPitch: generated.agentFields.agentSalesPitch || null,
       agentSupportFaq: generated.agentFields.agentSupportFaq || null,
       agentResearchContext: generated.agentFields.agentResearchContext || null,
@@ -260,7 +260,7 @@ router.post("/generate", requireAdmin, async (req: Request, res: Response) => {
         body: b.body,
         sources: b.sources || [],
         sortOrder: b.sortOrder || 1,
-        lifecycleStatus: "pending_review" as any,
+        lifecycleStatus: "review" as any,
         generatedByAi: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -323,7 +323,7 @@ router.post("/generate", requireAdmin, async (req: Request, res: Response) => {
       success: true,
       entityId,
       slug,
-      status: "pending_review",
+      status: "review",
       summary: {
         blocksCreated: blockResults.length,
         relationsInserted: insertedRels,
@@ -333,7 +333,7 @@ router.post("/generate", requireAdmin, async (req: Request, res: Response) => {
       blocks: blockResults,
       relations: relResults,
       skippedRelations: relResults.filter(r => !r.inserted).map(r => r.toEntityId),
-      message: `Entity "${name}" erstellt. Status: pending_review. Bitte manuell prüfen und dann /api/factory/approve/${entityId} aufrufen.`,
+      message: `Entity "${name}" erstellt. Status: review. Bitte manuell prüfen und dann /api/factory/approve/${entityId} aufrufen.`,
     });
   } catch (err: any) {
     console.error("[factory] Error:", err.message);
@@ -375,7 +375,7 @@ router.post("/generate-for/:id", requireAdmin, async (req: Request, res: Respons
         body: b.body,
         sources: b.sources || [],
         sortOrder: b.sortOrder || 1,
-        lifecycleStatus: "pending_review" as any,
+        lifecycleStatus: "review" as any,
         generatedByAi: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -437,7 +437,7 @@ router.post("/generate-for/:id", requireAdmin, async (req: Request, res: Respons
       agentResearchContext: generated.agentFields.agentResearchContext || e.agentResearchContext,
       agentMedicalDisclaimer: generated.agentFields.agentMedicalDisclaimer || e.agentMedicalDisclaimer,
       generatedByAi: true,
-      lifecycleStatus: "pending_review" as any,
+      lifecycleStatus: "review" as any,
       updatedAt: new Date(),
     }).where(eq(entities.id, id));
 
@@ -445,14 +445,14 @@ router.post("/generate-for/:id", requireAdmin, async (req: Request, res: Respons
       success: true,
       entityId: id,
       slug: e.slug,
-      status: "pending_review",
+      status: "review",
       summary: {
         blocksCreated: blockResults.length,
         relationsInserted: relResults.filter(r => r.inserted).length,
         relationsSkipped: relResults.filter(r => !r.inserted).length,
         sourcesCreated: sourceResults.length,
       },
-      message: `Entity "${e.canonicalName}" befüllt. Status: pending_review.`,
+      message: `Entity "${e.canonicalName}" befüllt. Status: review.`,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -476,7 +476,7 @@ router.get("/queue", requireAdmin, async (_req: Request, res: Response) => {
       })
       .from(entities)
       .where(
-        sql`${entities.lifecycleStatus} IN ('pending_review', 'new', 'draft')`
+        sql`${entities.lifecycleStatus} IN ('review', 'new', 'draft')`
       )
       .orderBy(entities.updatedAt);
 
