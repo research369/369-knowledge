@@ -3,6 +3,7 @@ import { db } from "../db/index.js";
 import { sources, contentBlockSources } from "../db/schema.js";
 import { eq, desc, ilike, or, and, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
+import { computeConfidenceScore } from "../services/confidence.service.js";
 
 const router = Router();
 
@@ -136,6 +137,14 @@ router.post("/", async (req: Request, res: Response) => {
       id,
       ...req.body,
     }).returning();
+
+    // Confidence-Score automatisch neu berechnen (non-blocking)
+    // linkedEntityIds ist ein JSONB-Array mit Entity-IDs
+    const linkedIds = Array.isArray(created.linkedEntityIds) ? created.linkedEntityIds as string[] : [];
+    for (const eid of linkedIds) {
+      computeConfidenceScore(eid).catch(() => {});
+    }
+
     res.status(201).json(created);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
