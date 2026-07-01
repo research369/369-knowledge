@@ -48,7 +48,7 @@ router.get("/", async (req: Request, res: Response) => {
     const stacks = await db.execute(sql`
       SELECT * FROM stacks
       ${status ? sql`WHERE status = ${status}` : sql``}
-      ORDER BY is_featured DESC, sort_order ASC, created_at DESC
+      ORDER BY is_featured DESC, created_at DESC
       LIMIT ${limit} OFFSET ${offset}
     `);
 
