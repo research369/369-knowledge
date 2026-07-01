@@ -226,8 +226,8 @@ export async function runRetatrutideSeedMigration() {
       '["Coskun T", "Sloop KW", "Loghin C", "Alsina-Fernandez J", "Urva S", "Clingan KL", "Cui Z", "Briere DA", "Cabrera O", "Roell WC"]'::jsonb,
       'Molecular Metabolism', 2018,
       '30195866', '10.1016/j.molmet.2018.08.008',
-      'animal_study', false, false, false,
-      'animal_study',
+      'animal', false, false, false,
+      'animal',
       ${JSON.stringify([RETATRUTIDE_ID])}::jsonb,
       'approved', NOW(), NOW()
     ),
@@ -248,7 +248,7 @@ export async function runRetatrutideSeedMigration() {
       '["Hansotia T", "Drucker DJ"]'::jsonb,
       'Regulatory Peptides', 2005,
       '15978665', '10.1016/j.regpep.2004.11.019',
-      'animal_study', false, false, false,
+      'animal', false, false, false,
       'preclinical',
       ${JSON.stringify([RETATRUTIDE_ID])}::jsonb,
       'approved', NOW(), NOW()
