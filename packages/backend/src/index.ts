@@ -89,25 +89,6 @@ app.use(cookieParser());
 app.use("/api", apiLimiter);
 app.use("/api/entities/:id/generate", generateLimiter);
 
-// ─── Debug: Retatrutide Migration Trigger ────────────────────────────────────
-app.get("/debug/run-retatrutide", async (_req, res) => {
-  try {
-    const { db } = await import("./db/index.js");
-    const { sql } = await import("drizzle-orm");
-    const RETATRUTIDE_ID = "40be3d7b-e2e0-47be-9f20-a9949bb1c56a";
-    const bc = await db.execute(sql`SELECT COUNT(*) as cnt FROM content_blocks WHERE entity_id = ${RETATRUTIDE_ID}`);
-    const rc = await db.execute(sql`SELECT COUNT(*) as cnt FROM relations WHERE from_entity_id = ${RETATRUTIDE_ID} OR to_entity_id = ${RETATRUTIDE_ID}`);
-    const blocks = Number((bc as any)[0]?.cnt ?? 0);
-    const rels = Number((rc as any)[0]?.cnt ?? 0);
-    await runRetatrutideSeedMigration();
-    const bc2 = await db.execute(sql`SELECT COUNT(*) as cnt FROM content_blocks WHERE entity_id = ${RETATRUTIDE_ID}`);
-    const rc2 = await db.execute(sql`SELECT COUNT(*) as cnt FROM relations WHERE from_entity_id = ${RETATRUTIDE_ID} OR to_entity_id = ${RETATRUTIDE_ID}`);
-    res.json({ before: { blocks, rels }, after: { blocks: Number((bc2 as any)[0]?.cnt ?? 0), rels: Number((rc2 as any)[0]?.cnt ?? 0) } });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message, stack: err.stack?.split("\n").slice(0,5) });
-  }
-});
-
 // ─── Health Check ─────────────────────────────────────────────────────────────
 
 app.get("/health", async (_req, res) => {
