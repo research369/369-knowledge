@@ -59,6 +59,12 @@ export async function runRetatrutideSeedMigration() {
     return;
   }
 
+  // Alte Blocks löschen falls < 8 aber > 0 (aus Phase-3-Anlage)
+  if (blocks > 0 && blocks < 8) {
+    await db.execute(sql`DELETE FROM content_blocks WHERE entity_id = ${RETATRUTIDE_ID}`);
+    console.log(`[migrate-retatrutide] Cleared ${blocks} old blocks for fresh insert`);
+  }
+
   console.log(`[migrate-retatrutide] Found ${blocks}/8 blocks, ${rels}/12 relations. Running migration...`);
 
   // ─── 1. Entity-Felder aktualisieren ────────────────────────────────────────
@@ -95,7 +101,8 @@ export async function runRetatrutideSeedMigration() {
   console.log("[migrate-retatrutide] ✓ Entity updated");
 
   // ─── 2. Content Blocks ─────────────────────────────────────────────────────
-  if (blocks < 8) {
+  const currentBlocks = await db.execute(sql`SELECT COUNT(*) as count FROM content_blocks WHERE entity_id = ${RETATRUTIDE_ID}`) as any[];
+  if (parseInt(currentBlocks[0]?.count ?? "0") < 8) {
     await db.execute(sql`
       INSERT INTO content_blocks (
         id, entity_id, block_type, layer, title, content,
