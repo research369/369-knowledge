@@ -76,20 +76,14 @@ export async function runRetatrutideSeedMigration() {
       aliases = '["LY3437943", "Retatrutide", "GLP-1/GIP/Glucagon Triple Agonist"]'::jsonb,
       language = 'de',
       cas_number = '2381089-83-2',
-      molecular_formula = 'C₂₂₄H₃₆₈N₆₄O₇₀S₂',
+      molecular_formula = 'C224H368N64O70S2',
       molecular_weight = '4891.4',
-      short_description = 'Retatrutide (LY3437943) ist ein Triple-Agonist der GLP-1-, GIP- und Glucagon-Rezeptoren. In Phase-2-Studien zeigte es überlegene Gewichtsreduktion gegenüber allen bisherigen GLP-1-Agonisten (bis -24,2% Körpergewicht in 48 Wochen).',
-      description = 'Retatrutide ist ein neuartiger Triple-Agonist, der gleichzeitig drei Rezeptoren aktiviert: GLP-1R (Glucagon-like Peptide-1 Receptor), GIPR (Glucose-dependent Insulinotropic Polypeptide Receptor) und GCGR (Glucagon Receptor). Diese Triple-Aktivierung führt zu synergistischen Effekten auf Energiehomöostase, Insulinsensitivität und Fettstoffwechsel. In einer Phase-2-Studie (NEJM 2023) erreichten Patienten eine mittlere Gewichtsreduktion von 17,5% (24mg-Gruppe) bis 24,2% (12mg-Gruppe) über 48 Wochen — deutlich mehr als Semaglutid oder Tirzepatid.',
+      short_description = 'Retatrutide (LY3437943): Triple-Agonist GLP-1/GIP/Glucagon. Bis -24,2% Körpergewicht in 48 Wochen (Phase-2-Studie NEJM 2023).',
       lifecycle_status = 'published',
-      status = 'published',
       published_at = NOW(),
       content_completeness = 90,
-      goldstandard_approved = false,
-      version = 1,
       categories = '["Metabolic Compounds", "GLP-1 Agonists", "Weight Management", "Longevity"]'::jsonb,
       tags = '["GLP-1", "GIP", "Glucagon", "Triple Agonist", "Adipositas", "Metabolisches Syndrom", "Insulinresistenz"]'::jsonb,
-      target_audience = '["biohacker", "researcher", "athlete"]'::jsonb,
-      knowledge_layer = 'L2',
       seo_title = 'Retatrutide (LY3437943) – Triple-Agonist GLP-1/GIP/Glucagon | 369 Research',
       seo_description = 'Retatrutide: Der stärkste Gewichtsreduktions-Compound der aktuellen Generation. Triple-Agonist mit bis zu -24% Körpergewicht in 48 Wochen. Mechanismus, Studien und Stacks.',
       seo_keywords = '["Retatrutide", "LY3437943", "GLP-1 Agonist", "Triple Agonist", "Adipositas Behandlung", "Gewichtsreduktion Peptid"]'::jsonb,
@@ -349,7 +343,6 @@ export async function runRetatrutideSeedMigration() {
   // Metabolic Stack mit Retatrutide aktivieren
   await db.execute(sql`
     UPDATE stacks SET
-      status = 'published',
       entity_ids = ${JSON.stringify([RETATRUTIDE_ID, SS31_ID])}::jsonb,
       description = 'Der Metabolic Optimization Stack kombiniert Retatrutide (Triple-Agonist für maximalen Fettabbau) mit SS-31 (mitochondrialer Schutz und Muskelerhalt). Ideal für Körperkomposition, Insulinsensitivität und metabolische Gesundheit.',
       updated_at = NOW()
