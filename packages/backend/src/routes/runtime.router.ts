@@ -9,7 +9,6 @@
 
 import { Router, Request, Response } from "express";
 import { db } from "../db/index.js";
-import { agentApiKeys } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { createHash } from "crypto";
 import {
@@ -42,10 +41,12 @@ async function authenticateRuntimeRequest(
 
   const keyHash = createHash("sha256").update(rawKey).digest("hex");
 
+  // Check in apiKeys table (admin-created keys)
+  const { apiKeys } = await import("../db/schema.js");
   const [keyRecord] = await db
     .select()
-    .from(agentApiKeys)
-    .where(eq(agentApiKeys.keyHash, keyHash))
+    .from(apiKeys)
+    .where(eq(apiKeys.keyHash, keyHash))
     .limit(1);
 
   if (!keyRecord || !keyRecord.active) {
@@ -58,7 +59,11 @@ async function authenticateRuntimeRequest(
     return null;
   }
 
-  // Map agent role from key record
+  // Derive agent role from key permissions or name
+  const permissions: string[] = Array.isArray(keyRecord.permissions)
+    ? keyRecord.permissions
+    : [];
+
   const roleMap: Record<string, AgentRole> = {
     pepgpt: "pepgpt",
     salesgpt: "salesgpt",
@@ -70,8 +75,17 @@ async function authenticateRuntimeRequest(
     content: "content",
   };
 
-  const agentRole: AgentRole =
-    roleMap[keyRecord.agentRole?.toLowerCase()] ?? "pepgpt";
+  // Try to detect role from permissions array or key name
+  let agentRole: AgentRole = "pepgpt";
+  for (const perm of permissions) {
+    const mapped = roleMap[perm.toLowerCase()];
+    if (mapped) { agentRole = mapped; break; }
+  }
+  // Fallback: detect from key name
+  const nameLower = (keyRecord.name ?? "").toLowerCase();
+  for (const [key, role] of Object.entries(roleMap)) {
+    if (nameLower.includes(key)) { agentRole = role; break; }
+  }
 
   return { keyRecord, agentRole };
 }
