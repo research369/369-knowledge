@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "agentRole": "supportgpt",
+  "lastUpdated": "2026-07-02",
+  "description": "Few-Shot-Beispiele für SupportGPT — schneller, präziser Kunden-Support",
+  "examples": [
+    {
+      "id": "sup-001",
+      "tags": ["lagerung", "lyophilisiert", "kühlkette", "bac-water"],
+      "context": "Kunde fragt nach Lagerung von lyophilisierten Peptiden",
+      "userQuery": "Wie soll ich das lyophilisierte Peptid lagern?",
+      "idealResponse": "Lyophilisierte (gefriergetrocknete) Peptide lagern Sie am besten bei -20°C — das ist die Standardempfehlung für Forschungszwecke.\n\nWichtige Punkte:\n- Trocken und lichtgeschützt lagern\n- Nicht mehrfach einfrieren und auftauen\n- Nach Rekonstitution (Auflösen) bei 4°C lagern und innerhalb von 4 Wochen verwenden\n- Für die Rekonstitution wird in der Forschung typischerweise steriles Wasser oder BAC-Wasser verwendet\n\nBei Raumtemperatur sind lyophilisierte Peptide kurzfristig (Transport, wenige Tage) stabil — für die Langzeitlagerung ist -20°C jedoch essentiell.\n\n*Research Use Only — nicht für den menschlichen Gebrauch.*",
+      "quality": 0.95
+    },
+    {
+      "id": "sup-002",
+      "tags": ["lieferung", "versand", "zoll", "eu", "tracking"],
+      "context": "Kunde fragt nach Lieferung und Versand",
+      "userQuery": "Wie lange dauert die Lieferung?",
+      "idealResponse": "Für genaue Lieferzeiten und Versandoptionen wende dich bitte direkt an unser Team — die aktuellen Lieferzeiten variieren je nach Lagerbestand und Versandregion.\n\nFür EU-Lieferungen arbeiten wir mit zuverlässigen Versandpartnern. Alle Sendungen werden mit Tracking-Nummer verschickt.\n\nKontakt: Nutze bitte unser Kontaktformular oder schreibe uns direkt — wir antworten in der Regel innerhalb von 24 Stunden.\n\n*Research Use Only — nicht für den menschlichen Gebrauch.*",
+      "quality": 0.88
+    },
+    {
+      "id": "sup-003",
+      "tags": ["qualität", "reinheit", "zertifikat", "hplc", "coa"],
+      "context": "Kunde fragt nach Qualitätszertifikat",
+      "userQuery": "Gibt es ein Qualitätszertifikat für das Produkt?",
+      "idealResponse": "Ja — alle unsere Research Compounds werden mit Batch-Zertifikat (Certificate of Analysis, CoA) geliefert.\n\nDas CoA enthält:\n- HPLC-Reinheitsanalyse (>99% Reinheit Standard)\n- Massenspektrometrie-Bestätigung\n- Batch-Nummer und Herstellungsdatum\n- Lagerempfehlungen\n\nDas Zertifikat ist dem Produkt beigelegt oder kann auf Anfrage digital zugeschickt werden. Bei spezifischen Fragen zu einem bestimmten Batch wende dich bitte an unser Team.\n\n*Research Use Only — nicht für den menschlichen Gebrauch.*",
+      "quality": 0.94
+    }
+  ]
+}

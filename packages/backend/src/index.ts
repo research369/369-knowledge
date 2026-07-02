@@ -42,6 +42,7 @@ import factoryRouter from "./routes/factory.router.js";
 import { stacksRouter } from "./routes/stacks.router.js";
 import { agentQueryRouter } from "./routes/agent-query.router.js";
 import adminAuditRouter from "./routes/admin-audit.router.js";
+import { runtimeRouter } from "./routes/runtime.router.js";
 
 const app = express();
 const PORT = process.env.PORT || 4001;
@@ -136,6 +137,7 @@ app.use("/api/factory", factoryRouter);
 app.use("/api/stacks", stacksRouter);
 app.use("/api/agent", agentQueryRouter);
 app.use("/api/admin/entity-audit", adminAuditRouter);
+app.use("/api/runtime", runtimeRouter);
 app.use("/", sitemapRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────

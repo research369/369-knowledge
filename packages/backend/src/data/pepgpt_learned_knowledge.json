@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "agentRole": "pepgpt",
+  "lastUpdated": "2026-07-02",
+  "description": "Few-Shot-Beispiele für PepGPT — wissenschaftliche Peptid-Beratung",
+  "examples": [
+    {
+      "id": "pep-001",
+      "tags": ["bpc-157", "mechanismus", "regeneration", "vegf"],
+      "context": "Nutzer fragt nach Wirkmechanismus von BPC-157",
+      "userQuery": "Wie wirkt BPC-157 auf die Regeneration?",
+      "idealResponse": "BPC-157 ist ein synthetisches Pentadecapeptid, das aus dem Magenprotein BPC (Body Protection Compound) isoliert wurde. Im Forschungskontext zeigt es mehrere interessante Eigenschaften:\n\nDer primäre Mechanismus ist die Aktivierung des VEGF-Signalwegs (Vascular Endothelial Growth Factor), was in Tierstudien mit verstärkter Angiogenese — also der Bildung neuer Blutgefäße — assoziiert wurde. Parallel dazu wurde eine Interaktion mit dem NO-System (Stickstoffmonoxid) beobachtet, das eine zentrale Rolle in der vaskulären Regulation spielt.\n\nIn Tiermodellen zeigte BPC-157 außerdem Effekte auf Tendon-Fibroblasten und die Expression von Wachstumsfaktoren wie EGF und FGF. Diese Beobachtungen stammen jedoch überwiegend aus In-vitro- und Tierstudien — klinische Humanstudien fehlen bisher weitgehend.\n\n*Research Use Only — nicht für den menschlichen Gebrauch.*",
+      "quality": 0.95
+    },
+    {
+      "id": "pep-002",
+      "tags": ["bpc-157", "tb-500", "kombination", "stack", "synergismus"],
+      "context": "Nutzer fragt nach BPC-157 und TB-500 Kombination",
+      "userQuery": "Was ist der Unterschied zwischen BPC-157 und TB-500? Kann man sie kombinieren?",
+      "idealResponse": "BPC-157 und TB-500 (Thymosin Beta-4 Fragment) sind zwei der am intensivsten erforschten regenerativen Peptide — mit unterschiedlichen Schwerpunkten.\n\nBPC-157 wirkt primär lokal: Es aktiviert VEGF-Signalwege, fördert die Angiogenese und zeigt in Tiermodellen starke Effekte auf Sehnen, Bänder und Schleimhäute. Sein Wirkprofil ist eher gewebespezifisch.\n\nTB-500 hingegen ist ein Fragment des Aktin-bindenden Proteins Thymosin Beta-4. Es reguliert die Aktin-Polymerisation, beeinflusst Zellmigration und zeigt in der Forschung systemischere Effekte — insbesondere auf Muskelgewebe und kardiovaskuläre Strukturen.\n\nIn der Forschungsliteratur werden beide Peptide häufig in Kombination untersucht, da sie komplementäre Mechanismen adressieren. Ob diese Kombination synergistisch wirkt, ist Gegenstand aktueller Forschung.\n\n*Research Use Only — nicht für den menschlichen Gebrauch.*",
+      "quality": 0.92
+    },
+    {
+      "id": "pep-003",
+      "tags": ["epithalon", "telomerase", "longevity", "anti-aging"],
+      "context": "Nutzer fragt nach Epithalon und Telomerase",
+      "userQuery": "Was macht Epithalon mit Telomeren?",
+      "idealResponse": "Epithalon (Ala-Glu-Asp-Gly) ist ein synthetisches Tetrapeptid, das ursprünglich aus der Zirbeldrüse isoliert wurde. Im Forschungskontext ist es vor allem für seine Interaktion mit der Telomerase-Aktivität bekannt.\n\nIn Zellkulturstudien wurde gezeigt, dass Epithalon die Expression der Telomerase-Reverse-Transkriptase (hTERT) stimulieren kann — dem katalytischen Kernenzym der Telomerase. Telomerase verlängert Telomere, die schützenden Endkappen der Chromosomen, die sich bei jeder Zellteilung verkürzen.\n\nDarüber hinaus wurde in Tiermodellen eine Normalisierung der Melatonin-Sekretion und eine Modulation von Pinealocyten-Aktivität beobachtet. Die Forschung zu Epithalon ist jedoch noch früh — die meisten Daten stammen aus In-vitro- und Tierstudien. Humanstudien sind begrenzt.\n\n*Research Use Only — nicht für den menschlichen Gebrauch.*",
+      "quality": 0.90
+    },
+    {
+      "id": "pep-004",
+      "tags": ["ghk-cu", "kollagen", "haut", "kupfer", "cosmeceutical"],
+      "context": "Nutzer fragt nach GHK-Cu für die Haut",
+      "userQuery": "Wie wirkt GHK-Cu auf die Haut?",
+      "idealResponse": "GHK-Cu (Glycyl-L-Histidyl-L-Lysin-Kupfer) ist ein natürlich vorkommendes Tripeptid-Kupfer-Komplex, der in der Forschung intensiv für seine Wirkungen auf Hautgewebe untersucht wird.\n\nDie Hauptmechanismen umfassen: Stimulation der Kollagen- und Elastin-Synthese durch Aktivierung von TGF-β-Signalwegen, Förderung der Wundheilung durch Angiogenese-Induktion, antioxidative Wirkung durch Kupfer-abhängige Enzymsysteme sowie Modulation der MMP-Aktivität (Matrix-Metalloproteinasen), die für den Kollagenabbau verantwortlich sind.\n\nIn klinischen Studien mit topischer Anwendung wurden Verbesserungen der Hautelastizität, Reduktion feiner Linien und verbesserte Wundheilung beobachtet. GHK-Cu ist eines der wenigen Peptide mit solider klinischer Datenlage für topische Anwendungen.\n\n*Research Use Only — nicht für den menschlichen Gebrauch.*",
+      "quality": 0.93
+    },
+    {
+      "id": "pep-005",
+      "tags": ["ss-31", "mitochondrien", "mots-c", "longevity", "energie"],
+      "context": "Nutzer fragt nach mitochondrialen Peptiden",
+      "userQuery": "Was sind die besten Peptide für Mitochondrien?",
+      "idealResponse": "Im Bereich der mitochondrialen Forschung sind zwei Peptide besonders relevant: SS-31 und MOTS-c.\n\nSS-31 (Szeto-Schiller Peptid) ist ein mitochondrial-targetiertes Tetrapeptid, das sich selektiv in der inneren Mitochondrienmembran anreichert. Es reduziert in Modellen reaktive Sauerstoffspezies (ROS), stabilisiert Cardiolipin — ein essentielles Phospholipid der inneren Mitochondrienmembran — und verbessert die ATP-Synthese-Effizienz.\n\nMOTS-c ist ein mitochondriales Open Reading Frame-Peptid (mitORP), das über AMPK-Aktivierung den Energiestoffwechsel reguliert. Es wurde in Forschungsmodellen mit verbesserter Insulinsensitivität, erhöhter Fettoxidation und verlängerter Lebensspanne assoziiert.\n\nBeide Peptide adressieren unterschiedliche Aspekte der mitochondrialen Funktion und werden in der Longevity-Forschung als komplementär betrachtet.\n\n*Research Use Only — nicht für den menschlichen Gebrauch.*",
+      "quality": 0.94
+    }
+  ]
+}

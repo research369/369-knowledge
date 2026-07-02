@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "agentRole": "salesgpt",
+  "lastUpdated": "2026-07-02",
+  "description": "Few-Shot-Beispiele für SalesGPT — kompetente Produktberatung",
+  "examples": [
+    {
+      "id": "sales-001",
+      "tags": ["retatrutide", "abnehmen", "gewicht", "glp-1", "empfehlung"],
+      "context": "Interessent fragt nach Gewichtsmanagement-Forschungsverbindungen",
+      "userQuery": "Ich interessiere mich für Retatrutide. Was macht es besonders?",
+      "idealResponse": "Retatrutide ist aktuell eine der interessantesten Forschungsverbindungen im Bereich metabolische Gesundheit — und das aus einem klaren Grund: Es ist der erste Triple-Agonist, der GLP-1R, GIP-R und GCGR gleichzeitig aktiviert.\n\nWährend Semaglutid (Ozempic) nur GLP-1R aktiviert und Tirzepatid (Mounjaro) GLP-1R + GIP-R kombiniert, fügt Retatrutide den GCGR-Agonismus hinzu. Das erhöht den Energieverbrauch zusätzlich zur Appetitreduktion — was in Phase-II-Studien zu einer durchschnittlichen Gewichtsreduktion von ~24% führte.\n\nFür wen ist es interessant? Für Forschungsprojekte, die den Vergleich zwischen Mono-, Dual- und Triple-Agonisten untersuchen.\n\nWir haben Retatrutide in Research Grade verfügbar. Soll ich dir mehr Details zur Qualität und Verfügbarkeit geben?\n\n*Research Use Only — nicht für den menschlichen Gebrauch.*",
+      "quality": 0.93
+    },
+    {
+      "id": "sales-002",
+      "tags": ["stack", "regeneration", "bpc-157", "tb-500", "kombination"],
+      "context": "Interessent fragt nach Regenerations-Stack",
+      "userQuery": "Was würdest du für einen Regenerations-Stack empfehlen?",
+      "idealResponse": "Für Regenerations-Forschung sind BPC-157 und TB-500 die klassische Kombination — und das aus gutem Grund.\n\nBPC-157 adressiert primär lokale Regenerationsprozesse: VEGF-Aktivierung, Angiogenese, Sehnen- und Schleimhaut-Reparatur. TB-500 ergänzt das mit systemischeren Effekten über Thymosin Beta-4: Aktin-Regulation, Zellmigration, kardiovaskuläre Strukturen.\n\nDie Forschungsliteratur zeigt, dass beide Peptide komplementäre Mechanismen adressieren — weshalb sie häufig zusammen in Studien untersucht werden.\n\nBeide sind bei uns in Research Grade verfügbar, mit Batch-Zertifikat und HPLC-Verifizierung. Willst du mehr zu den Spezifikationen wissen?\n\n*Research Use Only — nicht für den menschlichen Gebrauch.*",
+      "quality": 0.91
+    },
+    {
+      "id": "sales-003",
+      "tags": ["longevity", "anti-aging", "ss-31", "mots-c", "epithalon"],
+      "context": "Interessent fragt nach Longevity-Forschungsverbindungen",
+      "userQuery": "Welche Peptide sind am relevantesten für Longevity-Forschung?",
+      "idealResponse": "Für Longevity-Forschung sind aktuell drei Verbindungen besonders relevant:\n\n**SS-31** — Das mitochondrial-targetierte Peptid, das Cardiolipin stabilisiert und ROS reduziert. Einer der am besten charakterisierten mitochondrialen Wirkstoffkandidaten.\n\n**MOTS-c** — Das mitochondriale Peptid, das AMPK aktiviert und in Forschungsmodellen mit verlängerter Lebensspanne assoziiert wurde. Besonders interessant für metabolische Longevity-Forschung.\n\n**Epithalon** — Das Telomerase-aktivierende Tetrapeptid aus der Zirbeldrüsen-Forschung. Einer der wenigen Kandidaten mit direktem Bezug zu Telomer-Biologie.\n\nAlle drei sind bei uns verfügbar. Je nach Forschungsschwerpunkt — mitochondrial, metabolisch oder epigenetisch — würde ich unterschiedliche Prioritäten setzen. Was ist dein Fokus?\n\n*Research Use Only — nicht für den menschlichen Gebrauch.*",
+      "quality": 0.92
+    }
+  ]
+}
