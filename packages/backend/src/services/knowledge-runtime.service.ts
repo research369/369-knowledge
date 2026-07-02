@@ -17,7 +17,7 @@ import { randomUUID } from "crypto";
 import { invokeLLM } from "./llm-provider.service.js";
 import { buildDynamicPrompt, PromptContext } from "./prompt-builder.service.js";
 import { validateResponse, ValidationResult } from "./response-validator.service.js";
-import { loadFewShots } from "./learning-runtime.service.js";
+import { loadFewShots, loadConversationHistory, loadLongTermMemory, persistChatSession, formatLongTermMemoryForPrompt, LongTermMemoryEntry, ConversationMessage } from "./learning-runtime.service.js";
 import { getProductContext } from "./product-runtime.service.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -230,20 +230,34 @@ export async function runKnowledgeRuntime(
     ? await getProductContext(entitySlug)
     : null;
 
-  // 6. Learning Runtime — Few-Shot Loading
-  const fewShots = await loadFewShots(request.agentRole, request.query, 3);
+  // 6. Learning Runtime — Few-Shot Loading + Conversation Memory + Long-Term Memory
+  const sessionId = request.sessionId ?? queryId;
+  const [fewShots, dbConversationHistory, longTermMemory] = await Promise.all([
+    loadFewShots(request.agentRole, request.query, 3, { entitySlug: entitySlug ?? undefined, sessionId }),
+    request.sessionId ? loadConversationHistory(request.sessionId, 8) : Promise.resolve([]),
+    loadLongTermMemory(request.agentRole, entitySlug ?? undefined),
+  ]);
+
+  // Merge: prefer request-provided history, fall back to DB history
+  const conversationHistory = (request.conversationHistory && request.conversationHistory.length > 0)
+    ? request.conversationHistory
+    : dbConversationHistory.map(m => ({ role: m.role, content: m.content }));
+
+  // Format long-term memory for prompt
+  const longTermMemoryText = formatLongTermMemoryForPrompt(longTermMemory);
 
   // 7. Build Prompt
   const promptCtx: PromptContext = {
     agentRole: request.agentRole,
     intent,
     query: request.query,
-    conversationHistory: request.conversationHistory ?? [],
+    conversationHistory,
     knowledge,
     productContext,
     fewShots,
     knowledgeViewUsed: knowledgeView,
     entitySlug: entitySlug ?? undefined,
+    longTermMemoryText,
   };
 
   const { systemPrompt, userPrompt } = buildDynamicPrompt(promptCtx);
@@ -274,9 +288,30 @@ export async function runKnowledgeRuntime(
   // 10. Apply corrections if needed
   const finalAnswer = validation.correctedAnswer ?? rawAnswer;
 
-  // 11. Persist query log
+  // 11. Persist query log + Chat Session (Learning Pipeline)
   const complianceFlags: string[] = knowledge?.agentContext?.complianceFlags ?? ["ruo_only"];
+  const processingMs = Date.now() - startMs;
 
+  // Persist to chat_sessions (triggers learning pipeline)
+  persistChatSession({
+    sessionId,
+    agentRole: request.agentRole,
+    apiKeyId: request.apiKeyId,
+    entityId: knowledge?.entity?.id,
+    entitySlug: entitySlug ?? undefined,
+    query: request.query,
+    response: finalAnswer,
+    intent,
+    knowledgeView,
+    fewShotsUsed: fewShots.length,
+    promptTokens: llmResponse.usage?.prompt_tokens,
+    completionTokens: llmResponse.usage?.completion_tokens,
+    processingMs,
+    validationPassed: validation.passed,
+    complianceFlags,
+  }).catch(() => {}); // fire-and-forget
+
+  // Also log to agentAccessLog
   try {
     await db.insert(agentAccessLog).values({
       id: queryId,
@@ -286,10 +321,10 @@ export async function runKnowledgeRuntime(
       method: "POST",
       entityId: knowledge?.entity?.id ?? null,
       statusCode: 200,
-      durationMs: Date.now() - startMs,
+      durationMs: processingMs,
     });
   } catch {
-    // Non-critical — don't fail the response
+    // Non-critical
   }
 
   return {
@@ -307,7 +342,7 @@ export async function runKnowledgeRuntime(
       knowledgeViewUsed: knowledgeView,
       promptTokens: llmResponse.usage?.prompt_tokens,
       completionTokens: llmResponse.usage?.completion_tokens,
-      processingMs: Date.now() - startMs,
+      processingMs,
     },
   };
 }

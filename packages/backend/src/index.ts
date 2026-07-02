@@ -20,6 +20,7 @@ import { runStacksMigration } from "./db/migrate-stacks.js";
 import { runRetatrutideSeedMigration } from "./db/migrate-retatrutide-seed.js";
 import { runAllMigrations } from "./db/migration-runner.js";
 import { seedOntology } from "./db/seed-ontology.js";
+import { migrateLearningPipeline } from "./db/migrate-learning-pipeline.js";
 
 import { entitiesRouter } from "./routes/entities.router.js";
 import { relationsRouter } from "./routes/relations.router.js";
@@ -169,6 +170,7 @@ async function startServer() {
     { name: "Stacks",                  fn: runStacksMigration },
     { name: "Retatrutide Seed",         fn: runRetatrutideSeedMigration },
     { name: "Ontology Seed",              fn: seedOntology },
+    { name: "Learning Pipeline",           fn: migrateLearningPipeline },
   ]);
 
   app.listen(PORT, () => {

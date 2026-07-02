@@ -37,6 +37,7 @@ export interface PromptContext {
   fewShots: FewShotExample[];
   knowledgeViewUsed: string;
   entitySlug?: string;
+  longTermMemoryText?: string;
 }
 
 export interface BuiltPrompt {
@@ -334,6 +335,9 @@ export function buildDynamicPrompt(ctx: PromptContext): BuiltPrompt {
 
   // 3. Intent
   systemParts.push(buildIntentContext(ctx.intent));
+
+  // 4. Long-Term Memory (wenn vorhanden)
+  if (ctx.longTermMemoryText) systemParts.push(ctx.longTermMemoryText);
 
   // 5. Knowledge OS
   systemParts.push(buildKnowledgeContext(ctx.knowledge, ctx.knowledgeViewUsed));

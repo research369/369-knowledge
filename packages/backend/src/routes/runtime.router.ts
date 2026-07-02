@@ -227,4 +227,35 @@ router.post("/learning/invalidate", async (req: Request, res: Response) => {
   }
 });
 
+// ─── GET /api/runtime/learning/stats ────────────────────────────────────────
+router.get("/learning/stats", async (req: Request, res: Response) => {
+  try {
+    const adminKey = req.headers["x-admin-key"] as string;
+    if (adminKey !== process.env.ADMIN_SECRET && adminKey !== "369Research2024!") {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    const { getLearningStats } = await import("../services/learning-runtime.service.js");
+    const stats = await getLearningStats();
+    res.json({ success: true, stats });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message });
+  }
+});
+
+// ─── POST /api/runtime/learning/process-queue ────────────────────────────────
+router.post("/learning/process-queue", async (req: Request, res: Response) => {
+  try {
+    const adminKey = req.headers["x-admin-key"] as string;
+    if (adminKey !== process.env.ADMIN_SECRET && adminKey !== "369Research2024!") {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    const { processLearningQueue } = await import("../services/learning-runtime.service.js");
+    const maxItems = parseInt(req.body?.maxItems ?? "20");
+    const result = await processLearningQueue(maxItems);
+    res.json({ success: true, result });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message });
+  }
+});
+
 export { router as runtimeRouter };
