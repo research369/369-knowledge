@@ -20,7 +20,7 @@
  * 12. Output Regeln
  */
 
-import type { AgentRole, ConversationTurn, KnowledgeView } from "./knowledge-runtime.service.js";
+import type { AgentRole, ConversationTurn, KnowledgeView, UserLevel } from "./knowledge-runtime.service.js";
 import type { ProductContext } from "./product-runtime.service.js";
 import type { FewShotExample } from "./learning-runtime.service.js";
 import { formatFewShotsForPrompt } from "./learning-runtime.service.js";
@@ -38,6 +38,7 @@ export interface PromptContext {
   knowledgeViewUsed: string;
   entitySlug?: string;
   longTermMemoryText?: string;
+  userLevel?: UserLevel;
 }
 
 export interface BuiltPrompt {
@@ -300,6 +301,24 @@ function buildSEOContext(knowledge: KnowledgeView | null, intent: string): strin
 **Keywords:** ${(entity.seoKeywords ?? []).join(", ")}`;
 }
 
+// ─── 3b. User Level Adaption ────────────────────────────────────────────────────
+
+function buildUserLevelContext(level: UserLevel): string {
+  const descriptions: Record<UserLevel, string> = {
+    beginner: `## Nutzer-Level: Einsteiger
+Der Nutzer hat wenig Vorwissen. Erkläre Begriffe, vermeide Fachjargon und nutze Analogien.
+Maximale Verständlichkeit. Keine überflüssigen Fachbegriffe.`,
+    advanced: `## Nutzer-Level: Fortgeschritten
+Der Nutzer kennt Grundlagen. Fachbegriffe sind erlaubt, aber kurz erklären.
+Kombinationen und Mechanismen dürfen detaillierter behandelt werden.`,
+    expert: `## Nutzer-Level: Experte
+Der Nutzer hat tiefes Fachwissen. Volle wissenschaftliche Präzision.
+Signalwege, Rezeptoren, Studiendesigns, Biomarker — alles ohne Vereinfachung.
+Fachbegriffe ohne Erklärung verwenden.`,
+  };
+  return descriptions[level];
+}
+
 // ─── 12. Output Rules ────────────────────────────────────────────────────────
 
 function buildOutputRules(agentRole: AgentRole, intent: string): string {
@@ -335,6 +354,9 @@ export function buildDynamicPrompt(ctx: PromptContext): BuiltPrompt {
 
   // 3. Intent
   systemParts.push(buildIntentContext(ctx.intent));
+
+  // 3b. User Level Adaption
+  if (ctx.userLevel) systemParts.push(buildUserLevelContext(ctx.userLevel));
 
   // 4. Long-Term Memory (wenn vorhanden)
   if (ctx.longTermMemoryText) systemParts.push(ctx.longTermMemoryText);

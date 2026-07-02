@@ -119,6 +119,7 @@ router.post("/query", async (req: Request, res: Response) => {
       sessionId,
       agentRole: roleOverride,
       outputScope,
+      userLevel,
     } = req.body;
 
     if (!query || typeof query !== "string" || query.trim().length === 0) {
@@ -149,6 +150,7 @@ router.post("/query", async (req: Request, res: Response) => {
       sessionId: sessionId ?? undefined,
       apiKeyId: auth.keyRecord.id,
       outputScope: outputScope ?? undefined,
+      userLevel: userLevel ?? undefined,
     });
 
     res.json(result);

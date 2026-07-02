@@ -24,6 +24,8 @@ import { getProductContext } from "./product-runtime.service.js";
 
 export type AgentRole = "pepgpt" | "salesgpt" | "supportgpt" | "academy" | "content";
 
+export type UserLevel = "beginner" | "advanced" | "expert";
+
 export interface RuntimeRequest {
   agentRole: AgentRole;
   query: string;
@@ -32,6 +34,7 @@ export interface RuntimeRequest {
   sessionId?: string;
   apiKeyId?: string;
   outputScope?: "portal" | "shop" | "academy" | "agent" | "seo";
+  userLevel?: UserLevel; // Optional: Beginner / Advanced / Expert
 }
 
 export interface ConversationTurn {
@@ -53,6 +56,7 @@ export interface RuntimeResponse {
   meta: {
     intentDetected: string;
     knowledgeViewUsed: string;
+    userLevelDetected: string;
     promptTokens?: number;
     completionTokens?: number;
     processingMs: number;
@@ -202,6 +206,19 @@ export async function resolveEntityFromQuery(query: string): Promise<string | nu
   return null;
 }
 
+// ─── User Level Detection ────────────────────────────────────────────────────
+
+export function detectUserLevel(query: string, history: ConversationTurn[]): UserLevel {
+  const expertTerms = /signalweg|rezeptor|phosphorylierung|mrna|transkription|kinase|peptidsequenz|aminosäure|halbwertszeit|bioavailabilität|pharmakokinetik|in vitro|in vivo|randomisiert|kontrolliert|placebo|meta-analyse/i;
+  const advancedTerms = /mechanismus|studie|evidenz|forschung|stack|kombination|synerg|protokoll|dosier|wirkung|effekt|peptid|compound/i;
+
+  const allText = query + " " + history.map(h => h.content).join(" ");
+
+  if (expertTerms.test(allText)) return "expert";
+  if (advancedTerms.test(allText)) return "advanced";
+  return "beginner";
+}
+
 // ─── Main Runtime Function ────────────────────────────────────────────────────
 
 export async function runKnowledgeRuntime(
@@ -246,6 +263,9 @@ export async function runKnowledgeRuntime(
   // Format long-term memory for prompt
   const longTermMemoryText = formatLongTermMemoryForPrompt(longTermMemory);
 
+  // 6b. Auto-detect user level from conversation history if not provided
+  const userLevel: UserLevel = request.userLevel ?? detectUserLevel(request.query, conversationHistory);
+
   // 7. Build Prompt
   const promptCtx: PromptContext = {
     agentRole: request.agentRole,
@@ -258,6 +278,7 @@ export async function runKnowledgeRuntime(
     knowledgeViewUsed: knowledgeView,
     entitySlug: entitySlug ?? undefined,
     longTermMemoryText,
+    userLevel,
   };
 
   const { systemPrompt, userPrompt } = buildDynamicPrompt(promptCtx);
@@ -340,6 +361,7 @@ export async function runKnowledgeRuntime(
     meta: {
       intentDetected: intent,
       knowledgeViewUsed: knowledgeView,
+      userLevelDetected: userLevel,
       promptTokens: llmResponse.usage?.prompt_tokens,
       completionTokens: llmResponse.usage?.completion_tokens,
       processingMs,
