@@ -21,6 +21,7 @@ import { runRetatrutideSeedMigration } from "./db/migrate-retatrutide-seed.js";
 import { runAllMigrations } from "./db/migration-runner.js";
 import { seedOntology } from "./db/seed-ontology.js";
 import { migrateLearningPipeline } from "./db/migrate-learning-pipeline.js";
+import { runPhase3EvolutionMigration } from "./db/migrate-phase3-evolution.js";
 
 import { entitiesRouter } from "./routes/entities.router.js";
 import { relationsRouter } from "./routes/relations.router.js";
@@ -44,6 +45,7 @@ import { stacksRouter } from "./routes/stacks.router.js";
 import { agentQueryRouter } from "./routes/agent-query.router.js";
 import adminAuditRouter from "./routes/admin-audit.router.js";
 import { runtimeRouter } from "./routes/runtime.router.js";
+import evolutionRouter from "./routes/evolution.router.js";
 
 const app = express();
 const PORT = process.env.PORT || 4001;
@@ -139,6 +141,7 @@ app.use("/api/stacks", stacksRouter);
 app.use("/api/agent", agentQueryRouter);
 app.use("/api/admin/entity-audit", adminAuditRouter);
 app.use("/api/runtime", runtimeRouter);
+app.use("/api/evolution", evolutionRouter);
 app.use("/", sitemapRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
@@ -171,6 +174,7 @@ async function startServer() {
     { name: "Retatrutide Seed",         fn: runRetatrutideSeedMigration },
     { name: "Ontology Seed",              fn: seedOntology },
     { name: "Learning Pipeline",           fn: migrateLearningPipeline },
+    { name: "Phase 3 Evolution",             fn: runPhase3EvolutionMigration },
   ]);
 
   app.listen(PORT, () => {
