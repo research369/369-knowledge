@@ -50,6 +50,40 @@ const ALLOWED_RELATIONS = [
   // Guide
   { from: "guide", rel: "relevant_for", to: "compound" },
   { from: "guide", rel: "relevant_for", to: "biological_process" },
+  // Peptide relations (same as compound but for peptide type)
+  { from: "peptide", rel: "activates", to: "pathway" },
+  { from: "peptide", rel: "activates", to: "protein" },
+  { from: "peptide", rel: "activates", to: "receptor" },
+  { from: "peptide", rel: "activates", to: "mechanism" },
+  { from: "peptide", rel: "inhibits", to: "pathway" },
+  { from: "peptide", rel: "inhibits", to: "protein" },
+  { from: "peptide", rel: "influences", to: "biological_process" },
+  { from: "peptide", rel: "influences", to: "organ" },
+  { from: "peptide", rel: "improves", to: "biological_process" },
+  { from: "peptide", rel: "improves", to: "mechanism" },
+  { from: "peptide", rel: "relevant_for", to: "disease" },
+  { from: "peptide", rel: "relevant_for", to: "biological_process" },
+  { from: "peptide", rel: "combined_with", to: "peptide" },
+  { from: "peptide", rel: "combined_with", to: "compound" },
+  { from: "peptide", rel: "synergizes_with", to: "peptide" },
+  { from: "peptide", rel: "synergizes_with", to: "compound" },
+  { from: "peptide", rel: "belongs_to", to: "biological_process" },
+  // Compound: add missing relation types
+  { from: "compound", rel: "improves", to: "biological_process" },
+  { from: "compound", rel: "improves", to: "mechanism" },
+  { from: "compound", rel: "activates", to: "mechanism" },
+  { from: "compound", rel: "synergizes_with", to: "compound" },
+  { from: "compound", rel: "synergizes_with", to: "peptide" },
+  // Mechanism relations
+  { from: "mechanism", rel: "influences", to: "biological_process" },
+  { from: "mechanism", rel: "relevant_for", to: "biological_process" },
+  { from: "mechanism", rel: "activates", to: "pathway" },
+  { from: "mechanism", rel: "activates", to: "protein" },
+  { from: "mechanism", rel: "is_part_of", to: "pathway" },
+  // FAQ: add missing targets
+  { from: "faq", rel: "answers", to: "peptide" },
+  { from: "faq", rel: "answers", to: "biological_process" },
+  { from: "faq", rel: "answers", to: "mechanism" },
 ] as const;
 
 const FORBIDDEN_RELATIONS = [
