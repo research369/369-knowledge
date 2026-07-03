@@ -180,7 +180,7 @@ async function buildEntityContext(entityId: string): Promise<any | null> {
   // Entity-Grunddaten
   const entityRows = await db.execute(sql`
     SELECT e.id, e.slug, e.type, e.canonical_name, e.lifecycle_status,
-           e.agent_summary, e.agent_confidence_score,
+           e.agent_research_context, e.agent_confidence_score,
            e.shop_headline, e.shop_bullet_points,
            e.academy_learning_goals, e.academy_difficulty,
            kes.knowledge_score, kes.research_score, kes.evidence_score,
@@ -228,7 +228,7 @@ async function buildEntityContext(entityId: string): Promise<any | null> {
     slug: entity.slug,
     type: entity.type,
     name: entity.canonical_name,
-    agentSummary: entity.agent_summary,
+    agentSummary: entity.agent_research_context,
     shopHeadline: entity.shop_headline,
     shopBulletPoints: entity.shop_bullet_points ?? [],
     academyLearningGoals: entity.academy_learning_goals ?? [],
