@@ -151,7 +151,7 @@ async function computeAllScores(
 
   // Quellen laden
   const sources = await db.execute(sql`
-    SELECT study_type, evidence_level, publication_year, quality_score
+    SELECT study_type, evidence_level, year, quality_score
     FROM sources
     WHERE linked_entity_ids::text LIKE ${'%' + entityId + '%'}
   `) as any[];
@@ -209,7 +209,7 @@ async function computeAllScores(
     return Math.max(max, w);
   }, 0);
   const avgQuality = totalSources > 0
-    ? sources.reduce((sum: number, s: any) => sum + (s.quality_score ?? 50), 0) / totalSources / 100
+    ? sources.reduce((sum: number, s: any) => sum + (s.quality_score ?? 3), 0) / totalSources / 5
     : 0;
   const evidenceScore = Math.min(1.0, maxEvidence * 0.7 + avgQuality * 0.3);
 
@@ -217,7 +217,7 @@ async function computeAllScores(
   // Aktualität der Quellen (letzte 5 Jahre = 1.0, älter = linear fallend)
   const currentYear = new Date().getFullYear();
   const years = sources
-    .map((s: any) => s.publication_year)
+    .map((s: any) => s.year)
     .filter((y: any) => y && y > 1990);
   const newestYear = years.length > 0 ? Math.max(...years) : null;
   const freshnessScore = newestYear

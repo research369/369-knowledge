@@ -204,7 +204,7 @@ async function buildEntityContext(entityId: string): Promise<any | null> {
 
   // Quellen
   const sources = await db.execute(sql`
-    SELECT title, authors, publication_year, study_type, evidence_level, doi, pmid
+    SELECT title, authors, year, study_type, evidence_level, doi, pmid
     FROM sources
     WHERE linked_entity_ids::text LIKE ${'%' + entityId + '%'}
     LIMIT 10
@@ -242,7 +242,7 @@ async function buildEntityContext(entityId: string): Promise<any | null> {
     })),
     sources: sources.map((s: any) => ({
       title: s.title,
-      year: s.publication_year,
+      year: s.year,
       studyType: s.study_type,
       evidenceLevel: s.evidence_level,
       doi: s.doi,
