@@ -113,7 +113,7 @@ export async function computeBusinessScores(entityId: string): Promise<BusinessS
 
   // 6. Stack/Bundle-Zugehörigkeit
   const stackRows = await db.execute(
-    sql`SELECT COUNT(*) as cnt FROM relations WHERE (from_entity_id = ${entityId} OR to_entity_id = ${entityId}) AND relation_type IN ('belongs_to_stack', 'synergizes_with', 'part_of_bundle')`
+    sql`SELECT COUNT(*) as cnt FROM relations WHERE (from_entity_id = ${entityId} OR to_entity_id = ${entityId}) AND relation_type IN ('synergizes_with', 'has_stack', 'combined_with')`
   ) as any[];
   const stackCount = parseInt((stackRows[0] as any)?.cnt || '0');
 
