@@ -79,7 +79,7 @@ const BUSINESS_WEIGHTS = {
 export async function computeBusinessScores(entityId: string): Promise<BusinessScores> {
   // 1. Entity-Basisdaten laden
   const entityRows = await db.execute(
-    sql`SELECT id, slug, type, lifecycle_status, agent_research_context, shop_visible, academy_visible
+    sql`SELECT id, slug, type, lifecycle_status, agent_research_context
         FROM entities WHERE id = ${entityId} LIMIT 1`
   ) as any[];
   const entity = entityRows[0];
@@ -117,9 +117,9 @@ export async function computeBusinessScores(entityId: string): Promise<BusinessS
   ) as any[];
   const stackCount = parseInt((stackRows[0] as any)?.cnt || '0');
 
-  // 7. Generierte Content-Typen (aus aiGenerationLog)
+  // 7. Generierte Content-Typen (aus content_versions — neue Pre-Freeze Tabelle)
   const genRows = await db.execute(
-    sql`SELECT COUNT(DISTINCT output_type) as cnt FROM ai_generation_log WHERE entity_id = ${entityId} AND status = 'success'`
+    sql`SELECT COUNT(DISTINCT output_type) as cnt FROM content_versions WHERE entity_id = ${entityId} AND status = 'generated'`
   ) as any[];
   const generatedTypes = parseInt((genRows[0] as any)?.cnt || '0');
 
@@ -136,11 +136,11 @@ export async function computeBusinessScores(entityId: string): Promise<BusinessS
   // Clinical Relevance: Quellen + Agent-Kontext vorhanden
   const clinicalRelevance = Math.min(1, (sourceCount / 5) * 0.6 + (entity.agent_research_context ? 0.4 : 0));
 
-  // Commercial Value: Shop + Academy sichtbar + Blocks vorhanden
+  // Commercial Value: Blocks vorhanden + Relations (shop_visible/academy_visible nicht in DB)
   const commercialValue = Math.min(1,
-    (entity.shop_visible ? 0.4 : 0) +
-    (entity.academy_visible ? 0.3 : 0) +
-    Math.min(0.3, totalBlocks / 20 * 0.3)
+    Math.min(0.5, totalBlocks / 10 * 0.5) +
+    Math.min(0.3, relationCount / 15 * 0.3) +
+    (entity.agent_research_context ? 0.2 : 0)
   );
 
   // SEO Opportunity: SEO-Block vorhanden + Relations
