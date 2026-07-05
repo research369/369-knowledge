@@ -24,6 +24,7 @@ import { migrateLearningPipeline } from "./db/migrate-learning-pipeline.js";
 import { runPhase3EvolutionMigration } from "./db/migrate-phase3-evolution.js";
 import { runOrchestratorMigration } from "./db/migrate-orchestrator.js";
 import { migratePhase5Collective } from "./db/migrate-phase5-collective.js";
+import { migratePreFreezeVersioning } from "./db/migrate-prefreeze-versioning.js";
 
 import { entitiesRouter } from "./routes/entities.router.js";
 import { relationsRouter } from "./routes/relations.router.js";
@@ -50,6 +51,7 @@ import { runtimeRouter } from "./routes/runtime.router.js";
 import evolutionRouter from "./routes/evolution.router.js";
 import orchestratorRouter from "./routes/orchestrator.router.js";
 import collectiveRouter from "./routes/collective.router.js";
+import prefreezeRouter from "./routes/prefreeze.router.js";
 
 const app = express();
 const PORT = process.env.PORT || 4001;
@@ -108,7 +110,7 @@ app.get("/health", async (_req, res) => {
     res.json({
       status: "ok",
       service: "369-knowledge-api",
-      version: "5.0.0",
+      version: "6.0.0",
       db: "connected",
       timestamp: new Date().toISOString(),
     });
@@ -148,6 +150,7 @@ app.use("/api/runtime", runtimeRouter);
 app.use("/api/evolution", evolutionRouter);
 app.use("/api/orchestrator", orchestratorRouter);
 app.use("/api/collective", collectiveRouter);
+app.use("/api/prefreeze", prefreezeRouter);
 app.use("/", sitemapRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
@@ -183,6 +186,7 @@ async function startServer() {
     { name: "Phase 3 Evolution",             fn: runPhase3EvolutionMigration },
     { name: "Phase 4 Orchestrator",            fn: runOrchestratorMigration },
     { name: "Phase 5 Collective Intelligence",  fn: migratePhase5Collective },
+    { name: "Pre-Freeze Versioning",              fn: migratePreFreezeVersioning },
   ]);
 
   app.listen(PORT, () => {
