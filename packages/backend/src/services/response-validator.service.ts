@@ -85,7 +85,8 @@ function checkDosageScope(answer: string, ctx: ValidationContext): string[] {
 
   for (const pattern of DOSAGE_PATTERNS) {
     if (pattern.test(answer)) {
-      warnings.push(`SCOPE: Dosierungsangabe in ${ctx.agentRole}-Antwort erkannt — nur in Academy erlaubt`);
+      // FIX: Dosierungsangaben außerhalb der Academy sind HARD ERRORS → validationPassed:false
+      warnings.push(`DOSAGE_VIOLATION: Konkrete Dosierungsangabe in ${ctx.agentRole}-Antwort erkannt — nicht erlaubt außerhalb der Academy (RUO-Compliance)`);
     }
     pattern.lastIndex = 0;
   }
@@ -188,8 +189,10 @@ export function validateResponse(
   allWarnings.push(...checkKnowledgeConsistency(answer, ctx.knowledge));
 
   // Hard errors (would block response)
+  // FIX: DOSAGE_VIOLATION und schwere COMPLIANCE-Fehler sind Hard Errors
   const hardErrors = allWarnings.filter(w =>
-    w.startsWith("COMPLIANCE:") && w.includes("heilt")
+    w.startsWith("DOSAGE_VIOLATION:") ||
+    (w.startsWith("COMPLIANCE:") && (w.includes("heilt") || w.includes("behandelt") || w.includes("diagnostiziert") || w.includes("zugelassen")))
   );
 
   const passed = hardErrors.length === 0;
