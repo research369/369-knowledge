@@ -308,18 +308,41 @@ async function findExistingRelation(fromEntityId: string, toEntityId: string, re
 }
 
 /**
- * Prüft ob eine Quelle mit dieser PMID bereits global existiert.
+ * Prüft ob eine Quelle mit dieser PMID oder DOI bereits global existiert.
  * Gibt { id, linkedEntityIds } zurück oder null.
  */
+async function findExistingSourceByPmidOrDoi(
+  pmid: string | undefined,
+  doi: string | undefined
+): Promise<{ id: string; linkedEntityIds: string[] } | null> {
+  // Zuerst PMID prüfen (eindeutiger Identifier)
+  if (pmid) {
+    const byPmid = await db
+      .select({ id: sources.id, linkedEntityIds: sources.linkedEntityIds })
+      .from(sources)
+      .where(eq(sources.pmid, pmid))
+      .limit(1);
+    if (byPmid.length > 0) {
+      return { id: byPmid[0].id, linkedEntityIds: (byPmid[0].linkedEntityIds as string[]) ?? [] };
+    }
+  }
+  // Dann DOI prüfen
+  if (doi) {
+    const byDoi = await db
+      .select({ id: sources.id, linkedEntityIds: sources.linkedEntityIds })
+      .from(sources)
+      .where(eq(sources.doi, doi))
+      .limit(1);
+    if (byDoi.length > 0) {
+      return { id: byDoi[0].id, linkedEntityIds: (byDoi[0].linkedEntityIds as string[]) ?? [] };
+    }
+  }
+  return null;
+}
+
+/** @deprecated Verwende findExistingSourceByPmidOrDoi */
 async function findExistingSourceByPmid(pmid: string | undefined): Promise<{ id: string; linkedEntityIds: string[] } | null> {
-  if (!pmid) return null;
-  const existing = await db
-    .select({ id: sources.id, linkedEntityIds: sources.linkedEntityIds })
-    .from(sources)
-    .where(eq(sources.pmid, pmid))
-    .limit(1);
-  if (existing.length === 0) return null;
-  return { id: existing[0].id, linkedEntityIds: (existing[0].linkedEntityIds as string[]) ?? [] };
+  return findExistingSourceByPmidOrDoi(pmid, undefined);
 }
 
 /**
@@ -463,8 +486,8 @@ router.post("/generate", requireAdmin, async (req: Request, res: Response) => {
     // 6. Quellen einfügen (mit globalem PMID-Idempotenz-Check)
     const sourceResults: { id: string; pmid: string | null; action: "created" | "linked" | "skipped" }[] = [];
     for (const s of generated.sources) {
-      // Globale PMID-Prüfung: existiert diese PMID bereits in der DB?
-      const globalExisting = await findExistingSourceByPmid(s.pmid);
+      // Globale PMID/DOI-Prüfung: existiert diese Quelle bereits in der DB?
+      const globalExisting = await findExistingSourceByPmidOrDoi(s.pmid, s.doi);
       if (globalExisting) {
         // PMID existiert bereits global
         if (globalExisting.linkedEntityIds.includes(entityId)) {
@@ -639,7 +662,7 @@ router.post("/generate-for/:id", requireAdmin, async (req: Request, res: Respons
     // 3. Quellen — IDEMPOTENT: globale PMID-Prüfung + linkedEntityIds Update
     const sourceResults: { id: string; pmid: string | null; action: "created" | "linked" | "skipped" }[] = [];
     for (const s of generated.sources) {
-      const globalExisting = await findExistingSourceByPmid(s.pmid);
+      const globalExisting = await findExistingSourceByPmidOrDoi(s.pmid, s.doi);
       if (globalExisting) {
         if (globalExisting.linkedEntityIds.includes(id)) {
           log.warnings.push(`Quelle PMID:${s.pmid} bereits verknüpft`);
