@@ -1384,3 +1384,178 @@ export const knowledgeModules = pgTable(
 
 export type KnowledgeModule = typeof knowledgeModules.$inferSelect;
 export type NewKnowledgeModule = typeof knowledgeModules.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// KNOWLEDGE REASONING LAYER (v8.0.0)
+// Dritte Ebene des 369 Knowledge OS
+// Zielbasierte Entscheidungslogik — ausschließlich strukturierte JSON-Daten
+// Keine Texte, keine Antworten, keine Gesprächslogik
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+export const reasoningModuleTypeEnum = pgEnum("reasoning_module_type", [
+  "goal_tree",           // Zielstruktur: Fettverlust, Muskelaufbau, etc.
+  "qualification_tree",  // Welche Infos zuerst sammeln
+  "decision_tree_v2",    // Wenn/Dann/Sonst — nicht produktbezogen
+  "stack_strategy",      // Anfänger/Fortgeschritten/Performance/Minimal/Premium/Budget
+  "monitoring_strategy", // Wann, welche Blutwerte, welche Marker, welche Intervalle
+  "risk_strategy",       // Warnungen und Eskalationsauslöser
+  "alternative_strategy",// Alternativen wenn Compound X nicht verfügbar/geeignet
+  "conversation_strategy",// Meta: wie qualifizieren, wann Produkt nennen, etc.
+  "sales_strategy",      // Meta: Kaufgründe, Einwände, Trigger, Vergleichsmerkmale
+  "coach_strategy",      // Meta: Anfängerfehler, Plateaus, wann pausieren
+]);
+
+export const reasoningStatusEnum = pgEnum("reasoning_status", [
+  "draft",
+  "review",
+  "active",
+  "archived",
+]);
+
+export const reasoningNodeTypeEnum = pgEnum("reasoning_node_type", [
+  "goal",       // Ziel (Fettverlust, Muskelaufbau, etc.)
+  "compound",   // Produkt/Compound
+  "stack",      // Kombination
+  "monitoring", // Monitoring-Schritt
+  "bloodwork",  // Blutwert
+  "risk",       // Risiko/Warnung
+  "decision",   // Entscheidungspunkt
+  "symptom",    // Symptom/Beobachtung
+  "user_type",  // Nutzertyp (Anfänger, Fortgeschritten, etc.)
+  "next_step",  // Nächster Schritt
+]);
+
+export const reasoningEdgeTypeEnum = pgEnum("reasoning_edge_type", [
+  "leads_to",        // A führt zu B
+  "requires",        // A erfordert B
+  "recommends",      // A empfiehlt B
+  "contraindicates", // A kontraindiziert B
+  "monitors",        // A überwacht B
+  "escalates_to",    // A eskaliert zu B
+  "alternative_to",  // A ist Alternative zu B
+  "part_of_stack",   // A ist Teil von Stack B
+  "precedes",        // A kommt vor B
+  "follows",         // A folgt auf B
+]);
+
+// ─── knowledge_reasoning Tabelle ─────────────────────────────────────────────
+// Reasoning-Module: zielbasierte Entscheidungslogik
+// Kann entity-gebunden (entitySlug gesetzt) oder global (entitySlug = null) sein
+
+export const knowledgeReasoning = pgTable(
+  "knowledge_reasoning",
+  {
+    id: varchar("id", { length: 36 }).primaryKey(),
+
+    // Kontext: entweder entity-gebunden oder global (goal-basiert)
+    entityId: varchar("entity_id", { length: 36 }),    // nullable: global wenn null
+    entitySlug: varchar("entity_slug", { length: 500 }), // nullable
+    goalContext: varchar("goal_context", { length: 200 }), // z.B. "fat_loss", "muscle_gain"
+
+    // Modul-Typ
+    moduleType: reasoningModuleTypeEnum("module_type").notNull(),
+
+    // Inhalt — immer strukturiertes JSON
+    content: text("content").notNull(), // JSON-String
+
+    // Agenten-Zugriff
+    allowedAgents: jsonb("allowed_agents").notNull().default('["pepgpt","salesgpt","supportgpt"]'),
+
+    // Status
+    status: reasoningStatusEnum("status").notNull().default("draft"),
+
+    // Qualität
+    confidenceScore: real("confidence_score").default(0.8),
+    isHighRisk: boolean("is_high_risk").notNull().default(false),
+
+    // Versionierung
+    version: integer("version").notNull().default(1),
+    generatedBy: varchar("generated_by", { length: 200 }).default("llm"),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    entityModuleIdx: index("kr_entity_module_idx").on(t.entityId, t.moduleType),
+    goalModuleIdx: index("kr_goal_module_idx").on(t.goalContext, t.moduleType),
+    statusIdx: index("kr_status_idx").on(t.status),
+  })
+);
+
+// ─── reasoning_graph_nodes Tabelle ───────────────────────────────────────────
+// Knoten des Knowledge Reasoning Graphs
+// Verbindet Ziele, Compounds, Stacks, Monitoring, Blutwerte, Risiken
+
+export const reasoningGraphNodes = pgTable(
+  "reasoning_graph_nodes",
+  {
+    id: varchar("id", { length: 36 }).primaryKey(),
+
+    // Knoten-Identität
+    nodeType: reasoningNodeTypeEnum("node_type").notNull(),
+    label: varchar("label", { length: 500 }).notNull(), // Anzeigename
+    slug: varchar("slug", { length: 500 }).notNull(),   // URL-safe ID
+
+    // Verknüpfung zu bestehenden Entities
+    entityId: varchar("entity_id", { length: 36 }),     // nullable
+    entitySlug: varchar("entity_slug", { length: 500 }), // nullable
+
+    // Metadaten
+    description: text("description"),
+    metadata: jsonb("metadata").default("{}"),
+
+    // Status
+    isActive: boolean("is_active").notNull().default(true),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    slugIdx: index("rgn_slug_idx").on(t.slug),
+    nodeTypeIdx: index("rgn_type_idx").on(t.nodeType),
+    entityIdx: index("rgn_entity_idx").on(t.entityId),
+  })
+);
+
+// ─── reasoning_graph_edges Tabelle ───────────────────────────────────────────
+// Kanten des Knowledge Reasoning Graphs
+// Verbindet Knoten mit typisierten Beziehungen
+
+export const reasoningGraphEdges = pgTable(
+  "reasoning_graph_edges",
+  {
+    id: varchar("id", { length: 36 }).primaryKey(),
+
+    // Kante
+    fromNodeId: varchar("from_node_id", { length: 36 }).notNull(),
+    toNodeId: varchar("to_node_id", { length: 36 }).notNull(),
+    edgeType: reasoningEdgeTypeEnum("edge_type").notNull(),
+
+    // Kontext
+    condition: text("condition"),   // Wenn-Bedingung (optional)
+    weight: real("weight").default(1.0), // Relevanz-Gewicht
+    metadata: jsonb("metadata").default("{}"),
+
+    // Status
+    isActive: boolean("is_active").notNull().default(true),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    fromIdx: index("rge_from_idx").on(t.fromNodeId),
+    toIdx: index("rge_to_idx").on(t.toNodeId),
+    edgeTypeIdx: index("rge_type_idx").on(t.edgeType),
+    // Unique-Constraint: keine doppelten Kanten gleichen Typs
+    uniqueEdge: index("rge_unique_idx").on(t.fromNodeId, t.toNodeId, t.edgeType),
+  })
+);
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type KnowledgeReasoning = typeof knowledgeReasoning.$inferSelect;
+export type NewKnowledgeReasoning = typeof knowledgeReasoning.$inferInsert;
+export type ReasoningGraphNode = typeof reasoningGraphNodes.$inferSelect;
+export type NewReasoningGraphNode = typeof reasoningGraphNodes.$inferInsert;
+export type ReasoningGraphEdge = typeof reasoningGraphEdges.$inferSelect;
+export type NewReasoningGraphEdge = typeof reasoningGraphEdges.$inferInsert;
