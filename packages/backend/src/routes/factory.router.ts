@@ -308,21 +308,27 @@ async function findExistingRelation(fromEntityId: string, toEntityId: string, re
 }
 
 /**
- * Prüft ob eine Quelle mit dieser PMID bereits für diese Entity existiert.
+ * Prüft ob eine Quelle mit dieser PMID bereits global existiert.
+ * Gibt { id, linkedEntityIds } zurück oder null.
  */
-async function findExistingSource(entityId: string, pmid: string | undefined): Promise<boolean> {
-  if (!pmid) return false;
+async function findExistingSourceByPmid(pmid: string | undefined): Promise<{ id: string; linkedEntityIds: string[] } | null> {
+  if (!pmid) return null;
   const existing = await db
-    .select({ id: sources.id })
+    .select({ id: sources.id, linkedEntityIds: sources.linkedEntityIds })
     .from(sources)
     .where(eq(sources.pmid, pmid))
     .limit(1);
-  if (existing.length === 0) return false;
-  // Prüfe ob entityId in linkedEntityIds
-  const src = await db.select({ linkedEntityIds: sources.linkedEntityIds }).from(sources)
-    .where(eq(sources.pmid, pmid)).limit(1);
-  const linked = src[0]?.linkedEntityIds as string[] ?? [];
-  return linked.includes(entityId);
+  if (existing.length === 0) return null;
+  return { id: existing[0].id, linkedEntityIds: (existing[0].linkedEntityIds as string[]) ?? [] };
+}
+
+/**
+ * Prüft ob eine Quelle mit dieser PMID bereits für diese Entity existiert.
+ */
+async function findExistingSource(entityId: string, pmid: string | undefined): Promise<boolean> {
+  const existing = await findExistingSourceByPmid(pmid);
+  if (!existing) return false;
+  return existing.linkedEntityIds.includes(entityId);
 }
 
 // ─── POST /api/factory/generate ──────────────────────────────────────────────
@@ -454,15 +460,28 @@ router.post("/generate", requireAdmin, async (req: Request, res: Response) => {
       relResults.push({ toEntityId: r.toEntityId, type: safeRelationType, action: "created" });
     }
 
-    // 6. Quellen einfügen (mit Idempotenz)
-    const sourceResults: { id: string; pmid: string | null; action: "created" | "skipped" }[] = [];
+    // 6. Quellen einfügen (mit globalem PMID-Idempotenz-Check)
+    const sourceResults: { id: string; pmid: string | null; action: "created" | "linked" | "skipped" }[] = [];
     for (const s of generated.sources) {
-      const alreadyLinked = await findExistingSource(entityId, s.pmid);
-      if (alreadyLinked) {
-        log.warnings.push(`Quelle PMID:${s.pmid} bereits verknüpft, übersprungen`);
-        sourceResults.push({ id: "", pmid: s.pmid || null, action: "skipped" });
+      // Globale PMID-Prüfung: existiert diese PMID bereits in der DB?
+      const globalExisting = await findExistingSourceByPmid(s.pmid);
+      if (globalExisting) {
+        // PMID existiert bereits global
+        if (globalExisting.linkedEntityIds.includes(entityId)) {
+          // Bereits für diese Entity verknüpft
+          log.warnings.push(`Quelle PMID:${s.pmid} bereits verknüpft, übersprungen`);
+          sourceResults.push({ id: globalExisting.id, pmid: s.pmid || null, action: "skipped" });
+        } else {
+          // PMID existiert global, aber noch nicht für diese Entity → linkedEntityIds updaten
+          const updatedLinked = [...globalExisting.linkedEntityIds, entityId];
+          await db.update(sources).set({ linkedEntityIds: updatedLinked })
+            .where(eq(sources.id, globalExisting.id));
+          log.sourcesCreated++;
+          sourceResults.push({ id: globalExisting.id, pmid: s.pmid || null, action: "linked" });
+        }
         continue;
       }
+      // Neue Quelle anlegen
       const sourceId = uuidv4();
       const safeStudyType = VALID_STUDY_TYPES.has(s.studyType) ? s.studyType : "review";
       const safeEvidenceLevel = VALID_EVIDENCE_LEVELS.has(s.evidenceLevel) ? s.evidenceLevel : "preclinical";
@@ -617,13 +636,21 @@ router.post("/generate-for/:id", requireAdmin, async (req: Request, res: Respons
       relResults.push({ toEntityId: r.toEntityId, type: safeRelationType, action: "created" });
     }
 
-    // 3. Quellen — IDEMPOTENT: Skip wenn PMID bereits verknüpft
-    const sourceResults: { id: string; pmid: string | null; action: "created" | "skipped" }[] = [];
+    // 3. Quellen — IDEMPOTENT: globale PMID-Prüfung + linkedEntityIds Update
+    const sourceResults: { id: string; pmid: string | null; action: "created" | "linked" | "skipped" }[] = [];
     for (const s of generated.sources) {
-      const alreadyLinked = await findExistingSource(id, s.pmid);
-      if (alreadyLinked) {
-        log.warnings.push(`Quelle PMID:${s.pmid} bereits verknüpft`);
-        sourceResults.push({ id: "", pmid: s.pmid || null, action: "skipped" });
+      const globalExisting = await findExistingSourceByPmid(s.pmid);
+      if (globalExisting) {
+        if (globalExisting.linkedEntityIds.includes(id)) {
+          log.warnings.push(`Quelle PMID:${s.pmid} bereits verknüpft`);
+          sourceResults.push({ id: globalExisting.id, pmid: s.pmid || null, action: "skipped" });
+        } else {
+          const updatedLinked = [...globalExisting.linkedEntityIds, id];
+          await db.update(sources).set({ linkedEntityIds: updatedLinked })
+            .where(eq(sources.id, globalExisting.id));
+          log.sourcesCreated++;
+          sourceResults.push({ id: globalExisting.id, pmid: s.pmid || null, action: "linked" });
+        }
         continue;
       }
       const sourceId = uuidv4();
