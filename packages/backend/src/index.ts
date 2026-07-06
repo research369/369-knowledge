@@ -25,6 +25,7 @@ import { runPhase3EvolutionMigration } from "./db/migrate-phase3-evolution.js";
 import { runOrchestratorMigration } from "./db/migrate-orchestrator.js";
 import { migratePhase5Collective } from "./db/migrate-phase5-collective.js";
 import { migratePreFreezeVersioning } from "./db/migrate-prefreeze-versioning.js";
+import { migrateKnowledgeModules } from "./db/migrate-knowledge-modules.js";
 
 import { entitiesRouter } from "./routes/entities.router.js";
 import { relationsRouter } from "./routes/relations.router.js";
@@ -52,6 +53,7 @@ import evolutionRouter from "./routes/evolution.router.js";
 import orchestratorRouter from "./routes/orchestrator.router.js";
 import collectiveRouter from "./routes/collective.router.js";
 import prefreezeRouter from "./routes/prefreeze.router.js";
+import modulesRouter from "./routes/modules.router.js";
 
 const app = express();
 const PORT = process.env.PORT || 4001;
@@ -151,6 +153,7 @@ app.use("/api/evolution", evolutionRouter);
 app.use("/api/orchestrator", orchestratorRouter);
 app.use("/api/collective", collectiveRouter);
 app.use("/api/prefreeze", prefreezeRouter);
+app.use("/api/entity", modulesRouter);
 app.use("/", sitemapRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
@@ -187,6 +190,7 @@ async function startServer() {
     { name: "Phase 4 Orchestrator",            fn: runOrchestratorMigration },
     { name: "Phase 5 Collective Intelligence",  fn: migratePhase5Collective },
     { name: "Pre-Freeze Versioning",              fn: migratePreFreezeVersioning },
+    { name: "Knowledge Modules Layer",              fn: migrateKnowledgeModules },
   ]);
 
   app.listen(PORT, () => {

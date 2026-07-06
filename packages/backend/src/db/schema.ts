@@ -1327,3 +1327,60 @@ export type AgentAccessLog = typeof agentAccessLog.$inferSelect;
 // Goldstandard types
 export type EcosystemLink = typeof ecosystemLinks.$inferSelect;
 export type NewEcosystemLink = typeof ecosystemLinks.$inferInsert;
+
+// ─── Knowledge Modules Layer ──────────────────────────────────────────────────
+
+/**
+ * Knowledge Modules — zweite Wissensebene des 369 Knowledge OS
+ *
+ * 16 Modul-Typen als strukturierte Expertenwissen-Schicht.
+ * Kein Agent schreibt in diese Tabelle.
+ * Nur review_status = 'agent_available' wird an Agenten ausgegeben.
+ */
+export const knowledgeModules = pgTable(
+  "knowledge_modules",
+  {
+    id: text("id").primaryKey(),
+    entityId: text("entity_id").notNull().references(() => entities.id, { onDelete: "cascade" }),
+    entitySlug: varchar("entity_slug", { length: 300 }).notNull(),
+
+    // Modul-Typ
+    moduleType: varchar("module_type", { length: 100 }).notNull(),
+
+    // Inhalt (strukturiertes JSON — je nach Typ unterschiedlich)
+    content: jsonb("content").notNull(),
+
+    // Qualitäts-Metadaten
+    source: text("source"),
+    evidenceLevel: varchar("evidence_level", { length: 100 }),
+    confidenceScore: real("confidence_score").default(0.5),
+    lastReviewed: timestamp("last_reviewed"),
+    reviewStatus: varchar("review_status", { length: 50 }).notNull().default("draft"),
+
+    // Zugriffskontrolle
+    allowedAgents: jsonb("allowed_agents").notNull().default('["pepgpt","salesgpt","supportgpt"]'),
+    allowedScope: jsonb("allowed_scope").notNull().default('["agent","portal","academy"]'),
+    forbiddenScope: jsonb("forbidden_scope").notNull().default("[]"),
+
+    // Compliance
+    isHighRisk: boolean("is_high_risk").notNull().default(false),
+    riskClass: varchar("risk_class", { length: 100 }),
+
+    // Versionierung
+    version: integer("version").notNull().default(1),
+    generatedByAi: boolean("generated_by_ai").notNull().default(true),
+    approvedBy: varchar("approved_by", { length: 200 }),
+    approvedAt: timestamp("approved_at"),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    entityModuleIdx: index("km_entity_module_idx").on(t.entityId, t.moduleType),
+    slugModuleIdx: index("km_slug_module_idx").on(t.entitySlug, t.moduleType),
+    statusIdx: index("km_status_idx").on(t.reviewStatus),
+  })
+);
+
+export type KnowledgeModule = typeof knowledgeModules.$inferSelect;
+export type NewKnowledgeModule = typeof knowledgeModules.$inferInsert;
