@@ -182,6 +182,38 @@ export async function migrateKnowledgeReasoning(): Promise<void> {
       ON reasoning_graph_edges (from_node_id, to_node_id, edge_type);
   `);
 
+  // ─── Enum-Erweiterungen (idempotent) ────────────────────────────────────
+
+  // reasoning_edge_type: supports_goal, acts_via, mechanism_of hinzufügen
+  await db.execute(sql`
+    DO $$ BEGIN
+      ALTER TYPE reasoning_edge_type ADD VALUE IF NOT EXISTS 'supports_goal';
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END $$;
+  `);
+
+  await db.execute(sql`
+    DO $$ BEGIN
+      ALTER TYPE reasoning_edge_type ADD VALUE IF NOT EXISTS 'acts_via';
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END $$;
+  `);
+
+  await db.execute(sql`
+    DO $$ BEGIN
+      ALTER TYPE reasoning_edge_type ADD VALUE IF NOT EXISTS 'mechanism_of';
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END $$;
+  `);
+
+  // reasoning_node_type: mechanism hinzufügen
+  await db.execute(sql`
+    DO $$ BEGIN
+      ALTER TYPE reasoning_node_type ADD VALUE IF NOT EXISTS 'mechanism';
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END $$;
+  `);
+
   console.log("[Migration] Knowledge Reasoning Layer — Abgeschlossen ✅");
   console.log("  → knowledge_reasoning: Tabelle erstellt");
   console.log("  → reasoning_graph_nodes: Tabelle erstellt");
