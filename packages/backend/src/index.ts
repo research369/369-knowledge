@@ -70,6 +70,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL ?? "http://localhost:5174",
   "https://wissen.369research.eu",
   "https://369research.eu",
+  "https://portal.369research.eu",
   "https://369-knowledge.netlify.app",
   "http://localhost:5173",
   "http://localhost:5174",
