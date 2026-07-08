@@ -494,67 +494,67 @@ CREATE TABLE IF NOT EXISTS "topic_relations" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "content_blocks" ADD COLUMN "ai_prompt_id" text;--> statement-breakpoint
-ALTER TABLE "content_blocks" ADD COLUMN "comprehension_level" varchar(50) DEFAULT 'all' NOT NULL;--> statement-breakpoint
-ALTER TABLE "content_blocks" ADD COLUMN "target_audience" varchar(50) DEFAULT 'all' NOT NULL;--> statement-breakpoint
-ALTER TABLE "content_blocks" ADD COLUMN "reading_time_seconds" integer;--> statement-breakpoint
-ALTER TABLE "content_blocks" ADD COLUMN "glossar_terms" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "content_blocks" ADD COLUMN "lifecycle_status" "lifecycle_status" DEFAULT 'new' NOT NULL;--> statement-breakpoint
-ALTER TABLE "content_blocks" ADD COLUMN "version" integer DEFAULT 1 NOT NULL;--> statement-breakpoint
-ALTER TABLE "content_blocks" ADD COLUMN "approved_by" varchar(200);--> statement-breakpoint
-ALTER TABLE "content_blocks" ADD COLUMN "approved_at" timestamp;--> statement-breakpoint
-ALTER TABLE "content_blocks" ADD COLUMN "last_reviewed_at" timestamp;--> statement-breakpoint
-ALTER TABLE "content_blocks" ADD COLUMN "next_review_due" timestamp;--> statement-breakpoint
-ALTER TABLE "content_blocks" ADD COLUMN "review_note" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "lifecycle_status" "lifecycle_status" DEFAULT 'new' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "academy_module_ids" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "shop_product_ids" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "protocol_ids" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "stack_ids" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "guide_ids" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "canonical_url" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "geo_qa" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "json_ld" jsonb;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "schema_org" jsonb;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "content_completeness" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "goldstandard_approved" boolean DEFAULT false NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "goldstandard_approved_at" timestamp;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "agent_sales_pitch" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "agent_support_faq" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "agent_research_context" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "agent_medical_disclaimer" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "agent_confidence_score" real DEFAULT 0.8;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "shop_headline" varchar(200);--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "shop_bullet_points" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "shop_target_audience" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "shop_contraindications" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "shop_storage_instructions" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "shop_badge_labels" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "bundle_synergy_ids" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "upsell_entity_ids" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "content_hook_30s" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "content_hook_60s" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "content_tiktok_angle" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "content_instagram_caption" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "content_viral_fact" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "content_misconception" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "seo_og_title" varchar(200);--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "seo_og_description" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "seo_faq_schema" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "seo_product_schema" jsonb;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "seo_index_priority" real DEFAULT 0.5;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "academy_learning_goals" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "academy_prerequisites" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "academy_difficulty" varchar(50);--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "academy_estimated_time_minutes" integer;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "academy_video_url" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "crm_customer_segments" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "crm_purchase_intent_score" real DEFAULT 0.5;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "crm_reorder_interval_days" integer;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "crm_whatsapp_trigger_keywords" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
-ALTER TABLE "topics" ADD COLUMN "short_description" varchar(300);--> statement-breakpoint
-ALTER TABLE "topics" ADD COLUMN "emoji" varchar(10);--> statement-breakpoint
-ALTER TABLE "topics" ADD COLUMN "nav_group" varchar(100);--> statement-breakpoint
+ALTER TABLE "content_blocks" ADD COLUMN IF NOT EXISTS "ai_prompt_id" text;--> statement-breakpoint
+ALTER TABLE "content_blocks" ADD COLUMN IF NOT EXISTS "comprehension_level" varchar(50) DEFAULT 'all' NOT NULL;--> statement-breakpoint
+ALTER TABLE "content_blocks" ADD COLUMN IF NOT EXISTS "target_audience" varchar(50) DEFAULT 'all' NOT NULL;--> statement-breakpoint
+ALTER TABLE "content_blocks" ADD COLUMN IF NOT EXISTS "reading_time_seconds" integer;--> statement-breakpoint
+ALTER TABLE "content_blocks" ADD COLUMN IF NOT EXISTS "glossar_terms" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "content_blocks" ADD COLUMN IF NOT EXISTS "lifecycle_status" "lifecycle_status" DEFAULT 'new' NOT NULL;--> statement-breakpoint
+ALTER TABLE "content_blocks" ADD COLUMN IF NOT EXISTS "version" integer DEFAULT 1 NOT NULL;--> statement-breakpoint
+ALTER TABLE "content_blocks" ADD COLUMN IF NOT EXISTS "approved_by" varchar(200);--> statement-breakpoint
+ALTER TABLE "content_blocks" ADD COLUMN IF NOT EXISTS "approved_at" timestamp;--> statement-breakpoint
+ALTER TABLE "content_blocks" ADD COLUMN IF NOT EXISTS "last_reviewed_at" timestamp;--> statement-breakpoint
+ALTER TABLE "content_blocks" ADD COLUMN IF NOT EXISTS "next_review_due" timestamp;--> statement-breakpoint
+ALTER TABLE "content_blocks" ADD COLUMN IF NOT EXISTS "review_note" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "lifecycle_status" "lifecycle_status" DEFAULT 'new' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "academy_module_ids" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "shop_product_ids" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "protocol_ids" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "stack_ids" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "guide_ids" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "canonical_url" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "geo_qa" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "json_ld" jsonb;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "schema_org" jsonb;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "content_completeness" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "goldstandard_approved" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "goldstandard_approved_at" timestamp;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "agent_sales_pitch" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "agent_support_faq" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "agent_research_context" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "agent_medical_disclaimer" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "agent_confidence_score" real DEFAULT 0.8;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "shop_headline" varchar(200);--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "shop_bullet_points" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "shop_target_audience" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "shop_contraindications" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "shop_storage_instructions" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "shop_badge_labels" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "bundle_synergy_ids" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "upsell_entity_ids" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "content_hook_30s" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "content_hook_60s" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "content_tiktok_angle" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "content_instagram_caption" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "content_viral_fact" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "content_misconception" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "seo_og_title" varchar(200);--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "seo_og_description" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "seo_faq_schema" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "seo_product_schema" jsonb;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "seo_index_priority" real DEFAULT 0.5;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "academy_learning_goals" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "academy_prerequisites" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "academy_difficulty" varchar(50);--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "academy_estimated_time_minutes" integer;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "academy_video_url" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "crm_customer_segments" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "crm_purchase_intent_score" real DEFAULT 0.5;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "crm_reorder_interval_days" integer;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "crm_whatsapp_trigger_keywords" jsonb DEFAULT '[]' NOT NULL;--> statement-breakpoint
+ALTER TABLE "topics" ADD COLUMN IF NOT EXISTS "short_description" varchar(300);--> statement-breakpoint
+ALTER TABLE "topics" ADD COLUMN IF NOT EXISTS "emoji" varchar(10);--> statement-breakpoint
+ALTER TABLE "topics" ADD COLUMN IF NOT EXISTS "nav_group" varchar(100);--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "agent_access_log" ADD CONSTRAINT "agent_access_log_agent_key_id_agent_api_keys_id_fk" FOREIGN KEY ("agent_key_id") REFERENCES "public"."agent_api_keys"("id") ON DELETE set null ON UPDATE no action;
 EXCEPTION

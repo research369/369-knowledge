@@ -122,16 +122,16 @@ CREATE TABLE IF NOT EXISTS "studies" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "content_blocks" ADD COLUMN "generated_by_ai" boolean DEFAULT false NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "compound_subtype" varchar(100);--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "molecular_formula" varchar(200);--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "molecular_weight" varchar(100);--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "iupac_name" text;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "manually_edited" boolean DEFAULT false NOT NULL;--> statement-breakpoint
-ALTER TABLE "entities" ADD COLUMN "last_edited_by" varchar(200);--> statement-breakpoint
-ALTER TABLE "entity_versions" ADD COLUMN "is_ai_generated" boolean DEFAULT false NOT NULL;--> statement-breakpoint
-ALTER TABLE "entity_versions" ADD COLUMN "is_manual_edit" boolean DEFAULT false NOT NULL;--> statement-breakpoint
-ALTER TABLE "relations" ADD COLUMN "weight" real DEFAULT 1;--> statement-breakpoint
+ALTER TABLE "content_blocks" ADD COLUMN IF NOT EXISTS "generated_by_ai" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "compound_subtype" varchar(100);--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "molecular_formula" varchar(200);--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "molecular_weight" varchar(100);--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "iupac_name" text;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "manually_edited" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "entities" ADD COLUMN IF NOT EXISTS "last_edited_by" varchar(200);--> statement-breakpoint
+ALTER TABLE "entity_versions" ADD COLUMN IF NOT EXISTS "is_ai_generated" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "entity_versions" ADD COLUMN IF NOT EXISTS "is_manual_edit" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "relations" ADD COLUMN IF NOT EXISTS "weight" real DEFAULT 1;--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "studies" ADD CONSTRAINT "studies_entity_id_entities_id_fk" FOREIGN KEY ("entity_id") REFERENCES "public"."entities"("id") ON DELETE set null ON UPDATE no action;
 EXCEPTION
