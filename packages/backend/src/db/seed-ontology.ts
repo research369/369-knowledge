@@ -108,6 +108,55 @@ const ALLOWED_RELATIONS = [
   { from: "compound", rel: "synergizes_with", to: "compound" },
   { from: "compound", rel: "synergizes_with", to: "peptide" },
   { from: "peptide", rel: "synergizes_with", to: "compound" },
+  // Sprint 3: Compound/Peptide → Tissue/Organ
+  { from: "compound", rel: "influences", to: "tissue" },
+  { from: "compound", rel: "occurs_in", to: "organ" },
+  { from: "compound", rel: "occurs_in", to: "tissue" },
+  { from: "peptide", rel: "influences", to: "tissue" },
+  { from: "peptide", rel: "occurs_in", to: "organ" },
+  { from: "peptide", rel: "occurs_in", to: "tissue" },
+  // Sprint 3: Compound/Peptide → Protein/Gene/Enzyme
+  { from: "compound", rel: "activates", to: "gene" },
+  { from: "compound", rel: "activates", to: "enzyme" },
+  { from: "compound", rel: "inhibits", to: "gene" },
+  { from: "compound", rel: "inhibits", to: "receptor" },
+  { from: "compound", rel: "modulates", to: "protein" },
+  { from: "compound", rel: "modulates", to: "gene" },
+  { from: "compound", rel: "modulates", to: "enzyme" },
+  { from: "peptide", rel: "activates", to: "gene" },
+  { from: "peptide", rel: "activates", to: "enzyme" },
+  { from: "peptide", rel: "inhibits", to: "gene" },
+  { from: "peptide", rel: "inhibits", to: "receptor" },
+  { from: "peptide", rel: "modulates", to: "protein" },
+  { from: "peptide", rel: "modulates", to: "gene" },
+  { from: "peptide", rel: "modulates", to: "enzyme" },
+  // Sprint 3: Compound/Peptide → Study
+  { from: "peptide", rel: "studied_in", to: "study" },
+  { from: "study", rel: "evidenced_by", to: "peptide" },
+  // Sprint 3: FAQ → more targets
+  { from: "faq", rel: "answers", to: "pathway" },
+  { from: "faq", rel: "answers", to: "disease" },
+  // Sprint 3: Compound/Peptide → Academy
+  { from: "compound", rel: "part_of_academy", to: "academy_module" },
+  { from: "peptide", rel: "part_of_academy", to: "academy_module" },
+  { from: "academy_module", rel: "recommends", to: "peptide" },
+  // Sprint 3: Compound/Peptide combined_with Peptide
+  { from: "compound", rel: "combined_with", to: "peptide" },
+  // Sprint 3: Mechanism/Pathway → Disease/Biomarker
+  { from: "mechanism", rel: "relevant_for", to: "disease" },
+  { from: "mechanism", rel: "influences", to: "biomarker" },
+  { from: "pathway", rel: "relevant_for", to: "disease" },
+  { from: "pathway", rel: "influences", to: "biomarker" },
+  // Sprint 3: Protein/Gene/Enzyme → Biological Process/Disease
+  { from: "protein", rel: "influences", to: "biological_process" },
+  { from: "gene", rel: "influences", to: "biological_process" },
+  { from: "enzyme", rel: "influences", to: "biological_process" },
+  { from: "protein", rel: "relevant_for", to: "disease" },
+  { from: "gene", rel: "relevant_for", to: "disease" },
+  // Sprint 3: Biomarker → Disease/Mechanism
+  { from: "biomarker", rel: "marker_for", to: "disease" },
+  { from: "biomarker", rel: "marker_for", to: "mechanism" },
+  { from: "biomarker", rel: "measured_by", to: "compound" },
 ] as const;
 
 const FORBIDDEN_RELATIONS = [
