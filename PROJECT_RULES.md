@@ -70,3 +70,16 @@ Architecture Frozen. Keine neuen Grundstrukturen. Keine neuen Datenmodelle. Kein
 - Neue Themen/Topics anlegen
 - Glossarbegriffe hinzufügen
 - Studien und Protokolle hinzufügen
+
+---
+## Migrations-Regeln (RULE-MIGRATION-01)
+
+**Hintergrund:** Am 08.07.2026 schlug das Railway-Deployment fehl, weil Drizzle-generierte Migrations-Dateien `ALTER TYPE ADD VALUE` und `ALTER TABLE ADD COLUMN` ohne `IF NOT EXISTS` enthielten. Dies führte zu PostgreSQL-Fehlern (42710, 42701) bei Re-Deployments.
+
+**Pflichtprüfung vor jedem Migrations-Commit:**
+```bash
+grep "ALTER TYPE.*ADD VALUE\|ALTER TABLE.*ADD COLUMN" packages/backend/drizzle/*.sql | grep -v "IF NOT EXISTS"
+```
+Das Ergebnis muss leer sein. Wenn nicht: alle gefundenen Statements mit `IF NOT EXISTS` ergänzen.
+
+**Kein Push ohne erfolgreichen TypeScript-Check und leere Idempotenz-Prüfung.**
