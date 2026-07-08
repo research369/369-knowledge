@@ -60,6 +60,9 @@ import { reasoningRouter } from "./routes/reasoning.router.js";
 const app = express();
 const PORT = process.env.PORT || 4001;
 
+// Trust Railway reverse proxy (fixes X-Forwarded-For and rate-limiter IP detection)
+app.set("trust proxy", 1);
+
 // ─── Security ─────────────────────────────────────────────────────────────────
 
 app.use(helmet({
@@ -159,6 +162,17 @@ app.use("/api/prefreeze", prefreezeRouter);
 app.use("/api/entity", modulesRouter);
 app.use("/api/reasoning", reasoningRouter);
 app.use("/", sitemapRouter);
+
+// ─── API v1 versioned aliases ───────────────────────────────────────────────────────────────
+// /api/v1/* mirrors /api/* for forward-compatible clients.
+// Future breaking changes go under /api/v2/* without disrupting existing consumers.
+app.use("/api/v1/entities", entitiesRouter);
+app.use("/api/v1/topics", topicsRouter);
+app.use("/api/v1/search", searchRouter);
+app.use("/api/v1/agent", agentQueryRouter);
+app.use("/api/v1/stacks", stacksRouter);
+app.use("/api/v1/studies", studiesRouter);
+app.use("/api/v1/protocols", protocolsRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 

@@ -14,15 +14,13 @@
  * Chat → Learning Queue → Pipeline → Few-Shot + Graph + Memory Update
  */
 
-import { readFileSync, existsSync, writeFileSync } from "fs";
-import { join, dirname } from "path";
+import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { db } from "../db/index.js";
 import { sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = join(__dirname, "../data");
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -65,27 +63,15 @@ export interface LearningContext {
   similarChats: Array<{ query: string; response: string; quality: number }>;
 }
 
-// ─── File Cache ───────────────────────────────────────────────────────────────
+// ─── In-Memory Cache (DB-backed, no filesystem — v1.0 Freeze) ────────────────────
 
 const fileCache: Record<string, LearnedKnowledge> = {};
 
+// Filesystem-Abhängigkeit entfernt (v1.0 Freeze).
+// Few-Shots werden ausschließlich aus der DB geladen (loadDbFewShots).
+// loadKnowledgeFile gibt immer leeres Objekt zurück — DB ist Single Source of Truth.
 function loadKnowledgeFile(agentRole: string): LearnedKnowledge {
-  if (fileCache[agentRole]) return fileCache[agentRole];
-  const filePath = join(DATA_DIR, `${agentRole}_learned_knowledge.json`);
-  if (!existsSync(filePath)) {
-    const empty: LearnedKnowledge = { version: "1.0", agentRole, examples: [], lastUpdated: new Date().toISOString() };
-    fileCache[agentRole] = empty;
-    return empty;
-  }
-  try {
-    const raw = readFileSync(filePath, "utf-8");
-    const data = JSON.parse(raw) as LearnedKnowledge;
-    fileCache[agentRole] = data;
-    return data;
-  } catch (err) {
-    console.error(`[learning-runtime] Failed to load ${filePath}:`, err);
-    return { version: "1.0", agentRole, examples: [], lastUpdated: "" };
-  }
+  return { version: "2.0", agentRole, examples: [], lastUpdated: "" };
 }
 
 // ─── Semantic Similarity ──────────────────────────────────────────────────────
@@ -388,8 +374,9 @@ async function processLearningItem(row: any): Promise<{ createdFewShot: boolean;
     invalidateLearningCache(row.agent_role);
   }
   if (qualityScore >= 0.85 && row.entity_slug) {
-    await syncTopFewShotsToJson(row.agent_role);
-    actions.push("json_synced");
+    // Filesystem-Sync entfernt (v1.0 Freeze) — DB ist Single Source of Truth.
+    invalidateLearningCache(row.agent_role);
+    actions.push("cache_invalidated");
   }
   return { createdFewShot, qualityScore, actions };
 }
@@ -416,30 +403,8 @@ function extractTags(query: string, entitySlug?: string, intent?: string): strin
   return [...new Set(tags)];
 }
 
-async function syncTopFewShotsToJson(agentRole: string): Promise<void> {
-  try {
-    const rows = await db.execute(sql`
-      SELECT id, agent_role, entity_slug, tags, user_query, ideal_response, quality
-      FROM learned_few_shots WHERE agent_role = ${agentRole} AND active = TRUE AND approved = TRUE
-      ORDER BY quality DESC, usage_count DESC LIMIT 20
-    `);
-    const examples: FewShotExample[] = (rows as any[]).map(row => ({
-      id: row.id, agentRole: row.agent_role,
-      tags: Array.isArray(row.tags) ? row.tags : JSON.parse(row.tags || "[]"),
-      userQuery: row.user_query, idealResponse: row.ideal_response,
-      quality: row.quality, source: "learned" as const,
-    }));
-    const filePath = join(DATA_DIR, `${agentRole}_learned_knowledge.json`);
-    let existing: LearnedKnowledge = { version: "2.0", agentRole, examples: [], lastUpdated: new Date().toISOString() };
-    if (existsSync(filePath)) { try { existing = JSON.parse(readFileSync(filePath, "utf-8")); } catch {} }
-    const manualExamples = existing.examples.filter(e => e.source !== "learned");
-    const merged = [...examples, ...manualExamples].slice(0, 30);
-    writeFileSync(filePath, JSON.stringify({ ...existing, version: "2.0", examples: merged, lastUpdated: new Date().toISOString() }, null, 2), "utf-8");
-    delete fileCache[agentRole];
-  } catch (err) {
-    console.error("[learning-runtime] Failed to sync few-shots to JSON:", err);
-  }
-}
+// syncTopFewShotsToJson() entfernt (v1.0 Freeze) — kein Filesystem-Write mehr.
+// Alle Few-Shots leben ausschließlich in der PostgreSQL-Tabelle learned_few_shots.
 
 // ─── Cache Invalidation ───────────────────────────────────────────────────────
 
