@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /admin/*
 
-Sitemap: https://369-knowledge.netlify.app/sitemap.xml
+Sitemap: https://portal.369research.eu/sitemap.xml

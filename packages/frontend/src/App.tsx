@@ -11,8 +11,8 @@ import Suche from "@/pages/Suche";
 import "@/styles/globals.css";
 
 export default function App() {
-  const path = window.location.pathname;
-
+    const path = window.location.pathname;
+  // const search = window.location.search; // available if needed
   // Admin
   if (path.startsWith("/admin")) {
     return (
@@ -34,8 +34,9 @@ export default function App() {
     return <EntityDetail entityId={entitySlug} />;
   }
 
-  // Compound type pages: /compounds, /peptide, /mechanismen, /supplements, /kosmetik
-  if (path.startsWith("/wissen") && path !== "/wissen") {
+  // Portal with optional type filter: /wissen or /wissen?type=X
+  // Fix: previously only matched /wissen with a path suffix — now correctly matches /wissen with any query string
+  if (path === "/wissen" || path.startsWith("/wissen")) {
     return <Portal />;
   }
 

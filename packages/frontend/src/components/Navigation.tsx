@@ -62,12 +62,10 @@ export default function Navigation() {
             onClick={() => navigate("/")}
             className="flex items-center gap-2 group"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-bright to-gold flex items-center justify-center text-navy font-bold text-sm">
-              369
+            <div className="flex items-center gap-0.5">
+              <span className="text-white font-black text-xl tracking-tight">369</span>
+              <span className="text-gold font-black text-xl tracking-tight">Research</span>
             </div>
-            <span className="text-white font-semibold text-sm tracking-wide hidden sm:block">
-              Research <span className="text-gold">Wissen</span>
-            </span>
           </button>
 
           {/* Desktop Nav */}

@@ -1,37 +1,92 @@
 import { useState, useEffect } from "react";
 import { api, Entity } from "@/lib/api";
 
+// DB entity_type enum values → display labels
 const CATEGORY_LABELS: Record<string, string> = {
   compound: "Compound",
   peptide: "Peptid",
+  small_molecule: "Molekül",
+  steroid: "Steroid",
+  hormone: "Hormon",
+  supplement: "Supplement",
+  natural_compound: "Naturstoff",
+  vitamin: "Vitamin",
+  mineral: "Mineral",
+  cosmetic_ingredient: "Kosmetik",
+  mechanism: "Mechanismus",
+  pathway: "Pathway",
+  biological_process: "Biologischer Prozess",
+  organ: "Organ",
+  tissue: "Gewebe",
+  disease: "Erkrankung",
   guide: "Praxis-Guide",
   stack: "Stack",
-  steroid: "Steroid",
-  supplement: "Supplement",
-  cosmetic: "Kosmetik",
+  protocol: "Protokoll",
+  faq: "FAQ",
+  glossary_term: "Glossar",
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
   compound: "⬡",
   peptide: "⬡",
+  small_molecule: "⬡",
+  steroid: "💪",
+  hormone: "🧬",
+  supplement: "🧪",
+  natural_compound: "🌿",
+  vitamin: "💊",
+  mineral: "⚗️",
+  cosmetic_ingredient: "✨",
+  mechanism: "⚙️",
+  pathway: "🔗",
+  biological_process: "🔬",
+  organ: "🫀",
+  tissue: "🧫",
+  disease: "🩺",
   guide: "📋",
   stack: "⚡",
-  steroid: "💪",
-  supplement: "🧪",
-  cosmetic: "✨",
+  protocol: "📝",
+  faq: "❓",
+  glossary_term: "📖",
+};
+
+// Map URL ?type= values to DB entity_type enum values
+const TYPE_URL_TO_DB: Record<string, string> = {
+  kosmetik: "cosmetic_ingredient",
+  peptide: "peptide",
+  compound: "compound",
+  supplement: "supplement",
+  mechanismus: "mechanism",
+  steroid: "steroid",
+  guide: "guide",
+  stack: "stack",
+  protokoll: "protocol",
+  glossar: "glossary_term",
+  faq: "faq",
 };
 
 const FILTER_TYPES = [
   { value: "", label: "Alle" },
   { value: "compound", label: "Compounds" },
+  { value: "peptide", label: "Peptide" },
+  { value: "cosmetic_ingredient", label: "Kosmetik" },
+  { value: "supplement", label: "Supplements" },
+  { value: "mechanism", label: "Mechanismen" },
   { value: "guide", label: "Guides" },
   { value: "stack", label: "Stacks" },
 ];
 
 export default function Portal() {
+  // Read initial type filter from URL query string (e.g. /wissen?type=kosmetik)
+  const initialType = (() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlType = params.get("type") ?? "";
+    return TYPE_URL_TO_DB[urlType] ?? urlType;
+  })();
+
   const [entities, setEntities] = useState<Entity[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("");
+  const [filter, setFilter] = useState(initialType);
   const [search, setSearch] = useState("");
   const [ageConfirmed, setAgeConfirmed] = useState(() =>
     sessionStorage.getItem("age_confirmed") === "true"

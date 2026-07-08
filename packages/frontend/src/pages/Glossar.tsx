@@ -11,7 +11,7 @@ export default function Glossar() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    api.entities.list({ type: "glossar", status: "published", limit: "500" })
+    api.entities.list({ type: "glossary_term", status: "published", limit: "500" })
       .then((r) => setTerms(r.data))
       .catch(console.error)
       .finally(() => setLoading(false));
