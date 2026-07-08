@@ -10,7 +10,8 @@ dotenv.config();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const connectionString = process.env.DATABASE_URL!;
-const client = postgres(connectionString, { max: 1 });
+// Suppress NOTICE messages (e.g. "already exists, skipping") to avoid Railway log rate limits
+const client = postgres(connectionString, { max: 1, onnotice: () => {} });
 const db = drizzle(client);
 
 console.log("Running migrations...");
