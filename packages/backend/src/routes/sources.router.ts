@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { requireAdmin } from "../middleware/auth.js";
 import { db } from "../db/index.js";
 import { sources, contentBlockSources } from "../db/schema.js";
 import { eq, desc, ilike, or, and, sql } from "drizzle-orm";
@@ -130,7 +131,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 // POST /api/sources — create manually
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", requireAdmin, async (req: Request, res: Response) => {
   try {
     const id = req.body.id || (req.body.pmid ? `pmid-${req.body.pmid}` : `doi-${req.body.doi?.replace(/[^a-z0-9]/gi, "-")}` || randomUUID());
     const [created] = await db.insert(sources).values({
@@ -152,7 +153,7 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 // PUT /api/sources/:id — update
-router.put("/:id", async (req: Request, res: Response) => {
+router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
     const [updated] = await db.update(sources)
       .set({ ...req.body, updatedAt: new Date() })
@@ -166,7 +167,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 });
 
 // DELETE /api/sources/:id
-router.delete("/:id", async (req: Request, res: Response) => {
+router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
     await db.delete(sources).where(eq(sources.id, req.params.id));
     res.json({ success: true });
@@ -176,7 +177,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
 });
 
 // POST /api/sources/import/pmid — auto-import from PubMed
-router.post("/import/pmid", async (req: Request, res: Response) => {
+router.post("/import/pmid", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { pmid } = req.body;
     if (!pmid) return res.status(400).json({ error: "pmid required" });
@@ -208,7 +209,7 @@ router.post("/import/pmid", async (req: Request, res: Response) => {
 });
 
 // POST /api/sources/import/doi — auto-import from CrossRef
-router.post("/import/doi", async (req: Request, res: Response) => {
+router.post("/import/doi", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { doi } = req.body;
     if (!doi) return res.status(400).json({ error: "doi required" });
@@ -242,7 +243,7 @@ router.post("/import/doi", async (req: Request, res: Response) => {
 });
 
 // POST /api/sources/import/batch — batch import multiple PMIDs/DOIs
-router.post("/import/batch", async (req: Request, res: Response) => {
+router.post("/import/batch", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { pmids = [], dois = [] } = req.body;
     const results: { id: string; success: boolean; error?: string }[] = [];

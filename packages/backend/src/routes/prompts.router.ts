@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { requireAdmin } from "../middleware/auth.js";
 import { db } from "../db/index.js";
 import { aiPrompts, aiGenerationLog } from "../db/schema.js";
 import { eq, desc, ilike, and, sql } from "drizzle-orm";
@@ -57,7 +58,7 @@ router.get("/:idOrSlug", async (req: Request, res: Response) => {
 });
 
 // POST /api/prompts — create new prompt
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", requireAdmin, async (req: Request, res: Response) => {
   try {
     const id = req.body.id || randomUUID();
     const [created] = await db.insert(aiPrompts).values({
@@ -72,7 +73,7 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 // PUT /api/prompts/:id — update (creates new version)
-router.put("/:id", async (req: Request, res: Response) => {
+router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
     const [current] = await db.select().from(aiPrompts).where(eq(aiPrompts.id, req.params.id));
     if (!current) return res.status(404).json({ error: "Prompt not found" });
@@ -94,7 +95,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 });
 
 // DELETE /api/prompts/:id — soft delete (set active = false)
-router.delete("/:id", async (req: Request, res: Response) => {
+router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
     await db.update(aiPrompts)
       .set({ active: false, updatedAt: new Date() })

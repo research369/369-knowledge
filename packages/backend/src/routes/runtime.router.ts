@@ -215,7 +215,7 @@ router.post("/learning/invalidate", async (req: Request, res: Response) => {
   try {
     // Simple admin check via header
     const adminKey = req.headers["x-admin-key"] as string;
-    if (adminKey !== process.env.ADMIN_SECRET && adminKey !== "369Research2024!") {
+    if (!adminKey || adminKey !== process.env.ADMIN_SECRET) {
       return res.status(403).json({ error: "Forbidden" });
     }
 
@@ -233,7 +233,7 @@ router.post("/learning/invalidate", async (req: Request, res: Response) => {
 router.get("/learning/stats", async (req: Request, res: Response) => {
   try {
     const adminKey = req.headers["x-admin-key"] as string;
-    if (adminKey !== process.env.ADMIN_SECRET && adminKey !== "369Research2024!") {
+    if (!adminKey || adminKey !== process.env.ADMIN_SECRET) {
       return res.status(403).json({ error: "Forbidden" });
     }
     const { getLearningStats } = await import("../services/learning-runtime.service.js");
@@ -248,7 +248,7 @@ router.get("/learning/stats", async (req: Request, res: Response) => {
 router.post("/learning/process-queue", async (req: Request, res: Response) => {
   try {
     const adminKey = req.headers["x-admin-key"] as string;
-    if (adminKey !== process.env.ADMIN_SECRET && adminKey !== "369Research2024!") {
+    if (!adminKey || adminKey !== process.env.ADMIN_SECRET) {
       return res.status(403).json({ error: "Forbidden" });
     }
     const { processLearningQueue } = await import("../services/learning-runtime.service.js");

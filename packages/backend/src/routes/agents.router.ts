@@ -1,4 +1,5 @@
 import { Router, Request, Response, NextFunction } from "express";
+import { requireAdmin } from "../middleware/auth.js";
 import { db } from "../db/index.js";
 import { agentApiKeys, agentSuggestions, agentAccessLog, entities, sources } from "../db/schema.js";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -45,7 +46,7 @@ router.get("/keys", async (req: Request, res: Response) => {
 });
 
 // POST /api/agents/keys — create new agent key (admin)
-router.post("/keys", async (req: Request, res: Response) => {
+router.post("/keys", requireAdmin, async (req: Request, res: Response) => {
   try {
     const rawKey = generateApiKey();
     const keyHash = hashKey(rawKey);
@@ -74,7 +75,7 @@ router.post("/keys", async (req: Request, res: Response) => {
 });
 
 // PUT /api/agents/keys/:id — update key settings
-router.put("/keys/:id", async (req: Request, res: Response) => {
+router.put("/keys/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
     const [updated] = await db.update(agentApiKeys)
       .set({
@@ -98,7 +99,7 @@ router.put("/keys/:id", async (req: Request, res: Response) => {
 });
 
 // DELETE /api/agents/keys/:id — deactivate key
-router.delete("/keys/:id", async (req: Request, res: Response) => {
+router.delete("/keys/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
     await db.update(agentApiKeys).set({ active: false }).where(eq(agentApiKeys.id, req.params.id));
     res.json({ success: true });
