@@ -64,60 +64,60 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'persona';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'goal';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'side_effect';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'contraindication';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'interaction_profile';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'bloodwork_panel';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'lab_parameter';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'coach_note';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'sales_flow';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'support_note';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'bundle';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'has_protocol';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'has_stack';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'has_guide';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'part_of_academy';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'available_in_shop';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'related_topic';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'suggested_next';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'has_side_effect';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'has_contraindication';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'has_interaction';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'monitored_by';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'tracked_by';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'targets_persona';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'addresses_goal';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'has_coach_note';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'has_sales_flow';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'has_support_note';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'for_persona';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'achieves_goal';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'requires_panel';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'recommends_compound';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'recommends_stack';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'measured_via';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'resolved_by';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'has_goal';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'uses_stack';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'guided_by';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'enters_flow';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'includes_parameter';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'correlates_with';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'sells_product';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'sells_bundle';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'answers_via';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'resolves_via';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'references_product';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'recommends_protocol';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'recommends_stack_note';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'orders_panel';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'involves_compound';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'detected_via';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'mitigated_by';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'contraindicated_in';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'contraindicated_with';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'persona';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'goal';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'side_effect';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'contraindication';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'interaction_profile';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'bloodwork_panel';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'lab_parameter';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'coach_note';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'sales_flow';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'support_note';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'bundle';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'has_protocol';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'has_stack';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'has_guide';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'part_of_academy';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'available_in_shop';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'related_topic';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'suggested_next';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'has_side_effect';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'has_contraindication';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'has_interaction';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'monitored_by';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'tracked_by';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'targets_persona';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'addresses_goal';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'has_coach_note';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'has_sales_flow';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'has_support_note';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'for_persona';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'achieves_goal';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'requires_panel';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'recommends_compound';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'recommends_stack';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'measured_via';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'resolved_by';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'has_goal';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'uses_stack';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'guided_by';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'enters_flow';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'includes_parameter';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'correlates_with';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'sells_product';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'sells_bundle';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'answers_via';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'resolves_via';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'references_product';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'recommends_protocol';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'recommends_stack_note';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'orders_panel';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'involves_compound';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'detected_via';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'mitigated_by';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'contraindicated_in';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'contraindicated_with';--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "agent_access_log" (
 	"id" text PRIMARY KEY NOT NULL,
 	"agent_key_id" text,

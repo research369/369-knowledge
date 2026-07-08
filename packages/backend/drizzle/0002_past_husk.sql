@@ -1,46 +1,46 @@
-ALTER TYPE "content_type" ADD VALUE 'protocol';--> statement-breakpoint
-ALTER TYPE "content_type" ADD VALUE 'collection';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'peptide';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'small_molecule';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'steroid';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'hormone';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'antibody';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'supplement';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'natural_compound';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'vitamin';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'mineral';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'cosmetic_ingredient';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'biomarker';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'stack';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'protocol';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'collection';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'source';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'author';--> statement-breakpoint
-ALTER TYPE "entity_type" ADD VALUE 'product';--> statement-breakpoint
-ALTER TYPE "evidence_level" ADD VALUE 'in_vitro';--> statement-breakpoint
-ALTER TYPE "evidence_level" ADD VALUE 'animal';--> statement-breakpoint
-ALTER TYPE "evidence_level" ADD VALUE 'pilot_human';--> statement-breakpoint
-ALTER TYPE "evidence_level" ADD VALUE 'rct';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'upregulates';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'downregulates';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'binds_to';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'modulates';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'belongs_to';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'is_subtype_of';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'contains';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'treats';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'improves';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'worsens';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'synergizes_with';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'antagonizes';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'occurs_in';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'expressed_in';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'codes_for';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'measured_by';--> statement-breakpoint
-ALTER TYPE "relation_type" ADD VALUE 'marker_for';--> statement-breakpoint
-ALTER TYPE "study_type" ADD VALUE 'rct';--> statement-breakpoint
-ALTER TYPE "study_type" ADD VALUE 'case_study';--> statement-breakpoint
-ALTER TYPE "study_type" ADD VALUE 'observational';--> statement-breakpoint
+ALTER TYPE "content_type" ADD VALUE IF NOT EXISTS 'protocol';--> statement-breakpoint
+ALTER TYPE "content_type" ADD VALUE IF NOT EXISTS 'collection';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'peptide';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'small_molecule';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'steroid';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'hormone';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'antibody';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'supplement';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'natural_compound';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'vitamin';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'mineral';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'cosmetic_ingredient';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'biomarker';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'stack';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'protocol';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'collection';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'source';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'author';--> statement-breakpoint
+ALTER TYPE "entity_type" ADD VALUE IF NOT EXISTS 'product';--> statement-breakpoint
+ALTER TYPE "evidence_level" ADD VALUE IF NOT EXISTS 'in_vitro';--> statement-breakpoint
+ALTER TYPE "evidence_level" ADD VALUE IF NOT EXISTS 'animal';--> statement-breakpoint
+ALTER TYPE "evidence_level" ADD VALUE IF NOT EXISTS 'pilot_human';--> statement-breakpoint
+ALTER TYPE "evidence_level" ADD VALUE IF NOT EXISTS 'rct';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'upregulates';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'downregulates';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'binds_to';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'modulates';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'belongs_to';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'is_subtype_of';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'contains';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'treats';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'improves';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'worsens';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'synergizes_with';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'antagonizes';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'occurs_in';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'expressed_in';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'codes_for';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'measured_by';--> statement-breakpoint
+ALTER TYPE "relation_type" ADD VALUE IF NOT EXISTS 'marker_for';--> statement-breakpoint
+ALTER TYPE "study_type" ADD VALUE IF NOT EXISTS 'rct';--> statement-breakpoint
+ALTER TYPE "study_type" ADD VALUE IF NOT EXISTS 'case_study';--> statement-breakpoint
+ALTER TYPE "study_type" ADD VALUE IF NOT EXISTS 'observational';--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "collections" (
 	"id" text PRIMARY KEY NOT NULL,
 	"slug" varchar(300) NOT NULL,
