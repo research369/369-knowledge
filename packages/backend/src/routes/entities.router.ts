@@ -8,6 +8,7 @@ import { generateEntityContent } from "../services/ai-generate.service.js";
 import { requireAdmin, requireApiKey } from "../middleware/auth.js";
 import { z } from "zod";
 import { onEntityPublished, onEntityUpdated } from "../services/webhook.service.js";
+import { calculateQualityScore, validateKnowledgeGraph } from "../services/governance.service.js";
 
 const router = Router();
 
@@ -432,6 +433,37 @@ router.get(
         .from(entities)
         .orderBy(desc(entities.updatedAt));
       res.json({ data: rows, total: rows.length });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// ─── Governance: Quality Score per Entity ────────────────────────────────────
+// GET /api/entities/:id/quality-score — Content Quality Score (0–100)
+router.get(
+  "/:id/quality-score",
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const score = await calculateQualityScore(id);
+      res.json(score);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// ─── Governance: Knowledge Graph Validation Report ───────────────────────────
+// GET /api/entities/admin/graph-validation — Full Knowledge Graph Validation
+router.get(
+  "/admin/graph-validation",
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const report = await validateKnowledgeGraph();
+      res.json(report);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

@@ -456,11 +456,29 @@ export const entities = pgTable(
     crmPurchaseIntentScore: real("crm_purchase_intent_score").default(0.5),
     crmReorderIntervalDays: integer("crm_reorder_interval_days"),
     crmWhatsappTriggerKeywords: jsonb("crm_whatsapp_trigger_keywords").notNull().default("[]"),
+    // ─── Content Governance Layer (Architecture Freeze v1.0 — 08.07.2026) ────────
+    // Visibility: which agent/channel contexts may use this entity
+    // Allowed values: "PepGPT"|"SalesGPT"|"SupportGPT"|"Academy"|"Shop"|"Portal"|"SEO"|"GEO"|"WhatsApp"|"Content Factory"
+    visibility: jsonb("visibility").notNull().default('["PepGPT","SalesGPT","SupportGPT","Academy","Shop","Portal","SEO","GEO","WhatsApp","Content Factory"]'),
+    // Review workflow
+    humanReviewRequired: boolean("human_review_required").notNull().default(false),
+    reviewNotes: text("review_notes"),
+    reviewedBy: varchar("reviewed_by", { length: 200 }),
+    reviewDate: timestamp("review_date"),
+    // Evidence & quality
+    evidenceLevel: evidenceLevelEnum("evidence_level"),
+    sourceCount: integer("source_count").notNull().default(0),
+    // Ownership
+    owner: varchar("owner", { length: 200 }),
+    // Change history (append-only JSONB log: [{date, by, action, note}])
+    changeHistory: jsonb("change_history").notNull().default("[]"),
   },
   (t) => ({
     typeIdx: index("entities_type_idx").on(t.type),
     statusIdx: index("entities_status_idx").on(t.status),
     slugIdx: index("entities_slug_idx").on(t.slug),
+    lifecycleIdx: index("entities_lifecycle_idx").on(t.lifecycleStatus),
+    evidenceIdx: index("entities_evidence_idx").on(t.evidenceLevel),
   })
 );
 

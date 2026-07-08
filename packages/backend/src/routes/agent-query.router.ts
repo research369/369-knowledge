@@ -11,6 +11,7 @@ import { db } from "../db/index.js";
 import { entities, contentBlocks, relations, agentApiKeys, agentAccessLog, apiKeys } from "../db/schema.js";
 import { eq, ilike, or, inArray, sql, and } from "drizzle-orm";
 import { createHash, randomUUID } from "crypto";
+import { isAgentAccessible, isVisibleTo } from "../services/governance.service.js";
 
 const router = Router();
 
@@ -80,19 +81,24 @@ router.post("/query", async (req: Request, res: Response) => {
 
     // 1. Find relevant entities
     let targetEntities: any[] = [];
+    // Governance: Agents may ONLY access published entities
+    const publishedFilter = eq(entities.lifecycleStatus, "published" as any);
 
     if (entitySlugs?.length) {
       targetEntities = await db.select().from(entities).where(
-        or(...entitySlugs.map((s: string) => eq(entities.slug, s)))
+        and(publishedFilter, or(...entitySlugs.map((s: string) => eq(entities.slug, s))))
       );
     } else if (query) {
       // Semantic search via text matching (full-text search fallback)
       targetEntities = await db.select().from(entities).where(
-        or(
-          ilike(entities.canonicalName, `%${query}%`),
-          ilike(entities.shortDescription, `%${query}%`),
-          sql`${entities.aliases}::text ILIKE ${'%' + query + '%'}`,
-          sql`${entities.tags}::text ILIKE ${'%' + query + '%'}`
+        and(
+          publishedFilter,
+          or(
+            ilike(entities.canonicalName, `%${query}%`),
+            ilike(entities.shortDescription, `%${query}%`),
+            sql`${entities.aliases}::text ILIKE ${'%' + query + '%'}`,
+            sql`${entities.tags}::text ILIKE ${'%' + query + '%'}`
+          )
         )
       ).limit(10);
     }
@@ -100,6 +106,10 @@ router.post("/query", async (req: Request, res: Response) => {
     if (entityTypes?.length) {
       targetEntities = targetEntities.filter(e => entityTypes.includes(e.type));
     }
+
+    // Governance: Filter by visibility — only entities visible to this agent context
+    const agentContext = system as string;
+    targetEntities = targetEntities.filter(e => isVisibleTo(e, agentContext));
 
     // 2. Build knowledge context
     const result: any = {
