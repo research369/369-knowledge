@@ -84,6 +84,30 @@ const ALLOWED_RELATIONS = [
   { from: "faq", rel: "answers", to: "peptide" },
   { from: "faq", rel: "answers", to: "biological_process" },
   { from: "faq", rel: "answers", to: "mechanism" },
+  // Sprint 2: Compound/Peptide → Biomarker
+  { from: "compound", rel: "improves", to: "biomarker" },
+  { from: "compound", rel: "influences", to: "biomarker" },
+  { from: "compound", rel: "modulates", to: "biomarker" },
+  { from: "peptide", rel: "improves", to: "biomarker" },
+  { from: "peptide", rel: "influences", to: "biomarker" },
+  { from: "peptide", rel: "modulates", to: "biomarker" },
+  // Sprint 2: Compound/Peptide → Receptor (binds_to)
+  { from: "compound", rel: "binds_to", to: "receptor" },
+  { from: "peptide", rel: "binds_to", to: "receptor" },
+  // Sprint 2: Receptor → Pathway/Receptor
+  { from: "receptor", rel: "activates", to: "pathway" },
+  { from: "receptor", rel: "synergizes_with", to: "receptor" },
+  // Sprint 2: Mechanism → Mechanism/Pathway
+  { from: "mechanism", rel: "activates", to: "mechanism" },
+  { from: "mechanism", rel: "synergizes_with", to: "mechanism" },
+  { from: "mechanism", rel: "activates", to: "mechanism" },
+  // Sprint 2: Pathway → Pathway
+  { from: "pathway", rel: "synergizes_with", to: "pathway" },
+  { from: "pathway", rel: "activates", to: "pathway" },
+  // Sprint 2: Compound synergizes_with Compound (both directions)
+  { from: "compound", rel: "synergizes_with", to: "compound" },
+  { from: "compound", rel: "synergizes_with", to: "peptide" },
+  { from: "peptide", rel: "synergizes_with", to: "compound" },
 ] as const;
 
 const FORBIDDEN_RELATIONS = [
