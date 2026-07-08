@@ -219,7 +219,7 @@ router.post("/suggestions", async (req: Request, res: Response) => {
 });
 
 // PUT /api/agents/suggestions/:id/review — admin reviews a suggestion
-router.put("/suggestions/:id/review", async (req: Request, res: Response) => {
+router.put("/suggestions/:id/review", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { status, reviewNote, reviewedBy } = req.body;
     if (!["approved", "rejected", "under_review", "merged"].includes(status)) {
