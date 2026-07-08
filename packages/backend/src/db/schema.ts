@@ -54,6 +54,18 @@ export const entityTypeEnum = pgEnum("entity_type", [
   "academy_module",
   "video",
   "graphic",
+  // Phase 2 extensions — additive, 2026-07-08
+  "persona",             // user archetype / target audience
+  "goal",               // health or performance goal
+  "side_effect",        // adverse effect of a compound
+  "contraindication",   // condition that prevents use
+  "interaction_profile", // compound-compound or compound-drug interaction
+  "bloodwork_panel",    // lab test panel
+  "lab_parameter",      // single lab value / biomarker measurement
+  "coach_note",         // practitioner / coach guidance note
+  "sales_flow",         // sales funnel step or flow
+  "support_note",       // customer support knowledge entry
+  "bundle",             // product bundle
 ]);
 
 export const relationTypeEnum = pgEnum("relation_type", [
@@ -107,6 +119,55 @@ export const relationTypeEnum = pgEnum("relation_type", [
   "available_in_shop",
   "related_topic",
   "suggested_next",
+  // Phase 2 extensions — additive, 2026-07-08
+  // Compound → new targets
+  "has_side_effect",        // Compound → SideEffect
+  "has_contraindication",   // Compound → Contraindication
+  "has_interaction",        // Compound → InteractionProfile
+  "monitored_by",           // Compound → BloodworkPanel
+  "tracked_by",             // Compound → LabParameter
+  "targets_persona",        // Compound → Persona
+  "addresses_goal",         // Compound → Goal
+  "has_coach_note",         // Compound/Stack → CoachNote
+  "has_sales_flow",         // Compound/Stack → SalesFlow
+  "has_support_note",       // Compound/Stack → SupportNote
+  // Stack → new targets
+  "for_persona",            // Stack → Persona
+  "achieves_goal",          // Stack → Goal
+  "requires_panel",         // Stack → BloodworkPanel
+  // Goal → targets
+  "recommends_compound",    // Goal → Compound
+  "recommends_stack",       // Goal → Stack
+  "measured_via",           // Goal → Biomarker
+  "resolved_by",            // Goal → Symptom (symptom resolved by goal)
+  // Persona → targets
+  "has_goal",               // Persona → Goal
+  "uses_stack",             // Persona → Stack
+  "guided_by",              // Persona → CoachNote
+  "enters_flow",            // Persona → SalesFlow
+  // BloodworkPanel → targets
+  "includes_parameter",     // BloodworkPanel → LabParameter
+  // LabParameter → targets
+  "correlates_with",        // LabParameter → Biomarker
+  // SalesFlow → targets
+  "sells_product",          // SalesFlow → Product
+  "sells_bundle",           // SalesFlow → Bundle
+  "answers_via",            // SalesFlow → FAQ
+  // SupportNote → targets
+  "resolves_via",           // SupportNote → FAQ
+  "references_product",     // SupportNote → Product
+  // CoachNote → targets
+  "recommends_protocol",    // CoachNote → Protocol
+  "recommends_stack_note",  // CoachNote → Stack
+  "orders_panel",           // CoachNote → BloodworkPanel
+  // InteractionProfile → targets
+  "involves_compound",      // InteractionProfile → Compound
+  // SideEffect → targets
+  "detected_via",           // SideEffect → Biomarker
+  "mitigated_by",           // SideEffect → Protocol
+  // Contraindication → targets
+  "contraindicated_in",     // Contraindication → Disease
+  "contraindicated_with",   // Contraindication → Compound
 ]);
 
 export const evidenceLevelEnum = pgEnum("evidence_level", [
