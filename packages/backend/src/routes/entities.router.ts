@@ -17,15 +17,27 @@ router.get("/", async (req: Request, res: Response) => {
   try {
     const { type, category, q, limit = "50", offset = "0" } = req.query;
 
-    let query = db
+    // Build WHERE conditions
+    const conditions: any[] = [eq(entities.status, "published")];
+
+    // Fix: actually apply type filter when provided
+    if (type && typeof type === "string" && type.trim() !== "") {
+      conditions.push(eq(entities.type, type.trim() as any));
+    }
+
+    // Optional: full-text search on canonicalName
+    if (q && typeof q === "string" && q.trim() !== "") {
+      conditions.push(ilike(entities.canonicalName, `%${q.trim()}%`));
+    }
+
+    const rows = await db
       .select()
       .from(entities)
-      .where(eq(entities.status, "published"))
+      .where(and(...conditions))
       .orderBy(desc(entities.publishedAt))
       .limit(parseInt(limit as string))
       .offset(parseInt(offset as string));
 
-    const rows = await query;
     res.json({ data: rows, total: rows.length });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

@@ -16,7 +16,7 @@ sitemapRouter.get("/sitemap.xml", async (_req, res) => {
       .from(entities)
       .where(eq(entities.status, "published"));
 
-    const baseUrl = "https://wissen.369research.eu";
+    const baseUrl = "https://portal.369research.eu";
 
     const urls = [
       // Hub-Seite
