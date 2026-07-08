@@ -1,0 +1,58 @@
+name: Daily PostgreSQL Backup
+
+on:
+  schedule:
+    # Täglich um 03:00 UTC (05:00 CEST)
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    # Manuell auslösbar über GitHub Actions UI
+
+jobs:
+  backup:
+    name: pg_dump → GitHub Artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+
+      - name: Run pg_dump
+        env:
+          PGPASSWORD: ${{ secrets.PG_PASSWORD }}
+        run: |
+          TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
+          FILENAME="knowledge_backup_${TIMESTAMP}.sql.gz"
+          pg_dump \
+            --host=thomas.proxy.rlwy.net \
+            --port=12065 \
+            --username=knowledge_user \
+            --dbname=knowledge \
+            --no-password \
+            --format=plain \
+            --clean \
+            --if-exists \
+            | gzip > "${FILENAME}"
+          echo "BACKUP_FILE=${FILENAME}" >> $GITHUB_ENV
+          echo "Backup size: $(du -sh ${FILENAME} | cut -f1)"
+
+      - name: Upload backup as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: ${{ env.BACKUP_FILE }}
+          retention-days: 30
+          compression-level: 0
+
+      - name: Verify backup
+        run: |
+          SIZE=$(du -sb "${BACKUP_FILE}" | cut -f1)
+          echo "Backup file: ${BACKUP_FILE}"
+          echo "Backup size: ${SIZE} bytes"
+          if [ "$SIZE" -lt 1000 ]; then
+            echo "ERROR: Backup file is suspiciously small (< 1KB)"
+            exit 1
+          fi
+          echo "Backup verified successfully."
