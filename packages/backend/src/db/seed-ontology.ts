@@ -336,6 +336,13 @@ const ALLOWED_RELATIONS = [
   { from: "injury", rel: "recommended_for", to: "compound" },
   { from: "disease", rel: "recommended_for", to: "compound" },
 
+  // Domain 5: peptide/compound missing rules
+  { from: "peptide", rel: "recommended_for", to: "persona" },
+  { from: "peptide", rel: "relevant_for", to: "goal" },
+  { from: "compound", rel: "relevant_for", to: "goal" },
+  { from: "peptide", rel: "mechanism_complement", to: "small_molecule" },
+  { from: "small_molecule", rel: "mechanism_complement", to: "peptide" },
+
   // Domain 5: supplement and small_molecule full relation support
   { from: "supplement", rel: "goal_supports", to: "goal" },
   { from: "supplement", rel: "recommended_for", to: "goal" },
