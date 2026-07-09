@@ -200,6 +200,21 @@ const ALLOWED_RELATIONS = [
   { from: "faq", rel: "relevant_for", to: "protocol" },
   { from: "faq", rel: "relevant_for", to: "side_effect" },
   { from: "faq", rel: "relevant_for", to: "biomarker" },
+  // Domain 3: Anabolika / Harm Reduction & Monitoring
+  { from: "compound", rel: "has_side_effect", to: "side_effect" },
+  { from: "peptide", rel: "has_side_effect", to: "side_effect" },
+  { from: "compound", rel: "monitored_by", to: "protocol" },
+  { from: "peptide", rel: "monitored_by", to: "protocol" },
+  { from: "compound", rel: "monitored_by", to: "biomarker" },
+  { from: "peptide", rel: "monitored_by", to: "biomarker" },
+  { from: "protocol", rel: "uses", to: "compound" },
+  { from: "protocol", rel: "uses", to: "peptide" },
+  { from: "protocol", rel: "monitors", to: "biomarker" },
+  { from: "side_effect", rel: "mitigated_by", to: "protocol" },
+  { from: "side_effect", rel: "mitigated_by", to: "compound" },
+  { from: "biomarker", rel: "relevant_for", to: "side_effect" },
+  { from: "compound", rel: "activates", to: "mechanism" },
+  { from: "compound", rel: "inhibits", to: "mechanism" },
 ] as const;
 
 const FORBIDDEN_RELATIONS = [
