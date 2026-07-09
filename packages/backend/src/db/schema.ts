@@ -168,6 +168,24 @@ export const relationTypeEnum = pgEnum("relation_type", [
   // Contraindication → targets
   "contraindicated_in",     // Contraindication → Disease
   "contraindicated_with",   // Contraindication → Compound
+  // Coach Intelligence Layer — Phase 3 (2026-07-09)
+  "alternative_to",         // Compound → Compound (alternative option)
+  "recommended_for",        // Compound → Goal/Injury/Tissue (coach recommendation)
+  "avoid_with",             // Compound → Compound/Condition (avoid combination)
+  "works_best_when",        // Compound → Condition/Protocol (optimal context)
+  "stack_component_of",     // Compound → Stack (compound is part of stack)
+  "goal_supports",          // Compound → Goal (supports this goal)
+  "mechanism_overlap",      // Compound → Compound (shared mechanism)
+  "mechanism_complement",   // Compound → Compound (complementary mechanism)
+  "tissue_target",          // Compound → Tissue (primary tissue target)
+  "organ_target",           // Compound → Organ (primary organ target)
+  "injury_type",            // Compound → InjuryType/Disease (relevant injury)
+  "recovery_stage",         // Compound → RecoveryStage/Protocol (relevant stage)
+  "next_best_option",       // Compound → Compound (next best alternative)
+  "upgrade_path",           // Compound → Compound (upgrade to this)
+  "downgrade_path",         // Compound → Compound (downgrade to this)
+  "replacement_for",        // Compound → Compound (replaces this)
+  "common_combination",     // Compound → Compound (frequently combined)
 ]);
 
 export const evidenceLevelEnum = pgEnum("evidence_level", [
