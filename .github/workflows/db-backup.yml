@@ -11,7 +11,7 @@ jobs:
   backup:
     name: pg_dump → GitHub Artifact
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Install PostgreSQL client
