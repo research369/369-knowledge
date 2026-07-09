@@ -294,6 +294,51 @@ const ALLOWED_RELATIONS = [
   { from: "stack", rel: "stack_component_of", to: "stack" },
   { from: "stack", rel: "relevant_for", to: "compound" },
   { from: "stack", rel: "relevant_for", to: "peptide" },
+
+  // ─── Phase 4: Knowledge Engineering Mode ─────────────────────────────────
+  // Persona relations
+  { from: "compound", rel: "persona_fit", to: "persona" },
+  { from: "peptide", rel: "persona_fit", to: "persona" },
+  { from: "stack", rel: "persona_fit", to: "persona" },
+  { from: "protocol", rel: "persona_fit", to: "persona" },
+  { from: "persona", rel: "has_goal", to: "goal" },
+  // Goal tree
+  { from: "goal", rel: "goal_supports", to: "goal" },
+  { from: "goal", rel: "recommended_for", to: "persona" },
+  // Biomarker / Monitoring relations
+  { from: "compound", rel: "biomarker_target", to: "biomarker" },
+  { from: "compound", rel: "biomarker_target", to: "lab_parameter" },
+  { from: "compound", rel: "monitor_with", to: "biomarker" },
+  { from: "compound", rel: "monitor_with", to: "lab_parameter" },
+  { from: "compound", rel: "side_effect_monitor", to: "biomarker" },
+  { from: "compound", rel: "side_effect_monitor", to: "lab_parameter" },
+  { from: "stack", rel: "monitor_with", to: "biomarker" },
+  { from: "stack", rel: "monitor_with", to: "lab_parameter" },
+  { from: "stack", rel: "biomarker_target", to: "biomarker" },
+  // Stack phase / priority relations
+  { from: "compound", rel: "stack_phase", to: "stack" },
+  // Time axis relations
+  { from: "compound", rel: "time_axis_phase", to: "protocol" },
+  { from: "stack", rel: "time_axis_phase", to: "protocol" },
+  // Decision rule relations
+  { from: "coach_note", rel: "decision_rule", to: "compound" },
+  { from: "coach_note", rel: "decision_rule", to: "stack" },
+  { from: "coach_note", rel: "decision_rule", to: "protocol" },
+  { from: "coach_note", rel: "recommended_for", to: "persona" },
+  { from: "coach_note", rel: "recommended_for", to: "injury" },
+  { from: "coach_note", rel: "recommended_for", to: "disease" },
+  // FAQ answers
+  { from: "faq", rel: "faq_answers", to: "compound" },
+  { from: "faq", rel: "faq_answers", to: "stack" },
+  { from: "faq", rel: "faq_answers", to: "injury" },
+  // Contraindication relations
+  { from: "compound", rel: "contraindicated_for", to: "persona" },
+  { from: "compound", rel: "contraindicated_for", to: "disease" },
+  // Synergy relations
+  { from: "compound", rel: "synergy_strength", to: "compound" },
+  // Injury → compound
+  { from: "injury", rel: "recommended_for", to: "compound" },
+  { from: "disease", rel: "recommended_for", to: "compound" },
   // Stack → Injury (Coach Layer)
   { from: "stack", rel: "recommended_for", to: "injury" },
   { from: "stack", rel: "recommended_for", to: "side_effect" },
@@ -325,6 +370,96 @@ const ALLOWED_RELATIONS = [
   { from: "peptide", rel: "works_best_when", to: "tissue" },
   { from: "compound", rel: "works_best_when", to: "organ" },
   { from: "peptide", rel: "works_best_when", to: "organ" },
+
+  // ─── Phase 4: Knowledge Engineering Mode ─────────────────────────────────
+  // Persona relations
+  { from: "compound", rel: "persona_fit", to: "persona" },
+  { from: "peptide", rel: "persona_fit", to: "persona" },
+  { from: "stack", rel: "persona_fit", to: "persona" },
+  { from: "protocol", rel: "persona_fit", to: "persona" },
+  { from: "persona", rel: "has_goal", to: "goal" },
+  // Goal tree
+  { from: "goal", rel: "goal_supports", to: "goal" },
+  { from: "goal", rel: "recommended_for", to: "persona" },
+  // Biomarker / Monitoring relations
+  { from: "compound", rel: "biomarker_target", to: "biomarker" },
+  { from: "compound", rel: "biomarker_target", to: "lab_parameter" },
+  { from: "compound", rel: "monitor_with", to: "biomarker" },
+  { from: "compound", rel: "monitor_with", to: "lab_parameter" },
+  { from: "compound", rel: "side_effect_monitor", to: "biomarker" },
+  { from: "compound", rel: "side_effect_monitor", to: "lab_parameter" },
+  { from: "stack", rel: "monitor_with", to: "biomarker" },
+  { from: "stack", rel: "monitor_with", to: "lab_parameter" },
+  { from: "stack", rel: "biomarker_target", to: "biomarker" },
+  // Stack phase / priority relations
+  { from: "compound", rel: "stack_phase", to: "stack" },
+  // Time axis relations
+  { from: "compound", rel: "time_axis_phase", to: "protocol" },
+  { from: "stack", rel: "time_axis_phase", to: "protocol" },
+  // Decision rule relations
+  { from: "coach_note", rel: "decision_rule", to: "compound" },
+  { from: "coach_note", rel: "decision_rule", to: "stack" },
+  { from: "coach_note", rel: "decision_rule", to: "protocol" },
+  { from: "coach_note", rel: "recommended_for", to: "persona" },
+  { from: "coach_note", rel: "recommended_for", to: "injury" },
+  { from: "coach_note", rel: "recommended_for", to: "disease" },
+  // FAQ answers
+  { from: "faq", rel: "faq_answers", to: "compound" },
+  { from: "faq", rel: "faq_answers", to: "stack" },
+  { from: "faq", rel: "faq_answers", to: "injury" },
+  // Contraindication relations
+  { from: "compound", rel: "contraindicated_for", to: "persona" },
+  { from: "compound", rel: "contraindicated_for", to: "disease" },
+  // Synergy relations
+  { from: "compound", rel: "synergy_strength", to: "compound" },
+  // Injury -> compound
+  { from: "injury", rel: "recommended_for", to: "compound" },
+  { from: "disease", rel: "recommended_for", to: "compound" },
+
+  // ─── Phase 4: Knowledge Engineering Mode ─────────────────────────────────
+  // Persona relations
+  { from: "compound", rel: "persona_fit", to: "persona" },
+  { from: "peptide", rel: "persona_fit", to: "persona" },
+  { from: "stack", rel: "persona_fit", to: "persona" },
+  { from: "protocol", rel: "persona_fit", to: "persona" },
+  { from: "persona", rel: "has_goal", to: "goal" },
+  // Goal tree
+  { from: "goal", rel: "goal_supports", to: "goal" },
+  { from: "goal", rel: "recommended_for", to: "persona" },
+  // Biomarker / Monitoring relations
+  { from: "compound", rel: "biomarker_target", to: "biomarker" },
+  { from: "compound", rel: "biomarker_target", to: "lab_parameter" },
+  { from: "compound", rel: "monitor_with", to: "biomarker" },
+  { from: "compound", rel: "monitor_with", to: "lab_parameter" },
+  { from: "compound", rel: "side_effect_monitor", to: "biomarker" },
+  { from: "compound", rel: "side_effect_monitor", to: "lab_parameter" },
+  { from: "stack", rel: "monitor_with", to: "biomarker" },
+  { from: "stack", rel: "monitor_with", to: "lab_parameter" },
+  { from: "stack", rel: "biomarker_target", to: "biomarker" },
+  // Stack phase / priority relations
+  { from: "compound", rel: "stack_phase", to: "stack" },
+  // Time axis relations
+  { from: "compound", rel: "time_axis_phase", to: "protocol" },
+  { from: "stack", rel: "time_axis_phase", to: "protocol" },
+  // Decision rule relations
+  { from: "coach_note", rel: "decision_rule", to: "compound" },
+  { from: "coach_note", rel: "decision_rule", to: "stack" },
+  { from: "coach_note", rel: "decision_rule", to: "protocol" },
+  { from: "coach_note", rel: "recommended_for", to: "persona" },
+  { from: "coach_note", rel: "recommended_for", to: "injury" },
+  { from: "coach_note", rel: "recommended_for", to: "disease" },
+  // FAQ answers
+  { from: "faq", rel: "faq_answers", to: "compound" },
+  { from: "faq", rel: "faq_answers", to: "stack" },
+  { from: "faq", rel: "faq_answers", to: "injury" },
+  // Contraindication relations
+  { from: "compound", rel: "contraindicated_for", to: "persona" },
+  { from: "compound", rel: "contraindicated_for", to: "disease" },
+  // Synergy relations
+  { from: "compound", rel: "synergy_strength", to: "compound" },
+  // Injury -> compound
+  { from: "injury", rel: "recommended_for", to: "compound" },
+  { from: "disease", rel: "recommended_for", to: "compound" },
 ] as const;
 
 const FORBIDDEN_RELATIONS = [
