@@ -330,6 +330,54 @@ const ALLOWED_RELATIONS = [
 const FORBIDDEN_RELATIONS = [
   { from: "product", rel: "relevant_for", to: "disease", reason: "Compliance: Heilversprechen verboten" },
   { from: "compound", rel: "relevant_for", to: "disease", reason: "Compliance: medizinische Aussage verboten — nur 'relevant_for biological_process' erlaubt" },
+
+  // ─── Phase 4: Knowledge Engineering Mode ─────────────────────────────────
+  // Persona relations
+  { from: "compound", rel: "persona_fit", to: "persona", reason: "Compound is suitable for this persona" },
+  { from: "stack", rel: "persona_fit", to: "persona", reason: "Stack is designed for this persona" },
+  { from: "protocol", rel: "persona_fit", to: "persona", reason: "Protocol is designed for this persona" },
+  // Biomarker / Monitoring relations
+  { from: "compound", rel: "biomarker_target", to: "biomarker", reason: "Compound affects this biomarker" },
+  { from: "compound", rel: "biomarker_target", to: "lab_parameter", reason: "Compound affects this lab parameter" },
+  { from: "compound", rel: "monitor_with", to: "biomarker", reason: "Monitor this biomarker when using compound" },
+  { from: "compound", rel: "monitor_with", to: "lab_parameter", reason: "Monitor this lab parameter when using compound" },
+  { from: "compound", rel: "side_effect_monitor", to: "biomarker", reason: "Monitor for side effect detection" },
+  { from: "compound", rel: "side_effect_monitor", to: "lab_parameter", reason: "Monitor lab parameter for side effects" },
+  { from: "stack", rel: "monitor_with", to: "biomarker", reason: "Monitor this biomarker when using stack" },
+  { from: "stack", rel: "monitor_with", to: "lab_parameter", reason: "Monitor this lab parameter when using stack" },
+  // Stack phase / priority relations
+  { from: "compound", rel: "stack_phase", to: "stack", reason: "Compound belongs to stack with priority role" },
+  // Time axis relations
+  { from: "compound", rel: "time_axis_phase", to: "protocol", reason: "Compound is relevant in this recovery phase" },
+  { from: "stack", rel: "time_axis_phase", to: "protocol", reason: "Stack is relevant in this recovery phase" },
+  // Decision rule relations
+  { from: "coach_note", rel: "decision_rule", to: "compound", reason: "IF-THEN decision rule leads to compound" },
+  { from: "coach_note", rel: "decision_rule", to: "stack", reason: "IF-THEN decision rule leads to stack" },
+  { from: "coach_note", rel: "decision_rule", to: "protocol", reason: "IF-THEN decision rule leads to protocol" },
+  { from: "coach_note", rel: "recommended_for", to: "persona", reason: "Coach note is relevant for this persona" },
+  { from: "coach_note", rel: "recommended_for", to: "injury", reason: "Coach note is relevant for this injury" },
+  { from: "coach_note", rel: "recommended_for", to: "disease", reason: "Coach note is relevant for this disease" },
+  // Sales / Academy relations
+  { from: "compound", rel: "sales_trigger", to: "sales_flow", reason: "Compound triggers this sales flow" },
+  { from: "stack", rel: "sales_trigger", to: "sales_flow", reason: "Stack triggers this sales flow" },
+  { from: "compound", rel: "academy_covers", to: "academy_module", reason: "Academy covers this compound" },
+  { from: "stack", rel: "academy_covers", to: "academy_module", reason: "Academy covers this stack" },
+  { from: "faq", rel: "faq_answers", to: "compound", reason: "FAQ answers questions about this compound" },
+  { from: "faq", rel: "faq_answers", to: "stack", reason: "FAQ answers questions about this stack" },
+  { from: "faq", rel: "faq_answers", to: "injury", reason: "FAQ answers questions about this injury" },
+  // Contraindication relations
+  { from: "compound", rel: "contraindicated_for", to: "persona", reason: "Compound is contraindicated for this persona" },
+  { from: "compound", rel: "contraindicated_for", to: "disease", reason: "Compound is contraindicated for this disease" },
+  { from: "compound", rel: "contraindicated_with", to: "compound", reason: "Compounds should not be combined" },
+  // Synergy relations
+  { from: "compound", rel: "synergizes_with", to: "compound", reason: "General synergy between compounds" },
+  { from: "compound", rel: "synergy_strength", to: "compound", reason: "Synergy quality rating between compounds" },
+  // Goal tree relations
+  { from: "goal", rel: "goal_supports", to: "goal", reason: "Goal leads to this higher goal (goal tree)" },
+  { from: "goal", rel: "recommended_for", to: "persona", reason: "Goal is relevant for this persona" },
+  // Injury → compound relations
+  { from: "injury", rel: "recommended_for", to: "compound", reason: "Injury benefits from this compound" },
+  { from: "disease", rel: "recommended_for", to: "compound", reason: "Disease benefits from this compound" },
 ] as const;
 
 export async function seedOntology() {

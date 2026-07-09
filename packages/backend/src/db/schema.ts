@@ -187,6 +187,21 @@ export const relationTypeEnum = pgEnum("relation_type", [
   "downgrade_path",         // Compound → Compound (downgrade to this)
   "replacement_for",        // Compound → Compound (replaces this)
   "common_combination",     // Compound → Compound (frequently combined)
+  // Phase 4 — Knowledge Engineering Mode (2026-07-09)
+  "stack_phase",            // Compound → Stack (with phase: first_line/core/adjunct/optional/experimental)
+  "synergy_strength",       // Compound → Compound (synergy quality: very_high/high/moderate/low/experimental)
+  "biomarker_target",       // Compound → Biomarker/LabParameter (compound affects this marker)
+  "monitor_with",           // Compound → Biomarker/LabParameter (should monitor this)
+  "side_effect_monitor",    // Compound → Biomarker (monitor for side effect)
+  "research_strength",      // Compound → Study (evidence level for this compound)
+  "persona_fit",            // Compound/Stack → Persona (suitable for this persona)
+  "time_axis_phase",        // Compound/Stack → RecoveryStage (relevant in this phase)
+  "decision_rule",          // CoachNote → Compound/Stack (IF-THEN decision rule)
+  "sales_trigger",          // Compound/Stack → SalesNote (sales trigger)
+  "academy_covers",         // Compound/Stack → AcademyModule (academy content)
+  "faq_answers",            // FAQ → Compound/Stack (FAQ about this)
+  "contraindicated_for",    // Compound → Persona/Disease (contraindicated for)
+  "synergizes_with",        // Compound → Compound (general synergy)
 ]);
 
 export const evidenceLevelEnum = pgEnum("evidence_level", [

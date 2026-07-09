@@ -155,6 +155,11 @@ router.post("/run-migration", requireAdmin, async (_req: Request, res: Response)
       "tissue_target", "organ_target", "injury_type", "recovery_stage",
       "next_best_option", "upgrade_path", "downgrade_path", "replacement_for",
       "common_combination",
+      // Phase 4 — Knowledge Engineering Mode
+      "stack_phase", "synergy_strength", "biomarker_target", "monitor_with",
+      "side_effect_monitor", "research_strength", "persona_fit", "time_axis_phase",
+      "decision_rule", "sales_trigger", "academy_covers", "faq_answers",
+      "contraindicated_for", "synergizes_with",
     ];
     const results: string[] = [];
     for (const val of newValues) {
