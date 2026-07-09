@@ -155,11 +155,6 @@ router.post("/run-migration", requireAdmin, async (_req: Request, res: Response)
       "tissue_target", "organ_target", "injury_type", "recovery_stage",
       "next_best_option", "upgrade_path", "downgrade_path", "replacement_for",
       "common_combination",
-      // Phase 4 — Knowledge Engineering Mode
-      "stack_phase", "synergy_strength", "biomarker_target", "monitor_with",
-      "side_effect_monitor", "research_strength", "persona_fit", "time_axis_phase",
-      "decision_rule", "sales_trigger", "academy_covers", "faq_answers",
-      "contraindicated_for", "synergizes_with",
     ];
     const results: string[] = [];
     for (const val of newValues) {
@@ -168,16 +163,6 @@ router.post("/run-migration", requireAdmin, async (_req: Request, res: Response)
         results.push(`OK: ${val}`);
       } catch (e: any) {
         results.push(`SKIP: ${val} (${(e.message || "").slice(0, 60)})`);
-      }
-    }
-    // Also add new entity_type enum values
-    const newEntityTypes = ["injury"];
-    for (const val of newEntityTypes) {
-      try {
-        await db.execute(sql.raw(`ALTER TYPE entity_type ADD VALUE IF NOT EXISTS '${val}'`));
-        results.push(`OK entity_type: ${val}`);
-      } catch (e: any) {
-        results.push(`SKIP entity_type: ${val} (${(e.message || "").slice(0, 60)})`);
       }
     }
     res.json({ message: "Migration complete", results });
