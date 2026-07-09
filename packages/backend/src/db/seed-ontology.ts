@@ -183,6 +183,23 @@ const ALLOWED_RELATIONS = [
   { from: "compound", rel: "synergizes_with", to: "compound" },
   { from: "compound", rel: "improves", to: "biomarker" },
   { from: "peptide", rel: "improves", to: "biomarker" },
+  // Domain 3: Protocol, Side Effect, Biomarker relations
+  { from: "protocol", rel: "relevant_for", to: "compound" },
+  { from: "protocol", rel: "relevant_for", to: "peptide" },
+  { from: "protocol", rel: "relevant_for", to: "biomarker" },
+  { from: "protocol", rel: "relevant_for", to: "protocol" },
+  { from: "protocol", rel: "relevant_for", to: "mechanism" },
+  { from: "side_effect", rel: "relevant_for", to: "compound" },
+  { from: "side_effect", rel: "relevant_for", to: "peptide" },
+  { from: "side_effect", rel: "caused_by", to: "compound" },
+  { from: "side_effect", rel: "caused_by", to: "mechanism" },
+  { from: "biomarker", rel: "relevant_for", to: "compound" },
+  { from: "biomarker", rel: "relevant_for", to: "peptide" },
+  { from: "biomarker", rel: "relevant_for", to: "protocol" },
+  { from: "biomarker", rel: "relevant_for", to: "mechanism" },
+  { from: "faq", rel: "relevant_for", to: "protocol" },
+  { from: "faq", rel: "relevant_for", to: "side_effect" },
+  { from: "faq", rel: "relevant_for", to: "biomarker" },
 ] as const;
 
 const FORBIDDEN_RELATIONS = [
