@@ -336,6 +336,17 @@ const ALLOWED_RELATIONS = [
   { from: "compound", rel: "contraindicated_for", to: "disease" },
   // Synergy relations
   { from: "compound", rel: "synergy_strength", to: "compound" },
+  // Peptide variants for Phase 4 Knowledge Engineering
+  { from: "peptide", rel: "biomarker_target", to: "biomarker" },
+  { from: "peptide", rel: "biomarker_target", to: "lab_parameter" },
+  { from: "peptide", rel: "monitor_with", to: "biomarker" },
+  { from: "peptide", rel: "monitor_with", to: "lab_parameter" },
+  { from: "peptide", rel: "time_axis_phase", to: "protocol" },
+  { from: "peptide", rel: "synergy_strength", to: "peptide" },
+  { from: "peptide", rel: "synergy_strength", to: "compound" },
+  { from: "compound", rel: "synergy_strength", to: "peptide" },
+  { from: "peptide", rel: "contraindicated_for", to: "persona" },
+  { from: "peptide", rel: "persona_fit", to: "persona" },
   // Injury → compound
   { from: "injury", rel: "recommended_for", to: "compound" },
   { from: "disease", rel: "recommended_for", to: "compound" },
