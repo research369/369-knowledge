@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import { createHash, randomBytes } from "crypto";
 import { requireAdmin } from "../middleware/auth.js";
 import { z } from "zod";
+import { seedOntology } from "../db/seed-ontology.js";
 
 const router = Router();
 
@@ -138,6 +139,17 @@ router.delete("/api-keys/:id", requireAdmin, async (req: Request, res: Response)
       .set({ active: false })
       .where(eq(apiKeys.id, req.params.id));
     res.json({ message: "API key revoked" });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Admin: Re-seed Ontology (one-time fix, idempotent) ─────────────────────
+
+router.post("/reseed-ontology", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    await seedOntology();
+    res.json({ message: "Ontology re-seeded successfully" });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
