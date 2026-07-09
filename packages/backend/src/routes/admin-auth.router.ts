@@ -157,6 +157,7 @@ router.post("/run-migration", requireAdmin, async (_req: Request, res: Response)
       "common_combination",
       // Go-Live additions
       "has_faq",
+      "has_protocol",
       // Phase 4 relation types
       "persona_fit", "biomarker_target", "monitor_with", "time_axis_phase",
       "synergy_strength", "priority_level", "stack_phase", "decision_rule",
@@ -194,6 +195,51 @@ router.post("/reseed-ontology", requireAdmin, async (_req: Request, res: Respons
   try {
     await seedOntology();
     res.json({ message: "Ontology re-seeded successfully" });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Admin: Force-insert ontology rules (bypasses onConflictDoNothing) ───────
+
+router.post("/force-ontology-rules", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const rules = [
+      // has_faq rules
+      { id: "rule-compound-has_faq-faq", from: "compound", rel: "has_faq", to: "faq" },
+      { id: "rule-peptide-has_faq-faq", from: "peptide", rel: "has_faq", to: "faq" },
+      { id: "rule-small_molecule-has_faq-faq", from: "small_molecule", rel: "has_faq", to: "faq" },
+      { id: "rule-supplement-has_faq-faq", from: "supplement", rel: "has_faq", to: "faq" },
+      { id: "rule-hormone-has_faq-faq", from: "hormone", rel: "has_faq", to: "faq" },
+      { id: "rule-steroid-has_faq-faq", from: "steroid", rel: "has_faq", to: "faq" },
+      // has_protocol rules
+      { id: "rule-compound-has_protocol-protocol", from: "compound", rel: "has_protocol", to: "protocol" },
+      { id: "rule-peptide-has_protocol-protocol", from: "peptide", rel: "has_protocol", to: "protocol" },
+      { id: "rule-small_molecule-has_protocol-protocol", from: "small_molecule", rel: "has_protocol", to: "protocol" },
+      { id: "rule-supplement-has_protocol-protocol", from: "supplement", rel: "has_protocol", to: "protocol" },
+      { id: "rule-hormone-has_protocol-protocol", from: "hormone", rel: "has_protocol", to: "protocol" },
+      { id: "rule-steroid-has_protocol-protocol", from: "steroid", rel: "has_protocol", to: "protocol" },
+      { id: "rule-compound-has_protocol-dosage", from: "compound", rel: "has_protocol", to: "dosage" },
+      { id: "rule-peptide-has_protocol-dosage", from: "peptide", rel: "has_protocol", to: "dosage" },
+      { id: "rule-small_molecule-has_protocol-dosage", from: "small_molecule", rel: "has_protocol", to: "dosage" },
+      { id: "rule-supplement-has_protocol-dosage", from: "supplement", rel: "has_protocol", to: "dosage" },
+      { id: "rule-hormone-has_protocol-dosage", from: "hormone", rel: "has_protocol", to: "dosage" },
+      { id: "rule-steroid-has_protocol-dosage", from: "steroid", rel: "has_protocol", to: "dosage" },
+    ];
+    const results: string[] = [];
+    for (const rule of rules) {
+      try {
+        await db.execute(sql.raw(
+          `INSERT INTO ontology_relations (id, from_entity_type, relation_type, to_entity_type, allowed)
+           VALUES ('${rule.id}', '${rule.from}', '${rule.rel}', '${rule.to}', true)
+           ON CONFLICT (id) DO NOTHING`
+        ));
+        results.push(`OK: ${rule.id}`);
+      } catch (e: any) {
+        results.push(`SKIP: ${rule.id} (${(e.message || "").slice(0, 60)})`);
+      }
+    }
+    res.json({ message: "Force ontology rules complete", results });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
