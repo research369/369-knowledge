@@ -294,6 +294,37 @@ const ALLOWED_RELATIONS = [
   { from: "stack", rel: "stack_component_of", to: "stack" },
   { from: "stack", rel: "relevant_for", to: "compound" },
   { from: "stack", rel: "relevant_for", to: "peptide" },
+  // Stack → Injury (Coach Layer)
+  { from: "stack", rel: "recommended_for", to: "injury" },
+  { from: "stack", rel: "recommended_for", to: "side_effect" },
+  // Stack → Stack (comparison/upgrade)
+  { from: "stack", rel: "alternative_to", to: "stack" },
+  { from: "stack", rel: "upgrade_path", to: "stack" },
+  { from: "stack", rel: "next_best_option", to: "stack" },
+  // Compound/Peptide → Injury
+  { from: "compound", rel: "recommended_for", to: "injury" },
+  { from: "peptide", rel: "recommended_for", to: "injury" },
+  // Compound/Peptide works_best_when → Tissue/Organ
+  { from: "compound", rel: "works_best_when", to: "tissue" },
+  { from: "peptide", rel: "works_best_when", to: "tissue" },
+  { from: "compound", rel: "works_best_when", to: "organ" },
+  { from: "peptide", rel: "works_best_when", to: "organ" },
+
+  // Stack → Injury (Coach Layer)
+  { from: "stack", rel: "recommended_for", to: "injury" },
+  { from: "stack", rel: "recommended_for", to: "side_effect" },
+  // Stack → Stack (comparison/upgrade)
+  { from: "stack", rel: "alternative_to", to: "stack" },
+  { from: "stack", rel: "upgrade_path", to: "stack" },
+  { from: "stack", rel: "next_best_option", to: "stack" },
+  // Compound/Peptide → Injury
+  { from: "compound", rel: "recommended_for", to: "injury" },
+  { from: "peptide", rel: "recommended_for", to: "injury" },
+  // Compound/Peptide works_best_when → Tissue/Organ
+  { from: "compound", rel: "works_best_when", to: "tissue" },
+  { from: "peptide", rel: "works_best_when", to: "tissue" },
+  { from: "compound", rel: "works_best_when", to: "organ" },
+  { from: "peptide", rel: "works_best_when", to: "organ" },
 ] as const;
 
 const FORBIDDEN_RELATIONS = [
