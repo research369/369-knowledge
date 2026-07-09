@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { db } from "../db/index.js";
 import { adminSessions, apiKeys } from "../db/schema.js";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { createHash, randomBytes } from "crypto";
 import { requireAdmin } from "../middleware/auth.js";
@@ -159,7 +159,7 @@ router.post("/run-migration", requireAdmin, async (_req: Request, res: Response)
     const results: string[] = [];
     for (const val of newValues) {
       try {
-        await db.execute({ sql: `ALTER TYPE relation_type ADD VALUE IF NOT EXISTS '${val}'`, params: [] } as any);
+        await db.execute(sql.raw(`ALTER TYPE relation_type ADD VALUE IF NOT EXISTS '${val}'`));
         results.push(`OK: ${val}`);
       } catch (e: any) {
         results.push(`SKIP: ${val} (${(e.message || "").slice(0, 60)})`);
