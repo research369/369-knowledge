@@ -144,6 +144,33 @@ router.delete("/api-keys/:id", requireAdmin, async (req: Request, res: Response)
   }
 });
 
+// ─── Admin: Run SQL Migration (ALTER TYPE for new enum values) ──────────────
+
+router.post("/run-migration", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    // Add Coach Intelligence Layer relation types to PostgreSQL enum
+    const newValues = [
+      "alternative_to", "recommended_for", "avoid_with", "works_best_when",
+      "stack_component_of", "goal_supports", "mechanism_overlap", "mechanism_complement",
+      "tissue_target", "organ_target", "injury_type", "recovery_stage",
+      "next_best_option", "upgrade_path", "downgrade_path", "replacement_for",
+      "common_combination",
+    ];
+    const results: string[] = [];
+    for (const val of newValues) {
+      try {
+        await db.execute({ sql: `ALTER TYPE relation_type ADD VALUE IF NOT EXISTS '${val}'`, params: [] } as any);
+        results.push(`OK: ${val}`);
+      } catch (e: any) {
+        results.push(`SKIP: ${val} (${(e.message || "").slice(0, 60)})`);
+      }
+    }
+    res.json({ message: "Migration complete", results });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Admin: Re-seed Ontology (one-time fix, idempotent) ─────────────────────
 
 router.post("/reseed-ontology", requireAdmin, async (_req: Request, res: Response) => {
