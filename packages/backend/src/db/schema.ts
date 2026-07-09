@@ -39,6 +39,7 @@ export const entityTypeEnum = pgEnum("entity_type", [
   "tissue",
   "biological_process",
   "disease",
+  "injury",               // injury / condition for Coach Layer
   "symptom",
   "biomarker",
   "stack",

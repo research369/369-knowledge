@@ -165,6 +165,16 @@ router.post("/run-migration", requireAdmin, async (_req: Request, res: Response)
         results.push(`SKIP: ${val} (${(e.message || "").slice(0, 60)})`);
       }
     }
+    // Also add new entity_type enum values
+    const newEntityTypes = ["injury"];
+    for (const val of newEntityTypes) {
+      try {
+        await db.execute(sql.raw(`ALTER TYPE entity_type ADD VALUE IF NOT EXISTS '${val}'`));
+        results.push(`OK entity_type: ${val}`);
+      } catch (e: any) {
+        results.push(`SKIP entity_type: ${val} (${(e.message || "").slice(0, 60)})`);
+      }
+    }
     res.json({ message: "Migration complete", results });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
