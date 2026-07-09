@@ -113,6 +113,7 @@ export const relationTypeEnum = pgEnum("relation_type", [
   "has_product",
   // Ecosystem relations (new — Phase 2a)
   "has_protocol",
+  "has_faq",
   "has_stack",
   "has_guide",
   "part_of_academy",

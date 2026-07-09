@@ -155,6 +155,13 @@ router.post("/run-migration", requireAdmin, async (_req: Request, res: Response)
       "tissue_target", "organ_target", "injury_type", "recovery_stage",
       "next_best_option", "upgrade_path", "downgrade_path", "replacement_for",
       "common_combination",
+      // Go-Live additions
+      "has_faq",
+      // Phase 4 relation types
+      "persona_fit", "biomarker_target", "monitor_with", "time_axis_phase",
+      "synergy_strength", "priority_level", "stack_phase", "decision_rule",
+      "contraindicated_with", "first_line_for", "adjunct_for", "optional_for",
+      "core_for", "sales_note", "coach_intelligence",
     ];
     const results: string[] = [];
     for (const val of newValues) {
@@ -163,6 +170,16 @@ router.post("/run-migration", requireAdmin, async (_req: Request, res: Response)
         results.push(`OK: ${val}`);
       } catch (e: any) {
         results.push(`SKIP: ${val} (${(e.message || "").slice(0, 60)})`);
+      }
+    }
+    // Also add entity_type values
+    const newEntityTypes = ["injury"];
+    for (const val of newEntityTypes) {
+      try {
+        await db.execute(sql.raw(`ALTER TYPE entity_type ADD VALUE IF NOT EXISTS '${val}'`));
+        results.push(`OK entity_type: ${val}`);
+      } catch (e: any) {
+        results.push(`SKIP entity_type: ${val} (${(e.message || "").slice(0, 60)})`);
       }
     }
     res.json({ message: "Migration complete", results });

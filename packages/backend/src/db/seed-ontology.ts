@@ -340,6 +340,20 @@ const ALLOWED_RELATIONS = [
 const FORBIDDEN_RELATIONS = [
   { from: "product", rel: "relevant_for", to: "disease", reason: "Compliance: Heilversprechen verboten" },
   { from: "compound", rel: "relevant_for", to: "disease", reason: "Compliance: medizinische Aussage verboten — nur 'relevant_for biological_process' erlaubt" },
+
+  // Go-Live: has_faq and has_protocol rules for all entity types
+  { fromEntityType: "compound", relationType: "has_faq", toEntityType: "faq", allowed: true, description: "Compound has FAQ entry" },
+  { fromEntityType: "peptide", relationType: "has_faq", toEntityType: "faq", allowed: true, description: "Peptide has FAQ entry" },
+  { fromEntityType: "small_molecule", relationType: "has_faq", toEntityType: "faq", allowed: true, description: "Small molecule has FAQ entry" },
+  { fromEntityType: "supplement", relationType: "has_faq", toEntityType: "faq", allowed: true, description: "Supplement has FAQ entry" },
+  { fromEntityType: "stack", relationType: "has_faq", toEntityType: "faq", allowed: true, description: "Stack has FAQ entry" },
+  { fromEntityType: "protocol", relationType: "has_faq", toEntityType: "faq", allowed: true, description: "Protocol has FAQ entry" },
+  // has_protocol rules
+  { fromEntityType: "compound", relationType: "has_protocol", toEntityType: "protocol", allowed: true, description: "Compound has protocol" },
+  { fromEntityType: "peptide", relationType: "has_protocol", toEntityType: "protocol", allowed: true, description: "Peptide has protocol" },
+  { fromEntityType: "small_molecule", relationType: "has_protocol", toEntityType: "protocol", allowed: true, description: "Small molecule has protocol" },
+  { fromEntityType: "supplement", relationType: "has_protocol", toEntityType: "protocol", allowed: true, description: "Supplement has protocol" },
+  { fromEntityType: "stack", relationType: "has_protocol", toEntityType: "protocol", allowed: true, description: "Stack has protocol" },
 ] as const;
 
 export async function seedOntology() {
