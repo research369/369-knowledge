@@ -225,6 +225,20 @@ router.post("/force-ontology-rules", requireAdmin, async (_req: Request, res: Re
       { id: "rule-supplement-has_protocol-dosage", from: "supplement", rel: "has_protocol", to: "dosage" },
       { id: "rule-hormone-has_protocol-dosage", from: "hormone", rel: "has_protocol", to: "dosage" },
       { id: "rule-steroid-has_protocol-dosage", from: "steroid", rel: "has_protocol", to: "dosage" },
+      // tissue_target rules for supplement and small_molecule
+      { id: "rule-supplement-tissue_target-tissue", from: "supplement", rel: "tissue_target", to: "tissue" },
+      { id: "rule-small_molecule-tissue_target-tissue", from: "small_molecule", rel: "tissue_target", to: "tissue" },
+      { id: "rule-supplement-organ_target-organ", from: "supplement", rel: "organ_target", to: "organ" },
+      { id: "rule-small_molecule-organ_target-organ", from: "small_molecule", rel: "organ_target", to: "organ" },
+      // alternative_to cross-type rules
+      { id: "rule-supplement-alternative_to-small_molecule", from: "supplement", rel: "alternative_to", to: "small_molecule" },
+      { id: "rule-supplement-alternative_to-peptide", from: "supplement", rel: "alternative_to", to: "peptide" },
+      { id: "rule-peptide-alternative_to-supplement", from: "peptide", rel: "alternative_to", to: "supplement" },
+      { id: "rule-small_molecule-alternative_to-supplement", from: "small_molecule", rel: "alternative_to", to: "supplement" },
+      { id: "rule-small_molecule-alternative_to-peptide", from: "small_molecule", rel: "alternative_to", to: "peptide" },
+      { id: "rule-peptide-alternative_to-small_molecule", from: "peptide", rel: "alternative_to", to: "small_molecule" },
+      { id: "rule-compound-alternative_to-small_molecule", from: "compound", rel: "alternative_to", to: "small_molecule" },
+      { id: "rule-small_molecule-alternative_to-compound", from: "small_molecule", rel: "alternative_to", to: "compound" },
     ];
     const results: string[] = [];
     for (const rule of rules) {
