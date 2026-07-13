@@ -113,15 +113,15 @@ router.post("/admin/dedup", requireAdmin, async (req: Request, res: Response) =>
       // Sort by createdAt descending (newest first)
       group.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
 
-      const withContent = group.filter(b => b.content && b.content.length > 10);
+      const withContent = group.filter(b => b.body && b.body.length > 10);
 
       let keeperId: string;
       if (withContent.length >= 2) {
         keeperId = withContent[0].id;
-        const allContents = [...new Set(withContent.map(b => (b.content || '').trim()).filter(Boolean))];
+        const allContents = [...new Set(withContent.map(b => (b.body || '').trim()).filter(Boolean))];
         if (allContents.length > 1) {
           const mergedContent = allContents.join('\n\n---\n\n');
-          await db.update(contentBlocks).set({ content: mergedContent, updatedAt: new Date() }).where(eq(contentBlocks.id, keeperId));
+          await db.update(contentBlocks).set({ body: mergedContent, updatedAt: new Date() }).where(eq(contentBlocks.id, keeperId));
           merged++;
         }
       } else if (withContent.length === 1) {
