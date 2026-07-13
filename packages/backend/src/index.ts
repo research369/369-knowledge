@@ -29,6 +29,7 @@ import { migrateKnowledgeModules } from "./db/migrate-knowledge-modules.js";
 import { migrateKnowledgeReasoning } from "./db/migrate-knowledge-reasoning.js";
 import { migrateFullContent } from "./db/migrate-full-content.js";
 import { migrateDedupBlocks } from "./db/migrate-dedup-blocks.js";
+import { migrateDedupRelations } from "./db/migrate-dedup-relations.js";
 
 import { entitiesRouter } from "./routes/entities.router.js";
 import { relationsRouter } from "./routes/relations.router.js";
@@ -214,6 +215,7 @@ async function startServer() {
     { name: "Knowledge Reasoning Layer",               fn: migrateKnowledgeReasoning },
     { name: "Full Content Column",                         fn: migrateFullContent },
     { name: "Dedup Content Blocks",                           fn: migrateDedupBlocks },
+    { name: "Dedup Relations",                                  fn: migrateDedupRelations },
   ]);
 
   app.listen(PORT, () => {

@@ -83,11 +83,30 @@ router.get("/slug/:slug", async (req: Request, res: Response) => {
       .where(and(eq(contentBlocks.entityId, id), inArray(contentBlocks.layer, allowedLayers as any[])))
       .orderBy(contentBlocks.sortOrder);
 
-    const relatedEdges = await db
+        // Only return meaningful scientific/compound relations — no internal content types
+    const MEANINGFUL_RELATION_TYPES = [
+      "synergizes_with", "activates", "inhibits", "improves", "worsens",
+      "upregulates", "downregulates", "interacts_with", "combined_with",
+      "antagonizes", "binds_to", "influences", "regulates", "modulates",
+      "treats", "relevant_for", "studied_in", "evidenced_by",
+    ];
+    const relatedEdgesRaw = await db
       .select()
       .from(relations)
-      .where(eq(relations.fromEntityId, id));
-
+      .where(
+        and(
+          eq(relations.fromEntityId, id),
+          inArray(relations.relationType, MEANINGFUL_RELATION_TYPES as any[])
+        )
+      );
+    // Deduplicate: keep only one relation per (fromEntityId, toEntityId, relationType)
+    const seen = new Set<string>();
+    const relatedEdges = relatedEdgesRaw.filter((rel) => {
+      const key = `${rel.fromEntityId}|${rel.toEntityId}|${rel.relationType}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
     res.json({ entity: entity[0], blocks, relations: relatedEdges });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -128,11 +147,30 @@ router.get("/:id", async (req: Request, res: Response) => {
       )
       .orderBy(contentBlocks.sortOrder);
 
-    // Get related entities
-    const relatedEdges = await db
+    // Only return meaningful scientific/compound relations — no internal content types
+    const MEANINGFUL_RELATION_TYPES_2 = [
+      "synergizes_with", "activates", "inhibits", "improves", "worsens",
+      "upregulates", "downregulates", "interacts_with", "combined_with",
+      "antagonizes", "binds_to", "influences", "regulates", "modulates",
+      "treats", "relevant_for", "studied_in", "evidenced_by",
+    ];
+    const relatedEdgesRaw2 = await db
       .select()
       .from(relations)
-      .where(eq(relations.fromEntityId, id));
+      .where(
+        and(
+          eq(relations.fromEntityId, id),
+          inArray(relations.relationType, MEANINGFUL_RELATION_TYPES_2 as any[])
+        )
+      );
+    // Deduplicate: keep only one relation per (fromEntityId, toEntityId, relationType)
+    const seen2 = new Set<string>();
+    const relatedEdges = relatedEdgesRaw2.filter((rel) => {
+      const key = `${rel.fromEntityId}|${rel.toEntityId}|${rel.relationType}`;
+      if (seen2.has(key)) return false;
+      seen2.add(key);
+      return true;
+    });
 
     res.json({
       entity: entity[0],
