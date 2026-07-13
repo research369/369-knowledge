@@ -91,4 +91,58 @@ router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
   }
 });
 
+// ─── Bulk Dedup: Remove duplicate blocks across all entities ─────────────────
+router.post("/admin/dedup", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const allBlocks = await db.select().from(contentBlocks);
+
+    // Group by (entityId, title, blockType, layer)
+    const groups = new Map<string, typeof allBlocks>();
+    for (const block of allBlocks) {
+      const key = `${block.entityId}||${block.title || ''}||${block.blockType}||${block.layer}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(block);
+    }
+
+    const toDelete: string[] = [];
+    let merged = 0;
+
+    for (const [, group] of groups.entries()) {
+      if (group.length <= 1) continue;
+
+      // Sort by createdAt descending (newest first)
+      group.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+
+      const withContent = group.filter(b => b.content && b.content.length > 10);
+
+      let keeperId: string;
+      if (withContent.length >= 2) {
+        keeperId = withContent[0].id;
+        const allContents = [...new Set(withContent.map(b => (b.content || '').trim()).filter(Boolean))];
+        if (allContents.length > 1) {
+          const mergedContent = allContents.join('\n\n---\n\n');
+          await db.update(contentBlocks).set({ content: mergedContent, updatedAt: new Date() }).where(eq(contentBlocks.id, keeperId));
+          merged++;
+        }
+      } else if (withContent.length === 1) {
+        keeperId = withContent[0].id;
+      } else {
+        keeperId = group[0].id;
+      }
+
+      for (const b of group) {
+        if (b.id !== keeperId) toDelete.push(b.id);
+      }
+    }
+
+    for (const id of toDelete) {
+      await db.delete(contentBlocks).where(eq(contentBlocks.id, id));
+    }
+
+    res.json({ deleted: toDelete.length, merged, message: `Dedup complete: ${toDelete.length} blocks deleted, ${merged} merged` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export { router as contentBlocksRouter };
