@@ -400,6 +400,7 @@ export const entities = pgTable(
     categories: jsonb("categories").notNull().default("[]"), // string[]
     tags: jsonb("tags").notNull().default("[]"), // string[]
     shortDescription: varchar("short_description", { length: 300 }),
+    fullContent: text("full_content"),  // Long-form markdown content (studies, guides, etc.)
     status: contentStatusEnum("status").notNull().default("draft"),
     // SEO
     seoTitle: varchar("seo_title", { length: 200 }),
