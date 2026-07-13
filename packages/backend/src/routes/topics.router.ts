@@ -202,4 +202,44 @@ router.delete("/:topicId/entities/:entityId", requireAdmin, async (req: Request,
   }
 });
 
+// ─── Protected: Bulk assign entities to topics ───────────────────────────────
+router.post("/bulk-assign", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { links } = req.body as { links: Array<{ entityId: string; topicId: string; isPrimary?: boolean }> };
+    if (!Array.isArray(links) || links.length === 0) {
+      return res.status(400).json({ error: "links array required" });
+    }
+    let inserted = 0;
+    let skipped = 0;
+    const batchSize = 100;
+    for (let i = 0; i < links.length; i += batchSize) {
+      const batch = links.slice(i, i + batchSize);
+      const values = batch.map((l) => ({
+        entityId: l.entityId,
+        topicId: l.topicId,
+        isPrimary: l.isPrimary ?? false,
+        sortOrder: 0,
+        createdAt: new Date(),
+      }));
+      try {
+        await db.insert(entityTopics).values(values).onConflictDoNothing();
+        inserted += batch.length;
+      } catch {
+        for (const v of values) {
+          try {
+            await db.insert(entityTopics).values(v).onConflictDoNothing();
+            inserted++;
+          } catch {
+            skipped++;
+          }
+        }
+      }
+    }
+    res.json({ message: "Bulk assign complete", inserted, skipped, total: links.length });
+  } catch (err: any) {
+    console.error("Bulk assign error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export { router as topicsRouter };
