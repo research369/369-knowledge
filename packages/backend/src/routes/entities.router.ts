@@ -101,12 +101,30 @@ router.get("/slug/:slug", async (req: Request, res: Response) => {
       );
     // Deduplicate: keep only one relation per (fromEntityId, toEntityId, relationType)
     const seen = new Set<string>();
-    const relatedEdges = relatedEdgesRaw.filter((rel) => {
+    const dedupedEdges = relatedEdgesRaw.filter((rel) => {
       const key = `${rel.fromEntityId}|${rel.toEntityId}|${rel.relationType}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
+    // Enrich relations with toEntity canonicalName + slug
+    const toEntityIds = [...new Set(dedupedEdges.map((r) => r.toEntityId))];
+    const toEntityMap: Record<string, { canonicalName: string; slug: string; type: string }> = {};
+    if (toEntityIds.length > 0) {
+      const toEntities = await db
+        .select({ id: entities.id, canonicalName: entities.canonicalName, slug: entities.slug, type: entities.type })
+        .from(entities)
+        .where(inArray(entities.id, toEntityIds));
+      for (const e of toEntities) {
+        toEntityMap[e.id] = { canonicalName: e.canonicalName, slug: e.slug ?? e.id, type: e.type ?? "" };
+      }
+    }
+    const relatedEdges = dedupedEdges.map((rel) => ({
+      ...rel,
+      toEntityName: toEntityMap[rel.toEntityId]?.canonicalName ?? rel.toEntityId,
+      toEntitySlug: toEntityMap[rel.toEntityId]?.slug ?? rel.toEntityId,
+      toEntityType: toEntityMap[rel.toEntityId]?.type ?? null,
+    }));
     res.json({ entity: entity[0], blocks, relations: relatedEdges });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -165,17 +183,34 @@ router.get("/:id", async (req: Request, res: Response) => {
       );
     // Deduplicate: keep only one relation per (fromEntityId, toEntityId, relationType)
     const seen2 = new Set<string>();
-    const relatedEdges = relatedEdgesRaw2.filter((rel) => {
+    const dedupedEdges2 = relatedEdgesRaw2.filter((rel) => {
       const key = `${rel.fromEntityId}|${rel.toEntityId}|${rel.relationType}`;
       if (seen2.has(key)) return false;
       seen2.add(key);
       return true;
     });
-
+    // Enrich relations with toEntity canonicalName + slug
+    const toEntityIds2 = [...new Set(dedupedEdges2.map((r) => r.toEntityId))];
+    const toEntityMap2: Record<string, { canonicalName: string; slug: string; type: string }> = {};
+    if (toEntityIds2.length > 0) {
+      const toEntities2 = await db
+        .select({ id: entities.id, canonicalName: entities.canonicalName, slug: entities.slug, type: entities.type })
+        .from(entities)
+        .where(inArray(entities.id, toEntityIds2));
+      for (const e of toEntities2) {
+        toEntityMap2[e.id] = { canonicalName: e.canonicalName, slug: e.slug ?? e.id, type: e.type ?? "" };
+      }
+    }
+    const relatedEdges2 = dedupedEdges2.map((rel) => ({
+      ...rel,
+      toEntityName: toEntityMap2[rel.toEntityId]?.canonicalName ?? rel.toEntityId,
+      toEntitySlug: toEntityMap2[rel.toEntityId]?.slug ?? rel.toEntityId,
+      toEntityType: toEntityMap2[rel.toEntityId]?.type ?? null,
+    }));
     res.json({
       entity: entity[0],
       blocks,
-      relations: relatedEdges,
+      relations: relatedEdges2,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { api, Entity, ContentBlock, Relation } from "@/lib/api";
 import { ArrowLeft, ExternalLink, FlaskConical, BookOpen, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 const LAYER_LABELS: Record<string, string> = {
   L1: "Überblick",
@@ -151,10 +152,11 @@ function BlockCard({ block }: { block: ContentBlock }) {
 }
 
 function RelationCard({ relation, entityNames }: { relation: Relation; entityNames: Record<string, string> }) {
-  const targetName = entityNames[relation.toEntityId] ?? relation.toEntityId;
+  const targetName = relation.toEntityName ?? entityNames[relation.toEntityId] ?? relation.toEntityId;
+  const targetSlug = relation.toEntitySlug ?? relation.toEntityId;
   return (
     <a
-      href={`/wissen/${relation.toEntityId}`}
+      href={`/wissen/${targetSlug}`}
       className="flex items-center gap-3 p-3 bg-navy-light border border-white/5 rounded-lg hover:border-blue/30 hover:bg-blue/5 transition-all text-sm"
     >
       <span className="text-xs text-gray-500 bg-white/5 px-2 py-0.5 rounded whitespace-nowrap">
@@ -172,6 +174,7 @@ export default function EntityDetail({ entityId }: { entityId: string }) {
   const [entity, setEntity] = useState<Entity | null>(null);
   const [blocks, setBlocks] = useState<ContentBlock[]>([]);
   const [relations, setRelations] = useState<Relation[]>([]);
+  const [showAllRelations, setShowAllRelations] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeLayer, setActiveLayer] = useState<string>("all");
@@ -188,7 +191,43 @@ export default function EntityDetail({ entityId }: { entityId: string }) {
         }
         setEntity(res.entity);
         setBlocks(res.blocks ?? []);
-        setRelations(res.relations ?? []);
+        // Sort by importance: synergizes_with > activates/inhibits > improves > rest
+        // Also filter out FAQ/Protocol/Guide/Stack entity types
+        const RELATION_PRIORITY: Record<string, number> = {
+          synergizes_with: 0,
+          activates: 1,
+          inhibits: 1,
+          upregulates: 2,
+          downregulates: 2,
+          improves: 3,
+          worsens: 3,
+          reduces: 3,
+          increases: 3,
+          interacts_with: 4,
+          combined_with: 4,
+          potentiates: 4,
+          binds_to: 5,
+          antagonizes: 5,
+          treats: 6,
+          relevant_for: 7,
+          studied_in: 8,
+          evidenced_by: 9,
+        };
+        const EXCLUDED_ENTITY_TYPES = new Set(["faq", "protocol", "guide", "stack", "glossary_term", "glossar"]);
+        const rawRelations: Relation[] = res.relations ?? [];
+        const sortedRelations = rawRelations
+          .filter((r: Relation) => {
+            // Use enriched toEntityType first, fall back to legacy toEntity?.type
+            const toType = r.toEntityType ?? (r as any).toEntity?.type;
+            if (toType && EXCLUDED_ENTITY_TYPES.has(toType)) return false;
+            return true;
+          })
+          .sort((a: Relation, b: Relation) => {
+            const pa = RELATION_PRIORITY[a.relationType] ?? 10;
+            const pb = RELATION_PRIORITY[b.relationType] ?? 10;
+            return pa - pb;
+          });
+        setRelations(sortedRelations);
       } catch (err: any) {
         setError(err.message ?? "Eintrag nicht gefunden");
       } finally {
@@ -333,6 +372,21 @@ export default function EntityDetail({ entityId }: { entityId: string }) {
                   <BlockCard key={block.id} block={block} />
                 ))}
               </div>
+            ) : entity?.fullContent ? (
+              <div className="bg-navy-light border border-white/5 rounded-xl p-6">
+                <div className="
+                  [&_h2]:text-white [&_h2]:font-semibold [&_h2]:text-base [&_h2]:mt-6 [&_h2]:mb-3
+                  [&_h2]:border-b [&_h2]:border-white/10 [&_h2]:pb-2 [&_h2:first-child]:mt-0
+                  [&_h3]:text-white [&_h3]:font-medium [&_h3]:text-sm [&_h3]:mt-4 [&_h3]:mb-2
+                  [&_p]:text-gray-300 [&_p]:leading-relaxed [&_p]:text-sm [&_p]:mb-3
+                  [&_ul]:my-2 [&_ul]:space-y-1 [&_ul]:pl-4
+                  [&_li]:text-gray-300 [&_li]:text-sm [&_li]:list-disc [&_li]:marker:text-blue-bright
+                  [&_strong]:text-white [&_strong]:font-semibold
+                  [&_a]:text-blue-bright [&_a]:no-underline hover:[&_a]:underline
+                ">
+                  <ReactMarkdown>{entity.fullContent}</ReactMarkdown>
+                </div>
+              </div>
             ) : (
               <div className="text-center py-16 text-gray-600 border border-white/5 rounded-xl">
                 <FlaskConical size={32} className="mx-auto mb-3 opacity-30" />
@@ -395,13 +449,16 @@ export default function EntityDetail({ entityId }: { entityId: string }) {
               <div className="bg-navy-light border border-white/5 rounded-xl p-5">
                 <h3 className="text-white font-semibold text-sm mb-3">Verwandte Einträge</h3>
                 <div className="space-y-2">
-                  {relations.slice(0, 8).map((rel) => (
+                  {(showAllRelations ? relations : relations.slice(0, 12)).map((rel) => (
                     <RelationCard key={rel.id} relation={rel} entityNames={{}} />
                   ))}
-                  {relations.length > 8 && (
-                    <p className="text-xs text-gray-600 text-center pt-1">
-                      + {relations.length - 8} weitere
-                    </p>
+                  {relations.length > 12 && (
+                    <button
+                      onClick={() => setShowAllRelations(!showAllRelations)}
+                      className="text-xs text-blue-400 hover:text-blue-300 text-center pt-1 w-full transition-colors cursor-pointer"
+                    >
+                      {showAllRelations ? "Weniger anzeigen ↑" : `+ ${relations.length - 12} weitere anzeigen ↓`}
+                    </button>
                   )}
                 </div>
               </div>

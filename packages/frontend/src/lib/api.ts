@@ -1,4 +1,8 @@
-const API_BASE = import.meta.env.VITE_API_URL ?? "/api";
+// Ensure API_BASE always ends with /api regardless of how VITE_API_URL is set
+const _rawApiUrl: string = import.meta.env.VITE_API_URL ?? "";
+const API_BASE: string = _rawApiUrl
+  ? (_rawApiUrl.endsWith("/api") ? _rawApiUrl : `${_rawApiUrl.replace(/\/$/, "")}/api`)
+  : "/api";
 
 async function request<T>(
   path: string,
@@ -286,6 +290,7 @@ export interface Entity {
   categories: string[];
   tags: string[];
   shortDescription?: string;
+  fullContent?: string;
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords: string[];
@@ -336,6 +341,9 @@ export interface Relation {
   fromEntityId: string;
   relationType: string;
   toEntityId: string;
+  toEntityName?: string;   // enriched by backend: canonicalName of target entity
+  toEntitySlug?: string;  // enriched by backend: slug of target entity
+  toEntityType?: string;  // enriched by backend: type of target entity
   layer: string;
   scope: string[];
   description?: string;
