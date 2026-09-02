@@ -1,78 +1,51 @@
 import express from "express";
-import { createSign } from "node:crypto";
+import pg from "pg";
 
+const { Pool } = pg;
 const app = express();
 app.set("trust proxy", 1);
-app.use(express.json({ limit: "512kb" }));
+app.use(express.json({ limit: "2mb" }));
 
 const PORT = Number(process.env.PORT || 8080);
 const MODEL = process.env.PEPGPT_MODEL || "gpt-5.6-sol";
-const BEHAVIOR_DOC_ID = process.env.PEPGPT_BEHAVIOR_DOCUMENT_ID || "";
-const KNOWLEDGE_DOC_ID = process.env.PEPGPT_PRODUCT_KNOWLEDGE_DOCUMENT_ID || "";
-const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_DRIVE_CLIENT_EMAIL || "";
-const GOOGLE_PRIVATE_KEY = (process.env.GOOGLE_DRIVE_PRIVATE_KEY || "").replace(/\\n/g, "\n");
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 const INTERNAL_KEY = process.env.PEPGPT_INTERNAL_KEY || "";
-const CACHE_TTL_MS = Number(process.env.PEPGPT_KNOWLEDGE_CACHE_SECONDS || 300) * 1000;
+const DATABASE_URL = process.env.DATABASE_URL || "";
 
-let tokenCache = null;
-const docCache = new Map();
+if (!DATABASE_URL) throw new Error("DATABASE_URL is not configured");
+const pool = new Pool({ connectionString: DATABASE_URL, max: 3 });
 
-function b64url(value) {
-  return Buffer.from(value).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-}
-
-async function googleToken() {
-  const nowMs = Date.now();
-  if (tokenCache && tokenCache.expiresAt > nowMs + 60_000) return tokenCache.token;
-  if (!GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY) throw new Error("Google Drive credentials missing");
-
-  const now = Math.floor(nowMs / 1000);
-  const header = b64url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
-  const claim = b64url(JSON.stringify({
-    iss: GOOGLE_CLIENT_EMAIL,
-    scope: "https://www.googleapis.com/auth/drive.readonly",
-    aud: "https://oauth2.googleapis.com/token",
-    iat: now,
-    exp: now + 3600,
-  }));
-  const input = `${header}.${claim}`;
-  const signer = createSign("RSA-SHA256");
-  signer.update(input);
-  signer.end();
-  const assertion = `${input}.${b64url(signer.sign(GOOGLE_PRIVATE_KEY))}`;
-
-  const r = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion }),
-  });
-  if (!r.ok) throw new Error(`Google OAuth failed: ${r.status} ${await r.text()}`);
-  const data = await r.json();
-  tokenCache = { token: data.access_token, expiresAt: nowMs + (data.expires_in || 3600) * 1000 };
-  return tokenCache.token;
-}
-
-async function googleDocText(id) {
-  if (!id) throw new Error("Google document ID missing");
-  const cached = docCache.get(id);
-  if (cached && cached.expiresAt > Date.now()) return cached.text;
-  const token = await googleToken();
-  const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}/export?mimeType=${encodeURIComponent("text/plain")}`;
-  const r = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
-  if (!r.ok) throw new Error(`Google Drive export failed: ${r.status} ${await r.text()}`);
-  const text = (await r.text()).trim();
-  if (!text) throw new Error("Google Drive document is empty");
-  docCache.set(id, { text, expiresAt: Date.now() + CACHE_TTL_MS });
-  return text;
+async function ensureSchema() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS pepgpt_runtime_knowledge (
+      key TEXT PRIMARY KEY,
+      content TEXT NOT NULL,
+      source TEXT NOT NULL DEFAULT 'google-drive',
+      source_revision TEXT,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
 }
 
 async function loadKnowledge() {
-  const [behavior, knowledge] = await Promise.all([
-    googleDocText(BEHAVIOR_DOC_ID),
-    googleDocText(KNOWLEDGE_DOC_ID),
-  ]);
-  return { behavior, knowledge };
+  const { rows } = await pool.query(
+    `SELECT key, content, source_revision, updated_at
+       FROM pepgpt_runtime_knowledge
+      WHERE key IN ('PEP_BEHAVIOR.md', 'PEP_PRODUCT_KNOWLEDGE.md')`
+  );
+  const byKey = Object.fromEntries(rows.map((row) => [row.key, row]));
+  const behavior = byKey["PEP_BEHAVIOR.md"]?.content;
+  const knowledge = byKey["PEP_PRODUCT_KNOWLEDGE.md"]?.content;
+  if (!behavior || !knowledge) throw new Error("PepGPT knowledge store is not initialized with both required files");
+  return {
+    behavior,
+    knowledge,
+    revisions: {
+      behavior: byKey["PEP_BEHAVIOR.md"]?.source_revision ?? null,
+      productKnowledge: byKey["PEP_PRODUCT_KNOWLEDGE.md"]?.source_revision ?? null,
+    },
+    updatedAt: [byKey["PEP_BEHAVIOR.md"]?.updated_at, byKey["PEP_PRODUCT_KNOWLEDGE.md"]?.updated_at],
+  };
 }
 
 function requireInternalKey(req, res, next) {
@@ -84,19 +57,76 @@ function requireInternalKey(req, res, next) {
 app.get("/health", async (_req, res) => {
   const base = { service: "pepgpt-runtime", model: MODEL, timestamp: new Date().toISOString() };
   try {
-    const [behavior, knowledge] = await Promise.all([
-      googleDocText(BEHAVIOR_DOC_ID),
-      googleDocText(KNOWLEDGE_DOC_ID),
-    ]);
-    res.json({ ...base, status: "ok", drive: "connected", behaviorChars: behavior.length, knowledgeChars: knowledge.length, openaiConfigured: Boolean(OPENAI_API_KEY) });
+    await ensureSchema();
+    const data = await loadKnowledge();
+    res.json({
+      ...base,
+      status: "ok",
+      knowledgeStore: "connected",
+      behaviorChars: data.behavior.length,
+      knowledgeChars: data.knowledge.length,
+      revisions: data.revisions,
+      openaiConfigured: Boolean(OPENAI_API_KEY),
+    });
   } catch (error) {
-    res.status(503).json({ ...base, status: "error", drive: "failed", detail: error instanceof Error ? error.message : String(error), openaiConfigured: Boolean(OPENAI_API_KEY) });
+    res.status(503).json({
+      ...base,
+      status: "error",
+      knowledgeStore: "not_ready",
+      detail: error instanceof Error ? error.message : String(error),
+      openaiConfigured: Boolean(OPENAI_API_KEY),
+    });
+  }
+});
+
+app.put("/internal/knowledge", requireInternalKey, async (req, res) => {
+  try {
+    await ensureSchema();
+    const behavior = typeof req.body?.behavior === "string" ? req.body.behavior.trim() : "";
+    const productKnowledge = typeof req.body?.productKnowledge === "string" ? req.body.productKnowledge.trim() : "";
+    if (!behavior || !productKnowledge) {
+      return res.status(400).json({ error: "behavior and productKnowledge are both required" });
+    }
+    const behaviorRevision = typeof req.body?.behaviorRevision === "string" ? req.body.behaviorRevision : null;
+    const productKnowledgeRevision = typeof req.body?.productKnowledgeRevision === "string" ? req.body.productKnowledgeRevision : null;
+
+    await pool.query("BEGIN");
+    try {
+      await pool.query(
+        `INSERT INTO pepgpt_runtime_knowledge (key, content, source, source_revision, updated_at)
+         VALUES ('PEP_BEHAVIOR.md', $1, 'google-drive', $2, NOW())
+         ON CONFLICT (key) DO UPDATE SET content = EXCLUDED.content, source = EXCLUDED.source, source_revision = EXCLUDED.source_revision, updated_at = NOW()`,
+        [behavior, behaviorRevision]
+      );
+      await pool.query(
+        `INSERT INTO pepgpt_runtime_knowledge (key, content, source, source_revision, updated_at)
+         VALUES ('PEP_PRODUCT_KNOWLEDGE.md', $1, 'google-drive', $2, NOW())
+         ON CONFLICT (key) DO UPDATE SET content = EXCLUDED.content, source = EXCLUDED.source, source_revision = EXCLUDED.source_revision, updated_at = NOW()`,
+        [productKnowledge, productKnowledgeRevision]
+      );
+      await pool.query("COMMIT");
+    } catch (error) {
+      await pool.query("ROLLBACK");
+      throw error;
+    }
+
+    res.json({
+      status: "ok",
+      files: [
+        { key: "PEP_BEHAVIOR.md", chars: behavior.length, revision: behaviorRevision },
+        { key: "PEP_PRODUCT_KNOWLEDGE.md", chars: productKnowledge.length, revision: productKnowledgeRevision },
+      ],
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "knowledge_sync_failed", detail: error instanceof Error ? error.message : String(error) });
   }
 });
 
 app.post("/v1/chat", requireInternalKey, async (req, res) => {
   try {
     if (!OPENAI_API_KEY) return res.status(503).json({ error: "OPENAI_API_KEY not configured" });
+    await ensureSchema();
     const message = typeof req.body?.message === "string" ? req.body.message.trim() : "";
     if (!message) return res.status(400).json({ error: "message is required" });
     const history = Array.isArray(req.body?.history) ? req.body.history.slice(-24) : [];
@@ -127,7 +157,7 @@ app.post("/v1/chat", requireInternalKey, async (req, res) => {
     const r = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: { "content-type": "application/json", authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: MODEL, instructions, input, max_output_tokens: 1800 }),
+      body: JSON.stringify({ model: MODEL, instructions, input, max_output_tokens: Number(process.env.PEPGPT_MAX_OUTPUT_TOKENS || 1800) }),
     });
     if (!r.ok) return res.status(502).json({ error: "OpenAI request failed", status: r.status, detail: await r.text() });
     const data = await r.json();
@@ -144,4 +174,9 @@ app.post("/v1/chat", requireInternalKey, async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`PepGPT runtime listening on ${PORT}`));
+ensureSchema()
+  .then(() => app.listen(PORT, () => console.log(`PepGPT runtime listening on ${PORT}`)))
+  .catch((error) => {
+    console.error("PepGPT startup failed", error);
+    process.exit(1);
+  });
