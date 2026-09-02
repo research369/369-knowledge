@@ -58,21 +58,34 @@ app.get("/health", async (_req, res) => {
   const base = { service: "pepgpt-runtime", model: MODEL, timestamp: new Date().toISOString() };
   try {
     await ensureSchema();
+  } catch (error) {
+    return res.status(503).json({
+      ...base,
+      status: "error",
+      database: "failed",
+      detail: error instanceof Error ? error.message : String(error),
+      openaiConfigured: Boolean(OPENAI_API_KEY),
+    });
+  }
+
+  try {
     const data = await loadKnowledge();
-    res.json({
+    return res.json({
       ...base,
       status: "ok",
-      knowledgeStore: "connected",
+      database: "connected",
+      knowledgeStore: "ready",
       behaviorChars: data.behavior.length,
       knowledgeChars: data.knowledge.length,
       revisions: data.revisions,
       openaiConfigured: Boolean(OPENAI_API_KEY),
     });
   } catch (error) {
-    res.status(503).json({
+    return res.json({
       ...base,
-      status: "error",
-      knowledgeStore: "not_ready",
+      status: "not_ready",
+      database: "connected",
+      knowledgeStore: "awaiting_sync",
       detail: error instanceof Error ? error.message : String(error),
       openaiConfigured: Boolean(OPENAI_API_KEY),
     });
