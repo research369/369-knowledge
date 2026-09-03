@@ -16,7 +16,7 @@ const BEHAVIOR_DOC_ID = process.env.PEPGPT_BEHAVIOR_DOCUMENT_ID || "";
 const KNOWLEDGE_DOC_ID = process.env.PEPGPT_PRODUCT_KNOWLEDGE_DOCUMENT_ID || "";
 const SELF_TEST_ON_BOOT = process.env.PEPGPT_SELF_TEST_ON_BOOT === "1";
 const DIALOG_SELF_TEST_ON_BOOT = process.env.PEPGPT_DIALOG_SELF_TEST_ON_BOOT === "1";
-const DIALOG_SELF_TEST_MESSAGE = "HEy ich will schnell gewicht verlieren";
+const DIALOG_SELF_TEST_MESSAGE = process.env.PEPGPT_DIALOG_SELF_TEST_MESSAGE?.trim() || "";
 
 if (!DATABASE_URL) throw new Error("DATABASE_URL is not configured");
 const pool = new Pool({ connectionString: DATABASE_URL, max: 3 });
@@ -168,6 +168,15 @@ async function runStartupSelfTest() {
 
 async function runDialogSelfTest() {
   if (!DIALOG_SELF_TEST_ON_BOOT) return;
+  if (!DIALOG_SELF_TEST_MESSAGE) {
+    console.error(JSON.stringify({
+      event: "pepgpt.dialog_selftest",
+      status: "failed",
+      detail: "PEPGPT_DIALOG_SELF_TEST_MESSAGE is required when dialog self-test is enabled",
+      completedAt: new Date().toISOString(),
+    }));
+    return;
+  }
   const startedAt = new Date().toISOString();
   try {
     const result = await callOpenAI({
