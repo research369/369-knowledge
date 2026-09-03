@@ -17,6 +17,7 @@ const KNOWLEDGE_DOC_ID = process.env.PEPGPT_PRODUCT_KNOWLEDGE_DOCUMENT_ID || "";
 const SELF_TEST_ON_BOOT = process.env.PEPGPT_SELF_TEST_ON_BOOT === "1";
 const DIALOG_SELF_TEST_ON_BOOT = process.env.PEPGPT_DIALOG_SELF_TEST_ON_BOOT === "1";
 const DIALOG_SELF_TEST_MESSAGE = process.env.PEPGPT_DIALOG_SELF_TEST_MESSAGE?.trim() || "";
+const DIALOG_SELF_TEST_CUSTOMER_ID = normalizeCustomerId(process.env.PEPGPT_DIALOG_SELF_TEST_CUSTOMER_ID);
 const MEMORY_SELF_TEST_ON_BOOT = process.env.PEPGPT_MEMORY_SELF_TEST_ON_BOOT === "1";
 const MEMORY_FIELDS = new Set([
   "preferredName", "age", "heightCm", "weightKg", "goal", "training",
@@ -295,16 +296,26 @@ async function runDialogSelfTest() {
   }
   const startedAt = new Date().toISOString();
   try {
+    const memory = await loadCustomerMemory(DIALOG_SELF_TEST_CUSTOMER_ID);
     const result = await callOpenAI({
       message: DIALOG_SELF_TEST_MESSAGE,
+      memory,
       context: { purpose: "one-time-dialog-self-test" },
     });
+    let memoryUpdated = false;
+    if (DIALOG_SELF_TEST_CUSTOMER_ID) {
+      const patch = await extractMemoryPatch({ message: DIALOG_SELF_TEST_MESSAGE, existingProfile: memory.profile });
+      await saveCustomerMemory(DIALOG_SELF_TEST_CUSTOMER_ID, memory.profile, patch);
+      memoryUpdated = Object.keys(patch).length > 0;
+    }
     console.log(JSON.stringify({
       event: "pepgpt.dialog_selftest",
       status: "ok",
       model: MODEL,
       input: DIALOG_SELF_TEST_MESSAGE,
       output: result.text,
+      memoryEnabled: Boolean(DIALOG_SELF_TEST_CUSTOMER_ID),
+      memoryUpdated,
       responseId: result.responseId,
       startedAt,
       completedAt: new Date().toISOString(),
