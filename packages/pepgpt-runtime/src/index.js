@@ -15,6 +15,8 @@ const DRIVE_BOOTSTRAP_ASSERTION = process.env.GOOGLE_DRIVE_BOOTSTRAP_ASSERTION |
 const BEHAVIOR_DOC_ID = process.env.PEPGPT_BEHAVIOR_DOCUMENT_ID || "";
 const KNOWLEDGE_DOC_ID = process.env.PEPGPT_PRODUCT_KNOWLEDGE_DOCUMENT_ID || "";
 const SELF_TEST_ON_BOOT = process.env.PEPGPT_SELF_TEST_ON_BOOT === "1";
+const DIALOG_SELF_TEST_ON_BOOT = process.env.PEPGPT_DIALOG_SELF_TEST_ON_BOOT === "1";
+const DIALOG_SELF_TEST_MESSAGE = "HEy ich will schnell gewicht verlieren";
 
 if (!DATABASE_URL) throw new Error("DATABASE_URL is not configured");
 const pool = new Pool({ connectionString: DATABASE_URL, max: 3 });
@@ -164,6 +166,35 @@ async function runStartupSelfTest() {
   }
 }
 
+async function runDialogSelfTest() {
+  if (!DIALOG_SELF_TEST_ON_BOOT) return;
+  const startedAt = new Date().toISOString();
+  try {
+    const result = await callOpenAI({
+      message: DIALOG_SELF_TEST_MESSAGE,
+      context: { purpose: "one-time-dialog-self-test" },
+    });
+    console.log(JSON.stringify({
+      event: "pepgpt.dialog_selftest",
+      status: "ok",
+      model: MODEL,
+      input: DIALOG_SELF_TEST_MESSAGE,
+      output: result.text,
+      responseId: result.responseId,
+      startedAt,
+      completedAt: new Date().toISOString(),
+    }));
+  } catch (error) {
+    console.error(JSON.stringify({
+      event: "pepgpt.dialog_selftest",
+      status: "failed",
+      detail: error instanceof Error ? error.message : String(error),
+      startedAt,
+      completedAt: new Date().toISOString(),
+    }));
+  }
+}
+
 function requireInternalKey(req, res, next) {
   if (!INTERNAL_KEY) return res.status(503).json({ error: "PEPGPT_INTERNAL_KEY not configured" });
   if (req.get("x-pepgpt-key") !== INTERNAL_KEY) return res.status(401).json({ error: "unauthorized" });
@@ -224,6 +255,7 @@ ensureSchema()
     try { await bootstrapKnowledgeIfNeeded(); } catch (error) { console.error("PepGPT bootstrap failed", error); }
     app.listen(PORT, () => console.log(`PepGPT runtime listening on ${PORT}`));
     await runStartupSelfTest();
+    await runDialogSelfTest();
   })
   .catch((error) => {
     console.error("PepGPT startup failed", error);
