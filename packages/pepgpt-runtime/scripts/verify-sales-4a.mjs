@@ -1,6 +1,13 @@
 import pg from "pg";
 import { createHash, randomUUID } from "node:crypto";
 
+// Explicit opt-in only: node scripts/verify-sales-4a.mjs --run
+// With no behavior payload, verification leaves knowledge untouched.
+if (!process.argv.includes("--run")) {
+  console.log("PepGPT maintenance is inactive; pass --run for an explicit verification.");
+  process.exit(0);
+}
+
 const base = "https://pepgpt-service-production.up.railway.app";
 const key = process.env.PEPGPT_INTERNAL_KEY;
 const payloadText = process.env.PEPGPT_MAINTENANCE_BEHAVIOR || "";
