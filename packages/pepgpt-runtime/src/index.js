@@ -245,6 +245,36 @@ function buildInstructions(behavior, knowledge, memory = { profile: {}, turnCoun
   ].join("\n\n");
 }
 
+function retryDelayMs(response, errorText, attempt) {
+  const retryAfter = Number(response.headers.get("retry-after"));
+  if (Number.isFinite(retryAfter) && retryAfter > 0) return Math.min(15000, Math.ceil(retryAfter * 1000));
+  const match = errorText.match(/try again in\s+([\d.]+)\s*(ms|s)/i);
+  if (match) {
+    const value = Number(match[1]);
+    if (Number.isFinite(value)) return Math.min(15000, Math.ceil(match[2].toLowerCase() === "ms" ? value : value * 1000));
+  }
+  return Math.min(8000, 750 * (2 ** (attempt - 1))) + Math.floor(Math.random() * 250);
+}
+
+async function requestOpenAI(body, purpose) {
+  const maxAttempts = 5;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${OPENAI_API_KEY}` },
+      body: JSON.stringify(body),
+    });
+    if (response.ok) return response.json();
+    const errorText = await response.text();
+    const retryable = response.status === 429 || response.status >= 500;
+    if (!retryable || attempt === maxAttempts) throw new Error(`OpenAI ${purpose} failed after ${attempt} attempt(s): HTTP ${response.status}`);
+    const delayMs = retryDelayMs(response, errorText, attempt);
+    console.warn(JSON.stringify({ event: "pepgpt.openai.retry", purpose, status: response.status, attempt, delayMs, at: new Date().toISOString() }));
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+  throw new Error(`OpenAI ${purpose} failed`);
+}
+
 async function callOpenAI({ message, history = [], context = {}, memory }) {
   if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
   const { behavior, knowledge } = await loadKnowledge();
@@ -254,13 +284,10 @@ async function callOpenAI({ message, history = [], context = {}, memory }) {
     { role: "user", content: [{ type: "input_text", text: `Runtime context: ${JSON.stringify(context)}\nCustomer message: ${message}` }] },
   ];
   console.log(JSON.stringify({ event: "pepgpt.request.sent", model: MODEL, at: new Date().toISOString() }));
-  const response = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${OPENAI_API_KEY}` },
-    body: JSON.stringify({ model: MODEL, instructions, input, max_output_tokens: Number(process.env.PEPGPT_MAX_OUTPUT_TOKENS || 1800) }),
-  });
-  if (!response.ok) throw new Error(`OpenAI request failed: ${response.status} ${await response.text()}`);
-  const data = await response.json();
+  const data = await requestOpenAI(
+    { model: MODEL, instructions, input, max_output_tokens: Number(process.env.PEPGPT_MAX_OUTPUT_TOKENS || 1800) },
+    "response"
+  );
   let text = typeof data.output_text === "string" ? data.output_text.trim() : "";
   if (!text && Array.isArray(data.output)) text = data.output.flatMap((item) => Array.isArray(item.content) ? item.content : []).map((c) => c?.text).filter(Boolean).join("\n").trim();
   if (!text) throw new Error("OpenAI returned no text");
@@ -269,10 +296,7 @@ async function callOpenAI({ message, history = [], context = {}, memory }) {
 }
 
 async function extractMemoryPatch({ message, existingProfile }) {
-  const response = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${OPENAI_API_KEY}` },
-    body: JSON.stringify({
+  const data = await requestOpenAI({
       model: MODEL,
       instructions: [
         "Extract durable customer profile facts from the latest customer message.",
@@ -285,10 +309,7 @@ async function extractMemoryPatch({ message, existingProfile }) {
       ].join("\n"),
       input: [{ role: "user", content: [{ type: "input_text", text: message }] }],
       max_output_tokens: 500,
-    }),
-  });
-  if (!response.ok) throw new Error(`Memory extraction failed: ${response.status}`);
-  const data = await response.json();
+    }, "memory extraction");
   let text = typeof data.output_text === "string" ? data.output_text.trim() : "";
   if (!text && Array.isArray(data.output)) text = data.output.flatMap((item) => Array.isArray(item.content) ? item.content : []).map((c) => c?.text).filter(Boolean).join("\n").trim();
   const match = text.match(/\{[\s\S]*\}/);
