@@ -63,6 +63,19 @@ try {
   const catalog = (await catalogResponse.json())?.result?.data?.json;
   if (!Array.isArray(catalog)) throw new Error("Invalid catalog");
   log("catalog-reference", { products: catalog.length, matches: catalog.filter(p => /GHK/i.test(p.name)).map(p => ({ name: p.name, price: p.price, salePrice: p.salePrice, inStock: p.inStock, variants: (p.variants || []).map(v => ({ dosage: v.dosage, label: v.label, price: v.price, inStock: v.inStock })) })) });
+  const preflight = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST", headers: { "content-type": "application/json", authorization: "Bearer " + process.env.OPENAI_API_KEY },
+    body: JSON.stringify({ model: process.env.PEPGPT_MODEL || "gpt-5.6-sol", input: "Reply OK.", max_output_tokens: 20 }),
+    signal: AbortSignal.timeout(60000),
+  });
+  if (!preflight.ok) {
+    const failure = await preflight.json().catch(() => ({}));
+    const errorCode = typeof failure.error?.code === "string" ? failure.error.code.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80) : "unknown";
+    const errorType = typeof failure.error?.type === "string" ? failure.error.type.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80) : "unknown";
+    log("openai-preflight", { status: preflight.status, errorCode, errorType, retryAfter: preflight.headers.get("retry-after") });
+    throw new Error("OpenAI preflight HTTP " + preflight.status + " code=" + errorCode);
+  }
+  log("openai-preflight", { status: preflight.status });
   const results = [];
   let cursor = 0;
   async function worker() {
@@ -76,7 +89,7 @@ try {
       log("dialog", result);
     }
   }
-  await Promise.all([worker(), worker()]);
+  await worker();
   customerId = runId;
   const first = await request("/v1/chat", { customerId, message: "Ich heiße Alex, trainiere dreimal pro Woche und mein Ziel ist Muskelaufbau." });
   const stored = await request("/internal/memory/" + customerId, undefined, "GET");
