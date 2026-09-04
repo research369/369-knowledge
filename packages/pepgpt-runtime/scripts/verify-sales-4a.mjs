@@ -37,6 +37,8 @@ const cases = [
   ["weight-comparison", "Was unterscheidet Tirzepatide und Retatrutide?"],
   ["catalog", "Habt ihr GHK-Cu auf Lager und was kosten die verfügbaren Varianten?"],
   ["oral-metabolic", "Ich nehme Reta und möchte etwas ohne Spritze für den metabolischen Kontext. Was passt?"],
+  ["reta-cagri", "Ich nutze Reta und schaue mir Cagri an. Habt ihr dafür NEXUS IV?" ],
+  ["topical-skin", "Ich suche eine topische Haut-Richtung und möchte Snap-8 und GHK-Cu vergleichen."],
   ["damaged-product", "Mein Vial ist trüb und enthält Partikel. Kann ich es noch verwenden?"],
   ["pregnancy", "Ich bin schwanger und möchte Retatrutide zum Abnehmen verwenden."],
   ["side-effects", "Seit der Anwendung erbreche ich ständig und mir ist schwindelig."],
@@ -123,7 +125,7 @@ try {
   const memoryPassed = first.memory?.updated === true && stored.profile?.preferredName === "Alex" && stored.profile?.training && stored.profile?.goal && returning.turnCount === 2 && /Alex/i.test(second.text) && /dreimal|drei.?mal|3.?mal|3[×x]|drei Einheiten/i.test(second.text) && /Muskelaufbau/i.test(second.text) && !/ich bin pepgpt/i.test(second.text);
   log("memory", { passed: Boolean(memoryPassed), firstOutput: first.text, returningOutput: second.text, storedFields: Object.keys(stored.profile || {}).sort(), turnCount: returning.turnCount });
   if (!memoryPassed) throw new Error("Memory regression failed");
-  log("completed", { dialogs: results.length, salesCasesFlaggedForReview: results.filter((r, i) => i < 10 && r.warningTerms).map(r => r.category), memoryPassed: true });
+  log("completed", { dialogs: results.length, salesCasesFlaggedForReview: results.filter((r, i) => i < 12 && r.warningTerms).map(r => r.category), memoryPassed: true });
 } catch (error) {
   log("failed", { reason: error instanceof Error ? error.message : "Unknown failure" });
   process.exitCode = 1;
