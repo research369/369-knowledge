@@ -34,4 +34,6 @@ Start the bundled suite without exposing credentials:
 
 Concurrency defaults to 3 and is capped at 5 (`PEPGPT_BATCH_EVAL_CONCURRENCY`). `PEPGPT_BATCH_EVAL_LIMIT` can restrict a run while keeping the full suite unchanged.
 
-The runtime contains approved static shipping facts. Dynamic commerce values—prices, stock, variants, payment methods, order state and discounts—are used only when current live commerce data is supplied. Personal commerce data requires authenticated customer context.
+The runtime contains approved static shipping facts. It reads public product names, prices, sale prices, variants and availability from the existing 369 Research shop API with a short cache and a five-second fail-closed timeout. It never exposes numerical warehouse stock. Payment methods, order state, customer data and discounts are used only when current authenticated commerce data is supplied. Personal commerce data requires authenticated customer context.
+
+The catalog source defaults to the existing read-only `article.shopProducts` endpoint and can be overridden with `PEPGPT_CATALOG_API_URL`. `PEPGPT_CATALOG_CACHE_MS` defaults to 30 seconds and is constrained to 10–300 seconds.
