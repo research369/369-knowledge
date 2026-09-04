@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node scripts/verify-sales-4a.mjs --run && node src/index.js",
     "verify:sales-4a": "node scripts/verify-sales-4a.mjs --run"
   },
   "dependencies": {
