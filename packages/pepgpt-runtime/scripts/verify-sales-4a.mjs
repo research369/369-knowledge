@@ -10,7 +10,7 @@ const maintenanceMode = process.env.PEPGPT_RUN_MAINTENANCE || "";\nif (!process.
 
 const base = "https://pepgpt-service-production.up.railway.app";
 const key = process.env.PEPGPT_INTERNAL_KEY;
-const payloadText = process.env.PEPGPT_MAINTENANCE_KNOWLEDGE || "";
+const payloadText = process.env.PEPGPT_MAINTENANCE_KNOWLEDGE || [process.env.PEPGPT_MAINTENANCE_KNOWLEDGE_1, process.env.PEPGPT_MAINTENANCE_KNOWLEDGE_2, process.env.PEPGPT_MAINTENANCE_KNOWLEDGE_3].filter(Boolean).join("");
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 1 });
 const runId = "sales-4a-" + randomUUID();
 const log = (event, data = {}) => console.log(JSON.stringify({ event: "pepgpt.maintenance." + event, runId, ...data }));
