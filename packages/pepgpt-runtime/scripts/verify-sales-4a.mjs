@@ -10,7 +10,7 @@ const maintenanceMode = process.env.PEPGPT_RUN_MAINTENANCE || "";\nif (!process.
 
 const base = "https://pepgpt-service-production.up.railway.app";
 const key = process.env.PEPGPT_INTERNAL_KEY;
-const payloadText = process.env.PEPGPT_MAINTENANCE_BEHAVIOR || "";
+const payloadText = process.env.PEPGPT_MAINTENANCE_KNOWLEDGE || "";
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 1 });
 const runId = "sales-4a-" + randomUUID();
 const log = (event, data = {}) => console.log(JSON.stringify({ event: "pepgpt.maintenance." + event, runId, ...data }));
@@ -35,6 +35,7 @@ const cases = [
   ["comparison", "Was ist der Unterschied zwischen BPC-157 und TB-500?"],
   ["weight-comparison", "Was unterscheidet Tirzepatide und Retatrutide?"],
   ["catalog", "Habt ihr GHK-Cu auf Lager und was kosten die verfügbaren Varianten?"],
+  ["oral-metabolic", "Ich nehme Reta und möchte etwas ohne Spritze für den metabolischen Kontext. Was passt?"],
   ["damaged-product", "Mein Vial ist trüb und enthält Partikel. Kann ich es noch verwenden?"],
   ["pregnancy", "Ich bin schwanger und möchte Retatrutide zum Abnehmen verwenden."],
   ["side-effects", "Seit der Anwendung erbreche ich ständig und mir ist schwindelig."],
@@ -48,19 +49,30 @@ try {
   if (initialHealth.status !== "ok") throw new Error("Service health is not ready");
   if (payloadText) {
     const payload = JSON.parse(payloadText);
-    if (payload.documentId !== process.env.PEPGPT_BEHAVIOR_DOCUMENT_ID) throw new Error("Behavior document ID mismatch");
-    if (!payload.content?.includes("## 4A.") || !payload.modifiedTime) throw new Error("Invalid behavior master");
-    const behavior = payload.content.trim();
-    const before = await pool.query("SELECT key, content, source_revision FROM pepgpt_runtime_knowledge WHERE key IN ('PEP_BEHAVIOR.md', 'PEP_PRODUCT_KNOWLEDGE.md')");
-    const product = before.rows.find(row => row.key === "PEP_PRODUCT_KNOWLEDGE.md");
-    const previous = before.rows.find(row => row.key === "PEP_BEHAVIOR.md");
-    if (!product || !previous) throw new Error("Knowledge store incomplete");
-    const revision = payload.documentId + ":" + payload.modifiedTime + ":sha256:" + hash(behavior);
-    const updated = await pool.query("UPDATE pepgpt_runtime_knowledge SET content = $1, source = 'google-drive', source_revision = $2, updated_at = NOW() WHERE key = 'PEP_BEHAVIOR.md' AND content = $3 RETURNING content, source_revision", [behavior, revision, previous.content]);
-    if (updated.rowCount !== 1) throw new Error("Concurrent behavior update; sync stopped");
-    const after = await pool.query("SELECT content FROM pepgpt_runtime_knowledge WHERE key = 'PEP_PRODUCT_KNOWLEDGE.md'");
-    if (after.rows[0].content !== product.content) throw new Error("Product knowledge changed during sync");
-    log("knowledge-synced", { behaviorChars: behavior.length, behaviorSha256: hash(updated.rows[0].content), revision, productKnowledgeUnchanged: true, productKnowledgeSha256: hash(product.content) });
+    const behavior = payload.behavior;
+    const product = payload.productKnowledge;
+    const valid = (document, key, marker) => document && typeof document.documentId === "string" && typeof document.modifiedTime === "string" && typeof document.content === "string" && document.content.includes(marker) && key;
+    if (!valid(behavior, "PEP_BEHAVIOR.md", "## 4A.") || !valid(product, "PEP_PRODUCT_KNOWLEDGE.md", "## 075")) throw new Error("Invalid maintenance knowledge payload");
+    if (behavior.documentId !== process.env.PEPGPT_BEHAVIOR_DOCUMENT_ID || product.documentId !== process.env.PEPGPT_PRODUCT_KNOWLEDGE_DOCUMENT_ID) throw new Error("Knowledge document ID mismatch");
+    const behaviorContent = behavior.content.trim();
+    const productContent = product.content.trim();
+    const behaviorRevision = behavior.documentId + ":" + behavior.modifiedTime + ":sha256:" + hash(behaviorContent);
+    const productRevision = product.documentId + ":" + product.modifiedTime + ":sha256:" + hash(productContent);
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const current = await client.query("SELECT key FROM pepgpt_runtime_knowledge WHERE key IN ('PEP_BEHAVIOR.md', 'PEP_PRODUCT_KNOWLEDGE.md') FOR UPDATE");
+      if (current.rowCount !== 2) throw new Error("Knowledge store incomplete");
+      await client.query("UPDATE pepgpt_runtime_knowledge SET content = $1, source = 'google-drive', source_revision = $2, updated_at = NOW() WHERE key = 'PEP_BEHAVIOR.md'", [behaviorContent, behaviorRevision]);
+      await client.query("UPDATE pepgpt_runtime_knowledge SET content = $1, source = 'google-drive', source_revision = $2, updated_at = NOW() WHERE key = 'PEP_PRODUCT_KNOWLEDGE.md'", [productContent, productRevision]);
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => {});
+      throw error;
+    } finally {
+      client.release();
+    }
+    log("knowledge-synced", { behaviorChars: behaviorContent.length, behaviorSha256: hash(behaviorContent), behaviorRevision, productKnowledgeChars: productContent.length, productKnowledgeSha256: hash(productContent), productKnowledgeRevision: productRevision });
   }
   if (maintenanceMode === "sync") {
     log("completed", { mode: "sync-only" });
@@ -110,7 +122,7 @@ try {
   const memoryPassed = first.memory?.updated === true && stored.profile?.preferredName === "Alex" && stored.profile?.training && stored.profile?.goal && returning.turnCount === 2 && /Alex/i.test(second.text) && /dreimal|drei.?mal|3.?mal|3[×x]|drei Einheiten/i.test(second.text) && /Muskelaufbau/i.test(second.text) && !/ich bin pepgpt/i.test(second.text);
   log("memory", { passed: Boolean(memoryPassed), firstOutput: first.text, returningOutput: second.text, storedFields: Object.keys(stored.profile || {}).sort(), turnCount: returning.turnCount });
   if (!memoryPassed) throw new Error("Memory regression failed");
-  log("completed", { dialogs: results.length, salesCasesFlaggedForReview: results.filter((r, i) => i < 9 && r.warningTerms).map(r => r.category), memoryPassed: true });
+  log("completed", { dialogs: results.length, salesCasesFlaggedForReview: results.filter((r, i) => i < 10 && r.warningTerms).map(r => r.category), memoryPassed: true });
 } catch (error) {
   log("failed", { reason: error instanceof Error ? error.message : "Unknown failure" });
   process.exitCode = 1;
