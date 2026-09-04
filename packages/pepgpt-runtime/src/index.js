@@ -207,6 +207,33 @@ async function upsertKnowledge(behavior, productKnowledge, behaviorRevision = nu
   }
 }
 
+
+async function syncMaintenanceKnowledgeOnBoot() {
+  if (process.env.PEPGPT_RUN_MAINTENANCE !== "sync") return false;
+  const payloadText = process.env.PEPGPT_MAINTENANCE_KNOWLEDGE || [
+    process.env.PEPGPT_MAINTENANCE_KNOWLEDGE_1,
+    process.env.PEPGPT_MAINTENANCE_KNOWLEDGE_2,
+    process.env.PEPGPT_MAINTENANCE_KNOWLEDGE_3,
+    process.env.PEPGPT_MAINTENANCE_KNOWLEDGE_4,
+    process.env.PEPGPT_MAINTENANCE_KNOWLEDGE_5,
+    process.env.PEPGPT_MAINTENANCE_KNOWLEDGE_6,
+  ].filter(Boolean).join("");
+  if (!payloadText) throw new Error("PepGPT maintenance knowledge payload missing");
+  const payload = JSON.parse(payloadText);
+  const behavior = payload?.behavior;
+  const product = payload?.productKnowledge;
+  if (!behavior?.content?.includes("## 4A.") || !product?.content?.includes("## 075") || !behavior.modifiedTime || !product.modifiedTime) throw new Error("PepGPT maintenance knowledge payload invalid");
+  if (behavior.documentId !== BEHAVIOR_DOC_ID || product.documentId !== KNOWLEDGE_DOC_ID) throw new Error("PepGPT maintenance document ID mismatch");
+  await upsertKnowledge(
+    behavior.content.trim(),
+    product.content.trim(),
+    behavior.documentId + ":" + behavior.modifiedTime,
+    product.documentId + ":" + product.modifiedTime,
+  );
+  console.log(JSON.stringify({ event: "pepgpt.knowledge.maintenance_synced", behaviorChars: behavior.content.trim().length, productKnowledgeChars: product.content.trim().length, at: new Date().toISOString() }));
+  return true;
+}
+
 async function bootstrapKnowledgeIfNeeded() {
   if ((await knowledgeCount()) >= 2) return false;
   if (!DRIVE_BOOTSTRAP_ASSERTION || !BEHAVIOR_DOC_ID || !KNOWLEDGE_DOC_ID) return false;
@@ -659,7 +686,7 @@ app.get("/internal/evals/:runId", requireInternalKey, async (req, res) => {
 
 ensureSchema()
   .then(async () => {
-    try { await bootstrapKnowledgeIfNeeded(); } catch (error) { console.error("PepGPT bootstrap failed", error); }
+    try { await bootstrapKnowledgeIfNeeded(); await syncMaintenanceKnowledgeOnBoot(); } catch (error) { console.error("PepGPT knowledge initialization failed", error); }
     app.listen(PORT, () => console.log(`PepGPT runtime listening on ${PORT}`));
     await runStartupSelfTest();
     await runDialogSelfTest();
