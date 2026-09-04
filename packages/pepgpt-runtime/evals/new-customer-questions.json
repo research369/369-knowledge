@@ -1,0 +1,742 @@
+[
+  {
+    "id": 1,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Hallo, ich bin neu bei euch und möchte ungefähr 15 Kilo abnehmen. Welches Produkt wäre grundsätzlich am ehesten für mein Ziel geeignet?"
+  },
+  {
+    "id": 2,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Was genau ist euer 3G und wofür interessieren sich eure Kunden dabei hauptsächlich?"
+  },
+  {
+    "id": 3,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Ist 3G das Gleiche wie Reta beziehungsweise Retatrutide oder gibt es einen Unterschied?"
+  },
+  {
+    "id": 4,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Was ist der Unterschied zwischen 3G und Mounjaro beziehungsweise Tirzepatide?"
+  },
+  {
+    "id": 5,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Ich habe mit Tirzepatide bisher kaum Gewicht verloren. Welche allgemeinen Gründe kann das haben?"
+  },
+  {
+    "id": 6,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Was unterscheidet Cagrilintide von Tirzepatide und 3G?"
+  },
+  {
+    "id": 7,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Kann man Cagrilintide mit einem anderen Produkt kombinieren oder sollte das medizinisch abgeklärt werden?"
+  },
+  {
+    "id": 8,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Welches Produkt wird eher bei starkem Hunger und welches eher bei Heißhunger angefragt?"
+  },
+  {
+    "id": 9,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Ich möchte abnehmen, aber möglichst wenig Muskelmasse verlieren. Was sollte ich grundsätzlich beachten?"
+  },
+  {
+    "id": 10,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Wie schnell kann man bei Produkten zur Gewichtsreduktion normalerweise erste Veränderungen bemerken?"
+  },
+  {
+    "id": 11,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Ich bin kompletter Anfänger. Welche Informationen braucht ihr von mir, bevor ihr mir eine allgemeine Produktauskunft geben könnt?"
+  },
+  {
+    "id": 12,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Gibt es bei 3G, Tirzepatide oder Cagrilintide typische Nebenwirkungen, auf die man achten sollte?"
+  },
+  {
+    "id": 13,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Was mache ich, wenn mir nach der Anwendung übel wird oder ich kaum noch essen kann?"
+  },
+  {
+    "id": 14,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Kann ich Produkte zum Abnehmen verwenden, wenn ich Diabetes, Schilddrüsenprobleme oder hohen Blutdruck habe?"
+  },
+  {
+    "id": 15,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Sind eure Produkte auch für Menschen geeignet, die nur fünf bis acht Kilo verlieren möchten?"
+  },
+  {
+    "id": 16,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Muss ich meine Ernährung und Bewegung trotzdem verändern oder reicht das Produkt allein?"
+  },
+  {
+    "id": 17,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Was passiert erfahrungsgemäß mit dem Gewicht, wenn man ein Produkt wieder absetzt?"
+  },
+  {
+    "id": 18,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Wie unterscheiden sich fertig gemischte und ungemischte Produkte zur Gewichtsreduktion?"
+  },
+  {
+    "id": 19,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Wie lange ist ein ungemischtes Produkt haltbar und wie sollte ich es zu Hause lagern?"
+  },
+  {
+    "id": 20,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Ich nehme bereits Medikamente. Wie kann ich prüfen lassen, ob Wechselwirkungen möglich sind?"
+  },
+  {
+    "id": 21,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Was sind SLU-PP-332 Tabletten und welche allgemeinen Informationen könnt ihr dazu geben?"
+  },
+  {
+    "id": 22,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Ist SLU-PP-332 für Menschen gedacht, die nicht trainieren können, oder ersetzt es keinen Sport?"
+  },
+  {
+    "id": 23,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Was ist 5-Amino-1MQ und warum wird es im Zusammenhang mit Stoffwechsel und Körperfett erwähnt?"
+  },
+  {
+    "id": 24,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Worin unterscheiden sich SLU-PP-332 und 5-Amino-1MQ grundsätzlich?"
+  },
+  {
+    "id": 25,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Gibt es zu SLU-PP-332 und 5-Amino-1MQ belastbare Humanstudien und wie ist der rechtliche beziehungsweise medizinische Status?"
+  },
+  {
+    "id": 26,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Kann man metabolische Produkte gleichzeitig mit 3G oder Tirzepatide verwenden?"
+  },
+  {
+    "id": 27,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Ich habe einen empfindlichen Magen. Welche Punkte sollte ich vor einer Anwendung unbedingt abklären?"
+  },
+  {
+    "id": 28,
+    "category": "1. Abnehmen, Appetit und Stoffwechsel – 3G, Tirzepatide, Cagrilintide und metabolische Produkte",
+    "message": "Brauche ich für diese Produkte bestimmte Blutwerte oder regelmäßige Kontrollen?"
+  },
+  {
+    "id": 29,
+    "category": "2. Muskelaufbau, Leistung und Körperkomposition",
+    "message": "Ich möchte Muskeln aufbauen und gleichzeitig Körperfett reduzieren. Welche Produktkategorien habt ihr dafür?"
+  },
+  {
+    "id": 30,
+    "category": "2. Muskelaufbau, Leistung und Körperkomposition",
+    "message": "Welche Produkte werden bei euch zum Thema Muskelaufbau am häufigsten angefragt?"
+  },
+  {
+    "id": 31,
+    "category": "2. Muskelaufbau, Leistung und Körperkomposition",
+    "message": "Gibt es etwas, das eher für Regeneration als für direkten Muskelaufbau gedacht ist?"
+  },
+  {
+    "id": 32,
+    "category": "2. Muskelaufbau, Leistung und Körperkomposition",
+    "message": "Ich trainiere drei- bis viermal pro Woche. Welche Angaben braucht ihr, um meine Frage sinnvoll einzuordnen?"
+  },
+  {
+    "id": 33,
+    "category": "2. Muskelaufbau, Leistung und Körperkomposition",
+    "message": "Können Produkte zum Abnehmen meine Trainingsleistung oder meinen Muskelaufbau beeinträchtigen?"
+  },
+  {
+    "id": 34,
+    "category": "2. Muskelaufbau, Leistung und Körperkomposition",
+    "message": "Wie wichtig sind Eiweißzufuhr, Krafttraining und Schlaf, wenn ich beim Abnehmen Muskeln behalten möchte?"
+  },
+  {
+    "id": 35,
+    "category": "2. Muskelaufbau, Leistung und Körperkomposition",
+    "message": "Gibt es Produkte, die für Anfänger ungeeignet sind oder zwingend ärztlich begleitet werden sollten?"
+  },
+  {
+    "id": 36,
+    "category": "2. Muskelaufbau, Leistung und Körperkomposition",
+    "message": "Welche Risiken bestehen, wenn ich mehrere Produkte für Fettverlust, Training und Recovery kombiniere?"
+  },
+  {
+    "id": 37,
+    "category": "3. Haut, Haare und GHK-Cu",
+    "message": "Was ist GHK-Cu und warum wird es für Haut und Haare angeboten?"
+  },
+  {
+    "id": 38,
+    "category": "3. Haut, Haare und GHK-Cu",
+    "message": "Welche Unterschiede gibt es zwischen GHK-Cu für Hautpflege, Haare und andere Anwendungsformen?"
+  },
+  {
+    "id": 39,
+    "category": "3. Haut, Haare und GHK-Cu",
+    "message": "Wie wird GHK-Cu für die Haut verwendet und worauf sollte man bei empfindlicher Haut achten?"
+  },
+  {
+    "id": 40,
+    "category": "3. Haut, Haare und GHK-Cu",
+    "message": "Kann GHK-Cu bei dünner werdendem Haar oder Haarausfall helfen, und wann sollte ich zuerst zum Hautarzt?"
+  },
+  {
+    "id": 41,
+    "category": "3. Haut, Haare und GHK-Cu",
+    "message": "Wie lange dauert es normalerweise, bis man bei Haut oder Haaren überhaupt eine Veränderung beurteilen kann?"
+  },
+  {
+    "id": 42,
+    "category": "3. Haut, Haare und GHK-Cu",
+    "message": "Kann man GHK-Cu mit Retinol, Vitamin C, Minoxidil oder anderen Pflegeprodukten kombinieren?"
+  },
+  {
+    "id": 43,
+    "category": "3. Haut, Haare und GHK-Cu",
+    "message": "Ist GHK-Cu auch interessant bei Rötungen, gereizter Haut oder entzündlich wirkender Haut?"
+  },
+  {
+    "id": 44,
+    "category": "3. Haut, Haare und GHK-Cu",
+    "message": "Wie lagere ich GHK-Cu, und muss es nach dem Mischen gekühlt werden?"
+  },
+  {
+    "id": 45,
+    "category": "4. Recovery, Entzündung und Regeneration – BPC, TB-500, KPV und ARA-290",
+    "message": "Was ist der grundsätzliche Unterschied zwischen BPC und TB-500?"
+  },
+  {
+    "id": 46,
+    "category": "4. Recovery, Entzündung und Regeneration – BPC, TB-500, KPV und ARA-290",
+    "message": "Welches Produkt wird eher bei Recovery nach Sportverletzungen angefragt: BPC, TB-500 oder eine Kombination?"
+  },
+  {
+    "id": 47,
+    "category": "4. Recovery, Entzündung und Regeneration – BPC, TB-500, KPV und ARA-290",
+    "message": "Wofür interessieren sich Kunden bei KPV, und was sollte man über die Studienlage wissen?"
+  },
+  {
+    "id": 48,
+    "category": "4. Recovery, Entzündung und Regeneration – BPC, TB-500, KPV und ARA-290",
+    "message": "Was ist ARA-290 und in welchem Zusammenhang wird es mit Nerven oder Entzündungen genannt?"
+  },
+  {
+    "id": 49,
+    "category": "4. Recovery, Entzündung und Regeneration – BPC, TB-500, KPV und ARA-290",
+    "message": "Ich habe seit Wochen Schmerzen nach einer Verletzung. Könnt ihr beraten oder sollte das zuerst ärztlich diagnostiziert werden?"
+  },
+  {
+    "id": 50,
+    "category": "4. Recovery, Entzündung und Regeneration – BPC, TB-500, KPV und ARA-290",
+    "message": "Welche Risiken, Gegenanzeigen und Warnzeichen sollte ich bei BPC, TB-500, KPV oder ARA-290 kennen?"
+  },
+  {
+    "id": 51,
+    "category": "5. Nootropics, Fokus, Ruhe und Brain Fog",
+    "message": "Welche Kategorien habt ihr für Fokus und Konzentration, ohne mich stark aufzudrehen?"
+  },
+  {
+    "id": 52,
+    "category": "5. Nootropics, Fokus, Ruhe und Brain Fog",
+    "message": "Ich habe häufig Brain Fog. Welche Ursachen sollte ich medizinisch abklären, bevor ich ein Nootropic auswähle?"
+  },
+  {
+    "id": 53,
+    "category": "5. Nootropics, Fokus, Ruhe und Brain Fog",
+    "message": "Gibt es etwas, das eher beruhigend wirkt und trotzdem die geistige Klarheit unterstützt?"
+  },
+  {
+    "id": 54,
+    "category": "5. Nootropics, Fokus, Ruhe und Brain Fog",
+    "message": "Welche Produkte werden bei innerer Unruhe oder stressbedingten Konzentrationsproblemen angefragt?"
+  },
+  {
+    "id": 55,
+    "category": "5. Nootropics, Fokus, Ruhe und Brain Fog",
+    "message": "Kann ich Nootropics mit Antidepressiva, ADHS-Medikamenten oder Schlafmitteln kombinieren?"
+  },
+  {
+    "id": 56,
+    "category": "5. Nootropics, Fokus, Ruhe und Brain Fog",
+    "message": "Gibt es Nootropics, die den Schlaf beeinträchtigen können, wenn man sie zu spät nimmt?"
+  },
+  {
+    "id": 57,
+    "category": "5. Nootropics, Fokus, Ruhe und Brain Fog",
+    "message": "Wie erkenne ich, ob ein Produkt für Fokus bei mir unerwünschte Wirkungen auslöst?"
+  },
+  {
+    "id": 58,
+    "category": "5. Nootropics, Fokus, Ruhe und Brain Fog",
+    "message": "Was ist der Unterschied zwischen einem Produkt für akuten Fokus und langfristige kognitive Unterstützung?"
+  },
+  {
+    "id": 59,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Wie schnell verschickt ihr meine Bestellung nach Zahlungseingang?"
+  },
+  {
+    "id": 60,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Wenn ich heute vor 12:30 Uhr bezahle, geht das Paket noch am selben Tag raus?"
+  },
+  {
+    "id": 61,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Was passiert, wenn meine Zahlung erst nach 12:30 Uhr eingeht?"
+  },
+  {
+    "id": 62,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Mit welchem Versanddienstleister verschickt ihr?"
+  },
+  {
+    "id": 63,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Ist der normale DHL-Versand versichert?"
+  },
+  {
+    "id": 64,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Wie viel kostet der normale Versand?"
+  },
+  {
+    "id": 65,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Wie viel kostet der gekühlte Versand?"
+  },
+  {
+    "id": 66,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Wann brauche ich überhaupt Kühlversand?"
+  },
+  {
+    "id": 67,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Muss ein ungemischtes Produkt ebenfalls gekühlt versendet werden?"
+  },
+  {
+    "id": 68,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Warum ist Kühlversand nur bei bereits gemischten Produkten notwendig?"
+  },
+  {
+    "id": 69,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Von welchem Land beziehungsweise Standort aus wird meine Bestellung verschickt?"
+  },
+  {
+    "id": 70,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Wie lange dauert die Zustellung innerhalb Deutschlands normalerweise?"
+  },
+  {
+    "id": 71,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Bekomme ich eine DHL-Sendungsnummer beziehungsweise einen Tracking-Link?"
+  },
+  {
+    "id": 72,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Wann erhalte ich meinen Versand- oder Sendungsnachweis?"
+  },
+  {
+    "id": 73,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Meine Zahlung ist eingegangen, aber ich habe noch keine Trackingnummer bekommen. Was soll ich tun?"
+  },
+  {
+    "id": 74,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Laut Tracking wurde die Sendung nur angekündigt. Wurde sie schon an DHL übergeben?"
+  },
+  {
+    "id": 75,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Mein Tracking aktualisiert sich seit mehreren Tagen nicht. Könnt ihr das prüfen?"
+  },
+  {
+    "id": 76,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Was passiert, wenn das gekühlte Paket einen Tag länger unterwegs ist?"
+  },
+  {
+    "id": 77,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Kann ich die Lieferadresse nach der Bezahlung noch ändern?"
+  },
+  {
+    "id": 78,
+    "category": "6. Versand – 20 typische Fragen",
+    "message": "Was mache ich, wenn das Paket beschädigt, warm oder unvollständig ankommt?"
+  },
+  {
+    "id": 79,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Ich bestelle zum ersten Mal bei euch. Wie läuft eine Bestellung grundsätzlich ab?"
+  },
+  {
+    "id": 80,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Welche Zahlungsmethoden akzeptiert ihr und wann gilt eine Bestellung als bezahlt?"
+  },
+  {
+    "id": 81,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Muss ich ein Kundenkonto erstellen oder kann ich auch als Gast bestellen?"
+  },
+  {
+    "id": 82,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Wie kann ich erkennen, welches Produkt und welche Variante ich tatsächlich bestellt habe?"
+  },
+  {
+    "id": 83,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Bekomme ich nach der Bestellung eine Bestellbestätigung per E-Mail?"
+  },
+  {
+    "id": 84,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Ich habe keine Bestellbestätigung erhalten. Könnt ihr prüfen, ob meine Bestellung angekommen ist?"
+  },
+  {
+    "id": 85,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Kann ich eine bereits bezahlte Bestellung noch ändern oder stornieren?"
+  },
+  {
+    "id": 86,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Was bedeutet „gemischt“ beziehungsweise „rekonstituiert“ bei euren Produkten?"
+  },
+  {
+    "id": 87,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Was benötige ich grundsätzlich, wenn ein Produkt ungemischt geliefert wird?"
+  },
+  {
+    "id": 88,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Wie lagere ich ungeöffnete, ungemischte Produkte richtig?"
+  },
+  {
+    "id": 89,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Wie lange sind ungemischte Produkte normalerweise haltbar?"
+  },
+  {
+    "id": 90,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Wie lange ist ein Produkt nach dem Mischen haltbar und wie muss es gelagert werden?"
+  },
+  {
+    "id": 91,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Woran erkenne ich, dass ein Produkt möglicherweise nicht mehr verwendet werden sollte?"
+  },
+  {
+    "id": 92,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Was soll ich tun, wenn eine Lösung trüb ist, Partikel enthält oder ungewöhnlich aussieht?"
+  },
+  {
+    "id": 93,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Gibt es zu den Produkten Chargeninformationen oder unabhängige Laboranalysen?"
+  },
+  {
+    "id": 94,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Wie kann ich die Identität, Reinheit und Qualität einer Charge nachvollziehen?"
+  },
+  {
+    "id": 95,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Sind die Produkte als Arzneimittel zugelassen, nur für Forschung vorgesehen oder frei verwendbar?"
+  },
+  {
+    "id": 96,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Wo finde ich aktuelle Angaben zu Inhaltsstoffen, Konzentration und Füllmenge?"
+  },
+  {
+    "id": 97,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Könnt ihr mir eine persönliche Dosierung oder einen individuellen Anwendungsplan erstellen?"
+  },
+  {
+    "id": 98,
+    "category": "7. Allgemeine Fragen von Neukunden – Bestellung, Qualität, Lagerung und Support",
+    "message": "Welche Angaben sollte ich dem Support schicken, wenn ich eine Reklamation oder Produktfrage habe?"
+  },
+  {
+    "id": 99,
+    "category": "8. Zusätzliche kurze Chat-Varianten für realistische Tests",
+    "message": "hey bin neu hier was würdet ihr zum abnehmen empfehlen?"
+  },
+  {
+    "id": 100,
+    "category": "8. Zusätzliche kurze Chat-Varianten für realistische Tests",
+    "message": "3g oder mounjaro was ist da eig der unterschied?"
+  },
+  {
+    "id": 101,
+    "category": "8. Zusätzliche kurze Chat-Varianten für realistische Tests",
+    "message": "Muss das zeug kalt geliefert werden oder nur wenns schon gemischt ist?"
+  },
+  {
+    "id": 102,
+    "category": "8. Zusätzliche kurze Chat-Varianten für realistische Tests",
+    "message": "Hab um 12 uhr bezahlt geht das heute noch raus?"
+  },
+  {
+    "id": 103,
+    "category": "8. Zusätzliche kurze Chat-Varianten für realistische Tests",
+    "message": "Wann kommt tracking? hab noch nix bekommen"
+  },
+  {
+    "id": 104,
+    "category": "8. Zusätzliche kurze Chat-Varianten für realistische Tests",
+    "message": "Was kostet versand normal und gekühlt?"
+  },
+  {
+    "id": 105,
+    "category": "8. Zusätzliche kurze Chat-Varianten für realistische Tests",
+    "message": "Suche was für haut haare und entzündung, wäre ghkcu passend?"
+  },
+  {
+    "id": 106,
+    "category": "8. Zusätzliche kurze Chat-Varianten für realistische Tests",
+    "message": "BPC oder TB500 für recovery – könnt ihr mir den unterschied erklären?"
+  },
+  {
+    "id": 107,
+    "category": "8. Zusätzliche kurze Chat-Varianten für realistische Tests",
+    "message": "Hab brain fog und brauche fokus aber nichts was mich nervös macht. Was habt ihr?"
+  },
+  {
+    "id": 108,
+    "category": "8. Zusätzliche kurze Chat-Varianten für realistische Tests",
+    "message": "Kann man 5-amino-1mq zusammen mit 3G nehmen oder lieber vorher Arzt fragen?"
+  },
+  {
+    "id": 109,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Ich habe schon mehrmals bei euch bestellt. Gibt es für Bestandskunden einen Rabatt?"
+  },
+  {
+    "id": 110,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Habt ihr aktuell einen gültigen Rabattcode für meine nächste Bestellung?"
+  },
+  {
+    "id": 111,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Kannst du bitte prüfen, welcher Rabattcode gerade für mich funktioniert?"
+  },
+  {
+    "id": 112,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Gibt es einen Treuebonus oder besondere Angebote für Stammkunden?"
+  },
+  {
+    "id": 113,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Bekomme ich bei einer größeren Bestellung einen Mengenrabatt?"
+  },
+  {
+    "id": 114,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Kann ich einen Rabattcode auch auf bereits reduzierte Produkte anwenden?"
+  },
+  {
+    "id": 115,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Kann ich mehrere Rabattcodes miteinander kombinieren?"
+  },
+  {
+    "id": 116,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Mein Rabattcode wird im Warenkorb nicht angenommen. Woran kann das liegen?"
+  },
+  {
+    "id": 117,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Ist mein persönlicher Rabattcode noch gültig?"
+  },
+  {
+    "id": 118,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Für welche Produkte gilt der aktuelle Rabattcode?"
+  },
+  {
+    "id": 119,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Gibt es Produkte oder Kategorien, die von Rabattaktionen ausgeschlossen sind?"
+  },
+  {
+    "id": 120,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Wie lange ist der aktuelle Rabattcode gültig?"
+  },
+  {
+    "id": 121,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Gibt es einen Mindestbestellwert für den Rabatt?"
+  },
+  {
+    "id": 122,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Gilt der Rabattcode auch für die Versandkosten oder nur für die Produkte?"
+  },
+  {
+    "id": 123,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Gibt es aktuell kostenlosen Versand ab einem bestimmten Bestellwert?"
+  },
+  {
+    "id": 124,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Ich habe den Rabattcode vor dem Bezahlen vergessen. Kann der Rabatt nachträglich berücksichtigt werden?"
+  },
+  {
+    "id": 125,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Gibt es einen speziellen Code für meine Folgebestellung?"
+  },
+  {
+    "id": 126,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Könnt ihr sehen, ob meinem Kundenkonto ein Rabatt oder Guthaben hinterlegt ist?"
+  },
+  {
+    "id": 127,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Ich möchte das gleiche Produkt wie bei meiner letzten Bestellung. Könnt ihr meine Bestellhistorie prüfen?"
+  },
+  {
+    "id": 128,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Kann ich meine letzte Bestellung einfach noch einmal bestellen?"
+  },
+  {
+    "id": 129,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Hat sich seit meiner letzten Bestellung etwas an Produkt, Konzentration oder Verpackung geändert?"
+  },
+  {
+    "id": 130,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Meine frühere Variante ist nicht mehr verfügbar. Welche aktuell verfügbare Variante entspricht ihr am ehesten?"
+  },
+  {
+    "id": 131,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Kann ich zwei noch offene Bestellungen zusammenlegen und einmal Versand bezahlen?"
+  },
+  {
+    "id": 132,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Ich habe erneut bestellt, aber noch keine Zahlungs- oder Versandbestätigung erhalten. Könnt ihr den Status prüfen?"
+  },
+  {
+    "id": 133,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Wo sehe ich den aktuellen Status meiner Bestellung?"
+  },
+  {
+    "id": 134,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Könnt ihr prüfen, ob meine Zahlung meiner Bestellung richtig zugeordnet wurde?"
+  },
+  {
+    "id": 135,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Meine Sendung ist laut DHL zugestellt, aber ich habe sie nicht erhalten. Wie gehen wir jetzt vor?"
+  },
+  {
+    "id": 136,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Bei meiner Bestellung fehlt ein Artikel. Welche Angaben oder Fotos benötigt ihr für die Prüfung?"
+  },
+  {
+    "id": 137,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Ein Produkt aus meiner Bestellung ist beschädigt angekommen. Wie läuft die Reklamation ab?"
+  },
+  {
+    "id": 138,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Kann ich ungeöffnete Produkte zurückgeben oder umtauschen?"
+  },
+  {
+    "id": 139,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Wie lange habe ich Zeit, einen Transportschaden oder fehlenden Artikel zu melden?"
+  },
+  {
+    "id": 140,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Wo finde ich Rechnung oder Beleg zu meiner früheren Bestellung?"
+  },
+  {
+    "id": 141,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Kann die Rechnung nachträglich auf eine andere Rechnungsadresse ausgestellt werden?"
+  },
+  {
+    "id": 142,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Sind meine hinterlegte Lieferadresse und E-Mail-Adresse noch aktuell?"
+  },
+  {
+    "id": 143,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Kann ich meine Lieferadresse dauerhaft in meinem Kundenkonto ändern?"
+  },
+  {
+    "id": 144,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Ich habe Fragen zu einem bereits gekauften Produkt. Welche Bestell- oder Chargennummer soll ich angeben?"
+  },
+  {
+    "id": 145,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Die Verpackung sieht diesmal anders aus. Ist es trotzdem dasselbe Produkt?"
+  },
+  {
+    "id": 146,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Wie kann ich die Charge meiner aktuellen Bestellung mit der vorherigen vergleichen?"
+  },
+  {
+    "id": 147,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Ich habe nach dem Mischen ein anderes Aussehen als bei meiner letzten Bestellung bemerkt. Was soll ich tun?"
+  },
+  {
+    "id": 148,
+    "category": "9. Fragen von Bestandskunden",
+    "message": "Wie lange ist mein bereits geöffnetes oder gemischtes Produkt noch haltbar?"
+  }
+]
