@@ -3,7 +3,8 @@ import { createHash, randomUUID } from "node:crypto";
 
 // Explicit opt-in only: node scripts/verify-sales-4a.mjs --run
 // With no behavior payload, verification leaves knowledge untouched.
-const maintenanceMode = process.env.PEPGPT_RUN_MAINTENANCE || "";\nif (!process.argv.includes("--run") && maintenanceMode !== "1" && maintenanceMode !== "sync") {
+const maintenanceMode = process.env.PEPGPT_RUN_MAINTENANCE || "";
+if (!process.argv.includes("--run") && maintenanceMode !== "1" && maintenanceMode !== "sync") {
   console.log("PepGPT maintenance is inactive; pass --run for an explicit verification.");
   process.exit(0);
 }
