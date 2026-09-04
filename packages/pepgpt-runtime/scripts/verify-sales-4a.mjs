@@ -3,7 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 
 // Explicit opt-in only: node scripts/verify-sales-4a.mjs --run
 // With no behavior payload, verification leaves knowledge untouched.
-if (!process.argv.includes("--run") && process.env.PEPGPT_RUN_MAINTENANCE !== "1") {
+const maintenanceMode = process.env.PEPGPT_RUN_MAINTENANCE || "";\nif (!process.argv.includes("--run") && maintenanceMode !== "1" && maintenanceMode !== "sync") {
   console.log("PepGPT maintenance is inactive; pass --run for an explicit verification.");
   process.exit(0);
 }
@@ -61,6 +61,11 @@ try {
     const after = await pool.query("SELECT content FROM pepgpt_runtime_knowledge WHERE key = 'PEP_PRODUCT_KNOWLEDGE.md'");
     if (after.rows[0].content !== product.content) throw new Error("Product knowledge changed during sync");
     log("knowledge-synced", { behaviorChars: behavior.length, behaviorSha256: hash(updated.rows[0].content), revision, productKnowledgeUnchanged: true, productKnowledgeSha256: hash(product.content) });
+  }
+  if (maintenanceMode === "sync") {
+    log("completed", { mode: "sync-only" });
+    await pool.end();
+    process.exit(0);
   }
   const health = await request("/health", undefined, "GET");
   log("health", { health });
