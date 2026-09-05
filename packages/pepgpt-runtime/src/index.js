@@ -475,17 +475,34 @@ function validateEvalCases(value) {
   return value.slice(0, BATCH_EVAL_LIMIT).map((item, index) => {
     const message = typeof item?.message === "string" ? item.message.trim() : "";
     if (!message) throw new Error(`eval case ${index + 1} has no message`);
+    const requiredAny = Array.isArray(item?.expect?.requiredAny)
+      ? item.expect.requiredAny.filter((term) => typeof term === "string" && term.trim()).map((term) => term.trim().toLowerCase()).slice(0, 12)
+      : [];
+    const minimumScore = Number.isFinite(item?.expect?.minimumScore) ? Math.min(100, Math.max(0, Number(item.expect.minimumScore))) : 70;
     return {
       id: Number.isInteger(item?.id) ? item.id : index + 1,
+      group: typeof item?.group === "string" ? item.group.slice(0, 80) : "general",
       category: typeof item?.category === "string" ? item.category.slice(0, 80) : "uncategorized",
       message: message.slice(0, 4000),
+      expect: { requiredAny, minimumScore },
     };
   });
 }
 
 async function loadBundledEvalSuite() {
-  const url = new URL("../evals/new-customer-questions.json", import.meta.url);
-  return validateEvalCases(JSON.parse(await readFile(url, "utf8")));
+  const suite = process.env.PEPGPT_EVAL_SUITE === "sales-support-70" ? "sales-support-70" : "new-customer-questions";
+  const url = new URL("../evals/" + suite + ".json", import.meta.url);
+  return { suite, cases: validateEvalCases(JSON.parse(await readFile(url, "utf8"))) };
+}
+
+function evaluateEvalResponse(testCase, output) {
+  const normalized = typeof output === "string" ? output.toLowerCase() : "";
+  const checks = [{ name: "answer_present", passed: normalized.length >= 20 }];
+  const requiredAny = testCase.expect?.requiredAny || [];
+  if (requiredAny.length) checks.push({ name: "required_any", passed: requiredAny.some((term) => normalized.includes(term)), expected: requiredAny });
+  const passedChecks = checks.filter((check) => check.passed).length;
+  const score = Math.round((passedChecks / checks.length) * 100);
+  return { score, passed: score >= (testCase.expect?.minimumScore ?? 70), checks };
 }
 
 async function createEvalRun(cases, suite) {
@@ -517,6 +534,7 @@ async function runEvalSuite(cases, suite = "new-customer-questions", existingRun
           ...testCase,
           status: "ok",
           output: answer.text,
+          evaluation: evaluateEvalResponse(testCase, answer.text),
           responseId: answer.responseId,
           durationMs: Date.now() - started,
           questionMarks: (answer.text.match(/\?/g) || []).length,
@@ -534,20 +552,22 @@ async function runEvalSuite(cases, suite = "new-customer-questions", existingRun
   }
   await Promise.all(Array.from({ length: Math.min(BATCH_EVAL_CONCURRENCY, cases.length) }, () => worker()));
   const failed = results.filter((item) => item?.status !== "ok").length;
+  const flagged = results.filter((item) => item?.status === "ok" && !item.evaluation?.passed).length;
   await pool.query(
     `UPDATE pepgpt_eval_runs
         SET status = $2, completed = $3, failed = $4, results = $5::jsonb, completed_at = NOW()
       WHERE run_id = $1`,
     [runId, failed ? "completed_with_errors" : "completed", cases.length, failed, JSON.stringify(results)]
   );
-  console.log(JSON.stringify({ event: "pepgpt.eval.completed", runId, suite, total: cases.length, failed, at: new Date().toISOString() }));
+  console.log(JSON.stringify({ event: "pepgpt.eval.completed", runId, suite, total: cases.length, failed, flagged, at: new Date().toISOString() }));
   return { runId, suite, total: cases.length, failed, results };
 }
 
 async function runBatchEvalOnBoot() {
   if (!BATCH_EVAL_ON_BOOT) return;
   try {
-    await runEvalSuite(await loadBundledEvalSuite());
+    const bundled = await loadBundledEvalSuite();
+    await runEvalSuite(bundled.cases, bundled.suite);
   } catch (error) {
     console.error(JSON.stringify({ event: "pepgpt.eval.failed", detail: error instanceof Error ? error.message : String(error), at: new Date().toISOString() }));
   }
@@ -651,9 +671,10 @@ app.delete("/internal/memory/:customerId", requireInternalKey, async (req, res) 
 
 app.post("/internal/evals", requireInternalKey, async (req, res) => {
   try {
-    const cases = req.body?.cases ? validateEvalCases(req.body.cases) : await loadBundledEvalSuite();
+    const bundled = req.body?.cases ? null : await loadBundledEvalSuite();
+    const cases = req.body?.cases ? validateEvalCases(req.body.cases) : bundled.cases;
     if (!cases.length) return res.status(400).json({ error: "at least one eval case is required" });
-    const suite = typeof req.body?.suite === "string" ? req.body.suite.trim().slice(0, 120) || "custom" : "new-customer-questions";
+    const suite = typeof req.body?.suite === "string" ? req.body.suite.trim().slice(0, 120) || "custom" : bundled?.suite || "new-customer-questions";
     const runId = await createEvalRun(cases, suite);
     runEvalSuite(cases, suite, runId).catch(async (error) => {
       console.error(JSON.stringify({ event: "pepgpt.eval.failed", runId, detail: error instanceof Error ? error.message : String(error), at: new Date().toISOString() }));
