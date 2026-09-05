@@ -587,8 +587,15 @@ app.get("/health", async (_req, res) => {
     return res.status(503).json({ ...base, status: "error", database: "failed", detail: error instanceof Error ? error.message : String(error), openaiConfigured: Boolean(OPENAI_API_KEY) });
   }
   try {
-    const [data, liveCatalog] = await Promise.all([loadKnowledge(), loadLiveCatalog()]);
-    return res.json({ ...base, status: "ok", database: "connected", knowledgeStore: "ready", behaviorChars: data.behavior.length, knowledgeChars: data.knowledge.length, revisions: data.revisions, liveCatalog: { available: liveCatalog.available, products: liveCatalog.products.length }, openaiConfigured: Boolean(OPENAI_API_KEY) });
+    const [data, liveCatalog, latestEval] = await Promise.all([
+      loadKnowledge(),
+      loadLiveCatalog(),
+      pool.query("SELECT run_id, suite, status, total, completed, failed, results, completed_at FROM pepgpt_eval_runs ORDER BY created_at DESC LIMIT 1"),
+    ]);
+    const latest = latestEval.rows[0];
+    const flagged = Array.isArray(latest?.results) ? latest.results.filter((item) => item?.status === "ok" && item?.evaluation?.passed === false).length : null;
+    const evaluation = latest ? { runId: latest.run_id, suite: latest.suite, status: latest.status, total: latest.total, completed: latest.completed, failed: latest.failed, flagged, completedAt: latest.completed_at } : null;
+    return res.json({ ...base, status: "ok", database: "connected", knowledgeStore: "ready", behaviorChars: data.behavior.length, knowledgeChars: data.knowledge.length, revisions: data.revisions, liveCatalog: { available: liveCatalog.available, products: liveCatalog.products.length }, evaluation, openaiConfigured: Boolean(OPENAI_API_KEY) });
   } catch (error) {
     return res.json({ ...base, status: "not_ready", database: "connected", knowledgeStore: "awaiting_sync", detail: error instanceof Error ? error.message : String(error), openaiConfigured: Boolean(OPENAI_API_KEY) });
   }
