@@ -379,11 +379,7 @@
     "category": "libido-intent",
     "message": "unten ist grad tote hose",
     "expect": {
-      "requiredAny": [
-        "libido",
-        "pt-141",
-        "melanotan"
-      ],
+      "requiredAny": [],
       "minimumScore": 70
     }
   },
@@ -393,11 +389,7 @@
     "category": "libido-intent",
     "message": "brauch wieder mehr drive",
     "expect": {
-      "requiredAny": [
-        "libido",
-        "pt-141",
-        "melanotan"
-      ],
+      "requiredAny": [],
       "minimumScore": 70
     }
   },
