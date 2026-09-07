@@ -1,0 +1,651 @@
+[
+  {
+    "id": 1,
+    "group": "customer",
+    "category": "weight-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "ich will leaner werden"
+      },
+      {
+        "role": "assistant",
+        "content": "Für den Gewichtsverlust wäre R3ta die erste Richtung. Geht es dir mehr um Hunger oder die letzten Fettreserven?"
+      },
+      {
+        "role": "user",
+        "content": "hunger ist eigentlich okay, will nur noch mehr fett runter"
+      }
+    ],
+    "message": "will jetzt wissen was ich nehme",
+    "expect": {
+      "requiredAny": [
+        "reta",
+        "r3ta",
+        "retatrutide",
+        "slu"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 2,
+    "group": "customer",
+    "category": "weight-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "ich nehme Reta und will noch mehr Fett verlieren"
+      },
+      {
+        "role": "assistant",
+        "content": "Als zusätzliche metabolische Richtung kann ich SLU-PP-332 oder eine Vergleichsrichtung einordnen. Geht es dir um oral oder um einen Wechsel?"
+      }
+    ],
+    "message": "will keine weitere spritze",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett",
+        "oral"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 3,
+    "group": "customer",
+    "category": "weight-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "ich nehme Tirz"
+      },
+      {
+        "role": "assistant",
+        "content": "Geht es dir mehr um Hunger/Food Noise oder Fettverlust trotz guter Appetitkontrolle?"
+      },
+      {
+        "role": "user",
+        "content": "hunger passt, fett soll schneller runter"
+      }
+    ],
+    "message": "okay und was ist bei mir sinnvoller",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "retatrutide",
+        "reta",
+        "tirz"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 4,
+    "group": "customer",
+    "category": "weight-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "was noch zu Reta?"
+      },
+      {
+        "role": "assistant",
+        "content": "Für eine zusätzliche metabolische Richtung ist SLU-PP-332 die orale Option."
+      }
+    ],
+    "message": "zeig mir das orale",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett",
+        "oral"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 5,
+    "group": "customer",
+    "category": "blend-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "ich kenne Reta"
+      },
+      {
+        "role": "assistant",
+        "content": "NEXUS IV ist ein fester Blend aus Reta und Cagri."
+      }
+    ],
+    "message": "also nexus wäre dann nicht das gleiche?",
+    "expect": {
+      "requiredAny": [
+        "nexus",
+        "reta",
+        "cagri"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 6,
+    "group": "customer",
+    "category": "muscle-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "will was für gainz"
+      },
+      {
+        "role": "assistant",
+        "content": "Meinst du Aufbau oder Recovery?"
+      },
+      {
+        "role": "user",
+        "content": "ich trainiere 4x die Woche und komme klar"
+      }
+    ],
+    "message": "ich meine masse, nicht recovery",
+    "expect": {
+      "requiredAny": [
+        "muskel",
+        "aufbau",
+        "ace",
+        "peg"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 7,
+    "group": "customer",
+    "category": "muscle-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "will breiter werden"
+      },
+      {
+        "role": "assistant",
+        "content": "Geht es um Muskelmasse oder Recovery?"
+      },
+      {
+        "role": "user",
+        "content": "mehr Schulter und Rücken, Recovery ist okay"
+      }
+    ],
+    "message": "welches davon ist dann eher mein ding",
+    "expect": {
+      "requiredAny": [
+        "aufbau",
+        "muskel",
+        "ace",
+        "peg"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 8,
+    "group": "customer",
+    "category": "recovery-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "nach gym alles mies"
+      },
+      {
+        "role": "assistant",
+        "content": "Ganzkörper-Erschöpfung oder konkrete Stelle?"
+      },
+      {
+        "role": "user",
+        "content": "sonst okay"
+      }
+    ],
+    "message": "es ist nur die achillessehne",
+    "expect": {
+      "requiredAny": [
+        "bpc",
+        "sehne",
+        "recovery"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 9,
+    "group": "customer",
+    "category": "recovery-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "sehne nervt"
+      },
+      {
+        "role": "assistant",
+        "content": "Welche Sehne und seit wann?"
+      },
+      {
+        "role": "user",
+        "content": "achilles seit 3 wochen"
+      }
+    ],
+    "message": "nichts gerissen, nur immer gereizt",
+    "expect": {
+      "requiredAny": [
+        "bpc",
+        "tb",
+        "recovery"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 10,
+    "group": "customer",
+    "category": "sleep-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "penn grad kacke"
+      },
+      {
+        "role": "assistant",
+        "content": "Einschlafen, Durchschlafen oder nicht abschalten?"
+      },
+      {
+        "role": "user",
+        "content": "bin müde aber kopf läuft"
+      }
+    ],
+    "message": "einschlafen ist das problem",
+    "expect": {
+      "requiredAny": [
+        "selank",
+        "melatonin",
+        "schlaf"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 11,
+    "group": "customer",
+    "category": "sleep-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "schlaf ist mies"
+      },
+      {
+        "role": "assistant",
+        "content": "Geht es um Einschlafen oder Durchschlafen?"
+      },
+      {
+        "role": "user",
+        "content": "einschlafen geht"
+      }
+    ],
+    "message": "ich wach dauernd auf",
+    "expect": {
+      "requiredAny": [
+        "dsip",
+        "schlaf"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 12,
+    "group": "customer",
+    "category": "libido-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "unten ist tote hose"
+      },
+      {
+        "role": "assistant",
+        "content": "Fehlende Lust oder Erektionsproblem?"
+      },
+      {
+        "role": "user",
+        "content": "sonst alles normal"
+      }
+    ],
+    "message": "lust ist da, nur funktion nicht richtig",
+    "expect": {
+      "requiredAny": [
+        "pt-141",
+        "erektion",
+        "libido"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 13,
+    "group": "customer",
+    "category": "libido-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "brauch mehr drive"
+      },
+      {
+        "role": "assistant",
+        "content": "Mentaler Antrieb oder körperliche Energie?"
+      },
+      {
+        "role": "user",
+        "content": "training und energie"
+      }
+    ],
+    "message": "körperlich, nicht kopf",
+    "expect": {
+      "requiredAny": [
+        "mots",
+        "ss-31",
+        "energie"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 14,
+    "group": "customer",
+    "category": "skin-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "haut sieht fertig aus"
+      },
+      {
+        "role": "assistant",
+        "content": "Trocken/fahl, Falten oder gereizt?"
+      },
+      {
+        "role": "user",
+        "content": "nicht gereizt"
+      }
+    ],
+    "message": "hauptsächlich fahl und trocken",
+    "expect": {
+      "requiredAny": [
+        "ghk",
+        "haut",
+        "serum"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 15,
+    "group": "customer",
+    "category": "hair-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "haare werden weniger"
+      },
+      {
+        "role": "assistant",
+        "content": "Diffus oder Geheimratsecken?"
+      },
+      {
+        "role": "user",
+        "content": "nicht nur vorne"
+      }
+    ],
+    "message": "eher überall weniger",
+    "expect": {
+      "requiredAny": [
+        "ghk",
+        "haar"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 16,
+    "group": "support",
+    "category": "shipping-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "wo bleibt meine sendung?"
+      },
+      {
+        "role": "assistant",
+        "content": "Wie lautet deine Bestellnummer?"
+      }
+    ],
+    "message": "bestellung 12345",
+    "expect": {
+      "requiredAny": [
+        "bestellung",
+        "tracking",
+        "versand"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 17,
+    "group": "support",
+    "category": "shipping-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "brauch das kalt oder normal?"
+      },
+      {
+        "role": "assistant",
+        "content": "Welches Produkt und Versand oder Lagerung?"
+      },
+      {
+        "role": "user",
+        "content": "R3ta 10 mg"
+      }
+    ],
+    "message": "es geht um versand",
+    "expect": {
+      "requiredAny": [
+        "versand",
+        "gekühlt",
+        "kalt"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 18,
+    "group": "support",
+    "category": "catalog-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "ist Slu da?"
+      },
+      {
+        "role": "assistant",
+        "content": "SLU-PP-332 Tabletten sind verfügbar."
+      }
+    ],
+    "message": "dann nehm ich die",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett",
+        "verfüg"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 19,
+    "group": "support",
+    "category": "damage-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "vial kaputt angekommen"
+      },
+      {
+        "role": "assistant",
+        "content": "Bitte nicht verwenden. Schick bitte Bestellnummer und Fotos der Verpackung und des Vials."
+      },
+      {
+        "role": "user",
+        "content": "ist auch warm gewesen"
+      }
+    ],
+    "message": "foto hab ich",
+    "expect": {
+      "requiredAny": [
+        "nicht",
+        "verwenden",
+        "support"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 20,
+    "group": "customer",
+    "category": "context-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "ich will fett verlieren und nehme Reta"
+      },
+      {
+        "role": "assistant",
+        "content": "Für eine zusätzliche orale Richtung kann SLU-PP-332 passen. Geht es um Hunger oder Fettverlust trotz guter Appetitkontrolle?"
+      },
+      {
+        "role": "user",
+        "content": "fettverlust trotz gutem hunger"
+      }
+    ],
+    "message": "also nicht nochmal nach meinem ziel fragen",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett",
+        "oral"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 21,
+    "group": "customer",
+    "category": "context-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "ich will keine weitere spritze"
+      },
+      {
+        "role": "assistant",
+        "content": "Dann ist SLU-PP-332 als orale Richtung die passendere Option."
+      },
+      {
+        "role": "user",
+        "content": "gibt es das aktuell?"
+      }
+    ],
+    "message": "was ist der nächste schritt",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 22,
+    "group": "customer",
+    "category": "comparison-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "Reta oder Nexus?"
+      },
+      {
+        "role": "assistant",
+        "content": "Reta ist die einzelne Triple-Agonist-Richtung; NEXUS IV kombiniert Reta und Cagri."
+      },
+      {
+        "role": "user",
+        "content": "ich will die Sättigung stärker im Fokus"
+      }
+    ],
+    "message": "dann eher das zweite",
+    "expect": {
+      "requiredAny": [
+        "nexus",
+        "cagri",
+        "reta"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 23,
+    "group": "customer",
+    "category": "clarify-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "will leaner"
+      },
+      {
+        "role": "assistant",
+        "content": "Mehrere Kilo oder letzter Feinschliff?"
+      },
+      {
+        "role": "user",
+        "content": "bin schon ziemlich lean"
+      }
+    ],
+    "message": "nur der letzte cut",
+    "expect": {
+      "requiredAny": [
+        "reta",
+        "r3ta",
+        "retatrutide"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 24,
+    "group": "support",
+    "category": "support-journey",
+    "history": [
+      {
+        "role": "user",
+        "content": "wie viel ist das?"
+      },
+      {
+        "role": "assistant",
+        "content": "Nenne bitte Vialmenge und Endvolumen."
+      }
+    ],
+    "message": "10mg plus 2ml",
+    "expect": {
+      "requiredAny": [
+        "mg",
+        "ml",
+        "5"
+      ],
+      "minimumScore": 70
+    }
+  }
+]
