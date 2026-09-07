@@ -507,7 +507,9 @@ function validateEvalCases(value) {
 }
 
 async function loadBundledEvalSuite() {
-  const suite = process.env.PEPGPT_EVAL_SUITE === "sales-support-70" ? "sales-support-70" : "new-customer-questions";
+  const requestedSuite = process.env.PEPGPT_EVAL_SUITE || "new-customer-questions";
+  const supportedSuites = new Set(["new-customer-questions", "sales-support-70", "intent-need-60"]);
+  const suite = supportedSuites.has(requestedSuite) ? requestedSuite : "new-customer-questions";
   const url = new URL("../evals/" + suite + ".json", import.meta.url);
   return { suite, cases: validateEvalCases(JSON.parse(await readFile(url, "utf8"))) };
 }
