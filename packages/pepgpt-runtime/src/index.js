@@ -28,6 +28,8 @@ const QUALITY_REVIEW_ON_BOOT = process.env.PEPGPT_QUALITY_REVIEW_ON_BOOT === "1"
 const QUALITY_REVIEW_LIMIT = Math.min(100, Math.max(1, Number(process.env.PEPGPT_QUALITY_REVIEW_LIMIT || 70)));
 const CATALOG_API_URL = process.env.PEPGPT_CATALOG_API_URL || "https://api.369research.eu/api/trpc/article.shopProducts?input=%7B%22json%22%3Anull%7D";
 const CATALOG_CACHE_MS = Math.min(300000, Math.max(10000, Number(process.env.PEPGPT_CATALOG_CACHE_MS || 30000)));
+const COMMERCE_API_URL = process.env.PEPGPT_COMMERCE_API_URL?.replace(/\\/$/, "") || "";
+const COMMERCE_BRIDGE_KEY = process.env.PEPGPT_COMMERCE_BRIDGE_KEY || "";
 const MEMORY_FIELDS = new Set([
   "preferredName", "age", "heightCm", "weightKg", "goal", "training",
   "nutrition", "occupation", "children", "stressLevel", "sleep",
@@ -292,6 +294,46 @@ async function loadLiveCatalog() {
   } catch (error) {
     console.warn(JSON.stringify({ event: "pepgpt.catalog.unavailable", detail: error instanceof Error ? error.message : String(error), at: new Date().toISOString() }));
     return { available: false, source: "369 Research live shop catalog", products: [] };
+  }
+}
+
+async function loadVerifiedOrderStatus(context) {
+  const lookup = context?.orderLookup;
+  const orderId = typeof lookup?.orderId === "string" ? lookup.orderId.trim().slice(0, 64) : "";
+  const customerName = typeof lookup?.customerName === "string" ? lookup.customerName.trim().slice(0, 160) : "";
+  if (!COMMERCE_API_URL || !COMMERCE_BRIDGE_KEY || !orderId || !customerName) return null;
+  try {
+    const url = new URL("/api/internal/pepgpt/order-status", COMMERCE_API_URL);
+    url.searchParams.set("orderId", orderId);
+    url.searchParams.set("customerName", customerName);
+    const response = await fetch(url, {
+      headers: { "x-pepgpt-commerce-key": COMMERCE_BRIDGE_KEY },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (response.status === 404) return { found: false };
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    const order = payload?.order;
+    if (!payload?.success || !order || typeof order !== "object") return { found: false };
+    return {
+      found: true,
+      orderId: typeof order.orderId === "string" ? order.orderId : null,
+      status: typeof order.status === "string" ? order.status : null,
+      orderDate: order.orderDate || null,
+      shippedAt: order.shippedAt || null,
+      shipmentRecency: order.shipmentRecency === "older" ? "older" : "current",
+      ageDays: Number.isFinite(Number(order.ageDays)) ? Number(order.ageDays) : null,
+      tracking: order.tracking && typeof order.tracking === "object" ? {
+        number: typeof order.tracking.number === "string" ? order.tracking.number : null,
+        url: typeof order.tracking.url === "string" ? order.tracking.url : null,
+        status: typeof order.tracking.status === "string" ? order.tracking.status : null,
+        detail: typeof order.tracking.detail === "string" ? order.tracking.detail : null,
+        timestamp: order.tracking.timestamp || null,
+      } : null,
+    };
+  } catch (error) {
+    console.warn(JSON.stringify({ event: "pepgpt.commerce_lookup_unavailable", detail: error instanceof Error ? error.message : String(error), at: new Date().toISOString() }));
+    return { found: null };
   }
 }
 
@@ -724,7 +766,9 @@ app.post("/v1/chat", requireInternalKey, async (req, res) => {
     const history = Array.isArray(req.body?.history) ? req.body.history.slice(-24) : [];
     const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
     const memory = await loadCustomerMemory(customerId);
-    const result = await callOpenAI({ message, history, context, memory });
+    const verifiedOrderStatus = await loadVerifiedOrderStatus(context);
+    const trustedContext = { ...context, verifiedOrderStatus };
+    const result = await callOpenAI({ message, history, context: trustedContext, memory });
     let memoryUpdated = false;
     if (customerId) {
       let patch = {};
