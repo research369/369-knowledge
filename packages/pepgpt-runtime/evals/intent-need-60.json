@@ -1,0 +1,842 @@
+[
+  {
+    "id": 1,
+    "group": "customer",
+    "category": "weight-intent",
+    "message": "yo will wieder leaner werden",
+    "expect": {
+      "requiredAny": [
+        "reta",
+        "r3ta",
+        "retatrutide"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 2,
+    "group": "customer",
+    "category": "weight-intent",
+    "message": "irgendwas damit bauch weg geht?",
+    "expect": {
+      "requiredAny": [
+        "reta",
+        "r3ta",
+        "retatrutide"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 3,
+    "group": "customer",
+    "category": "weight-intent",
+    "message": "bin auf reta. was noch?",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett",
+        "oral",
+        "cagri",
+        "nexus"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 4,
+    "group": "customer",
+    "category": "weight-intent",
+    "message": "tirz läuft, will aber mehr fett loswerden",
+    "expect": {
+      "requiredAny": [
+        "tirz",
+        "reta",
+        "slu",
+        "cagri",
+        "nexus"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 5,
+    "group": "customer",
+    "category": "weight-intent",
+    "message": "will abnehmen aber spritzen nervt",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett",
+        "oral"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 6,
+    "group": "customer",
+    "category": "weight-intent",
+    "message": "reta plus was macht sinn?",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett",
+        "oral",
+        "cagri",
+        "nexus"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 7,
+    "group": "customer",
+    "category": "weight-intent",
+    "message": "ich will einfach schnell dünner",
+    "expect": {
+      "requiredAny": [
+        "reta",
+        "r3ta",
+        "retatrutide"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 8,
+    "group": "customer",
+    "category": "weight-intent",
+    "message": "hab schon tirz. noch ne richtung?",
+    "expect": {
+      "requiredAny": [
+        "tirz",
+        "reta",
+        "slu",
+        "cagri",
+        "nexus"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 9,
+    "group": "customer",
+    "category": "weight-intent",
+    "message": "was für cut ohne noch mehr pieksen",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett",
+        "oral"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 10,
+    "group": "customer",
+    "category": "weight-intent",
+    "message": "bringt das mit tabletten auch was wenn ich reta habe?",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett",
+        "oral"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 11,
+    "group": "customer",
+    "category": "weight-compare",
+    "message": "nexus oder reta, blick nicht durch",
+    "expect": {
+      "requiredAny": [
+        "nexus",
+        "reta",
+        "cagri"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 12,
+    "group": "customer",
+    "category": "weight-compare",
+    "message": "cagri ding oder das triple?",
+    "expect": {
+      "requiredAny": [
+        "cagri",
+        "reta",
+        "nexus"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 13,
+    "group": "customer",
+    "category": "weight-compare",
+    "message": "was ist besser für richtig cutten?",
+    "expect": {
+      "requiredAny": [
+        "reta",
+        "r3ta",
+        "retatrutide"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 14,
+    "group": "customer",
+    "category": "weight-compare",
+    "message": "dieses nexus ist was genau?",
+    "expect": {
+      "requiredAny": [
+        "nexus",
+        "reta",
+        "cagri"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 15,
+    "group": "customer",
+    "category": "weight-compare",
+    "message": "reta und tirz gleich oder nicht?",
+    "expect": {
+      "requiredAny": [
+        "reta",
+        "tirz",
+        "tirzepatide"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 16,
+    "group": "customer",
+    "category": "muscle-intent",
+    "message": "will breiter werden",
+    "expect": {
+      "requiredAny": [
+        "muskel",
+        "aufbau"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 17,
+    "group": "customer",
+    "category": "muscle-intent",
+    "message": "was nimmt man für masse?",
+    "expect": {
+      "requiredAny": [
+        "muskel",
+        "aufbau"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 18,
+    "group": "customer",
+    "category": "muscle-intent",
+    "message": "training läuft aber will mehr draufpacken",
+    "expect": {
+      "requiredAny": [
+        "muskel",
+        "aufbau"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 19,
+    "group": "customer",
+    "category": "muscle-intent",
+    "message": "ich brauch was für gainz",
+    "expect": {
+      "requiredAny": [
+        "muskel",
+        "aufbau"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 20,
+    "group": "customer",
+    "category": "recovery-intent",
+    "message": "bin nach gym komplett zerstört",
+    "expect": {
+      "requiredAny": [
+        "recovery",
+        "regeneration",
+        "bpc",
+        "tb"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 21,
+    "group": "customer",
+    "category": "recovery-intent",
+    "message": "alles tut nach training",
+    "expect": {
+      "requiredAny": [
+        "recovery",
+        "regeneration",
+        "bpc",
+        "tb"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 22,
+    "group": "customer",
+    "category": "recovery-intent",
+    "message": "will schneller wieder fit sein",
+    "expect": {
+      "requiredAny": [
+        "recovery",
+        "regeneration",
+        "bpc",
+        "tb"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 23,
+    "group": "customer",
+    "category": "recovery-intent",
+    "message": "sehne nervt nach sport",
+    "expect": {
+      "requiredAny": [
+        "bpc",
+        "tb",
+        "recovery"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 24,
+    "group": "customer",
+    "category": "sleep-intent",
+    "message": "abends kopf an, schlaf mies",
+    "expect": {
+      "requiredAny": [
+        "schlaf",
+        "melatonin",
+        "dsip",
+        "selank"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 25,
+    "group": "customer",
+    "category": "sleep-intent",
+    "message": "penn grad kacke",
+    "expect": {
+      "requiredAny": [
+        "schlaf",
+        "melatonin",
+        "dsip",
+        "selank"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 26,
+    "group": "customer",
+    "category": "sleep-intent",
+    "message": "was zum runterkommen nachts?",
+    "expect": {
+      "requiredAny": [
+        "schlaf",
+        "selank",
+        "melatonin",
+        "dsip"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 27,
+    "group": "customer",
+    "category": "libido-intent",
+    "message": "unten ist grad tote hose",
+    "expect": {
+      "requiredAny": [
+        "libido",
+        "pt-141",
+        "melanotan"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 28,
+    "group": "customer",
+    "category": "libido-intent",
+    "message": "brauch wieder mehr drive",
+    "expect": {
+      "requiredAny": [
+        "libido",
+        "pt-141",
+        "melanotan"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 29,
+    "group": "customer",
+    "category": "skin-intent",
+    "message": "haut sieht fertig aus",
+    "expect": {
+      "requiredAny": [
+        "ghk",
+        "snap",
+        "haut"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 30,
+    "group": "customer",
+    "category": "skin-intent",
+    "message": "haare werden weniger, habt ihr was?",
+    "expect": {
+      "requiredAny": [
+        "ghk",
+        "haar"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 31,
+    "group": "customer",
+    "category": "skin-intent",
+    "message": "will bessere haut aber kein riesen ding",
+    "expect": {
+      "requiredAny": [
+        "ghk",
+        "snap",
+        "haut"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 32,
+    "group": "customer",
+    "category": "catalog-intent",
+    "message": "is slu da?",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 33,
+    "group": "customer",
+    "category": "catalog-intent",
+    "message": "was kostet nexus jetzt?",
+    "expect": {
+      "requiredAny": [
+        "nexus"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 34,
+    "group": "customer",
+    "category": "catalog-intent",
+    "message": "ghk serum noch da?",
+    "expect": {
+      "requiredAny": [
+        "ghk"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 35,
+    "group": "customer",
+    "category": "catalog-intent",
+    "message": "hab ich bei euch was für meinen cut?",
+    "expect": {
+      "requiredAny": [
+        "reta",
+        "r3ta",
+        "retatrutide"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 36,
+    "group": "customer",
+    "category": "support-intent",
+    "message": "mein vial sieht komisch aus",
+    "expect": {
+      "requiredAny": [
+        "support",
+        "nicht",
+        "verwenden"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 37,
+    "group": "customer",
+    "category": "support-intent",
+    "message": "zeug war warm als es ankam",
+    "expect": {
+      "requiredAny": [
+        "support",
+        "nicht",
+        "verwenden"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 38,
+    "group": "customer",
+    "category": "support-intent",
+    "message": "hab da flocken drin",
+    "expect": {
+      "requiredAny": [
+        "support",
+        "nicht",
+        "verwenden"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 39,
+    "group": "customer",
+    "category": "support-intent",
+    "message": "mein paket fehlt was",
+    "expect": {
+      "requiredAny": [
+        "support",
+        "bestellung",
+        "foto"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 40,
+    "group": "customer",
+    "category": "support-intent",
+    "message": "wo bleibt meine sendung?",
+    "expect": {
+      "requiredAny": [
+        "sendung",
+        "tracking",
+        "versand"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 41,
+    "group": "support",
+    "category": "order",
+    "message": "hab bezahlt aber nix gehört",
+    "expect": {
+      "requiredAny": [
+        "bestellung",
+        "tracking",
+        "versand"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 42,
+    "group": "support",
+    "category": "order",
+    "message": "welcher status bei mir?",
+    "expect": {
+      "requiredAny": [
+        "bestellung",
+        "status",
+        "konto"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 43,
+    "group": "support",
+    "category": "shipping",
+    "message": "ging das heute noch raus?",
+    "expect": {
+      "requiredAny": [
+        "versand",
+        "heute",
+        "zahlung"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 44,
+    "group": "support",
+    "category": "shipping",
+    "message": "brauch das kalt oder normal?",
+    "expect": {
+      "requiredAny": [
+        "gekühlt",
+        "versand",
+        "kalt"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 45,
+    "group": "support",
+    "category": "shipping",
+    "message": "was kostet der versand?",
+    "expect": {
+      "requiredAny": [
+        "versand",
+        "eur",
+        "dhl"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 46,
+    "group": "support",
+    "category": "catalog",
+    "message": "slu noch verfügbar?",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 47,
+    "group": "support",
+    "category": "catalog",
+    "message": "was ist bei ghk gerade da?",
+    "expect": {
+      "requiredAny": [
+        "ghk"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 48,
+    "group": "support",
+    "category": "reconstitution",
+    "message": "10mg und 2ml, wie viel ist das?",
+    "expect": {
+      "requiredAny": [
+        "mg",
+        "ml",
+        "5"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 49,
+    "group": "support",
+    "category": "reconstitution",
+    "message": "was sind bei u100 5 units?",
+    "expect": {
+      "requiredAny": [
+        "0,05",
+        "ml",
+        "units"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 50,
+    "group": "support",
+    "category": "reconstitution",
+    "message": "hab 10mg mit 2ml gemischt. konzentration?",
+    "expect": {
+      "requiredAny": [
+        "mg",
+        "ml",
+        "5"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 51,
+    "group": "support",
+    "category": "product",
+    "message": "nexus blend was ist drin?",
+    "expect": {
+      "requiredAny": [
+        "nexus",
+        "reta",
+        "cagri"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 52,
+    "group": "support",
+    "category": "product",
+    "message": "slu ist oral richtig?",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett",
+        "oral"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 53,
+    "group": "support",
+    "category": "product",
+    "message": "bpc oder tb für recovery?",
+    "expect": {
+      "requiredAny": [
+        "bpc",
+        "tb"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 54,
+    "group": "support",
+    "category": "product",
+    "message": "ghk fürs gesicht oder haare?",
+    "expect": {
+      "requiredAny": [
+        "ghk",
+        "haut",
+        "haar"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 55,
+    "group": "support",
+    "category": "return",
+    "message": "vial kaputt angekommen",
+    "expect": {
+      "requiredAny": [
+        "support",
+        "nicht",
+        "verwenden"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 56,
+    "group": "support",
+    "category": "return",
+    "message": "spritze fehlt in der box",
+    "expect": {
+      "requiredAny": [
+        "support",
+        "bestellung",
+        "foto"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 57,
+    "group": "support",
+    "category": "payment",
+    "message": "code geht nicht",
+    "expect": {
+      "requiredAny": [
+        "code",
+        "rabatt",
+        "checkout"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 58,
+    "group": "support",
+    "category": "payment",
+    "message": "kann man codes kombinieren?",
+    "expect": {
+      "requiredAny": [
+        "code",
+        "rabatt",
+        "kombin"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 59,
+    "group": "support",
+    "category": "product",
+    "message": "was ist das ding für schlaf?",
+    "expect": {
+      "requiredAny": [
+        "schlaf",
+        "melatonin",
+        "dsip",
+        "selank"
+      ],
+      "minimumScore": 70
+    }
+  },
+  {
+    "id": 60,
+    "group": "support",
+    "category": "product",
+    "message": "will was fürs aufbauen",
+    "expect": {
+      "requiredAny": [
+        "muskel",
+        "aufbau"
+      ],
+      "minimumScore": 70
+    }
+  }
+]
