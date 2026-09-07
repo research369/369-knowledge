@@ -43,6 +43,7 @@ try {
     for (const entry of Object.values(byGroup)) for (const key of ["relevance", "clarity", "sales", "catalog", "safety"]) entry[key] = Number((entry[key] / entry.total).toFixed(2));
     console.log("PEPGPT_QUALITY_SUMMARY " + JSON.stringify({ reviewId: review.review_id, runId: review.run_id, status: review.status, total: review.total, completed: review.completed, failed: review.failed, groups: byGroup }));
     for (const item of reviewResults.filter((row) => row?.review?.verdict === "needs_revision")) console.log("PEPGPT_QUALITY_FLAG " + JSON.stringify(item));
+    for (const item of reviewResults.filter((row) => row?.status === "failed").slice(0, 5)) console.log("PEPGPT_QUALITY_ERROR " + JSON.stringify(item));
   }
   console.log("PEPGPT_EVAL_REPORT_END");
 } finally {
