@@ -632,7 +632,7 @@ async function runQualityReviewOnBoot() {
           input: [{ role: "user", content: [{ type: "input_text", text: JSON.stringify({ group: item.group, category: item.category, question: item.message, answer: item.output }) }] }],
           max_output_tokens: 350,
         }, "quality review");
-        const text = typeof data.output_text === "string" ? data.output_text : "";
+        const text = typeof data.output_text === "string" ? data.output_text.trim() : (Array.isArray(data.output) ? data.output.flatMap((entry) => Array.isArray(entry.content) ? entry.content : []).map((entry) => entry?.text).filter(Boolean).join("\n").trim() : "");
         results[index] = { id: item.id, group: item.group, category: item.category, status: "ok", review: parseQualityReview(text) };
       } catch (error) {
         results[index] = { id: item.id, group: item.group, category: item.category, status: "failed", detail: error instanceof Error ? error.message : String(error) };
