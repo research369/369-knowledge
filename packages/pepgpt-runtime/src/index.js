@@ -28,7 +28,7 @@ const QUALITY_REVIEW_ON_BOOT = process.env.PEPGPT_QUALITY_REVIEW_ON_BOOT === "1"
 const QUALITY_REVIEW_LIMIT = Math.min(100, Math.max(1, Number(process.env.PEPGPT_QUALITY_REVIEW_LIMIT || 70)));
 const CATALOG_API_URL = process.env.PEPGPT_CATALOG_API_URL || "https://api.369research.eu/api/trpc/article.shopProducts?input=%7B%22json%22%3Anull%7D";
 const CATALOG_CACHE_MS = Math.min(300000, Math.max(10000, Number(process.env.PEPGPT_CATALOG_CACHE_MS || 30000)));
-const COMMERCE_API_URL = process.env.PEPGPT_COMMERCE_API_URL?.replace(/\\/$/, "") || "";
+const COMMERCE_API_URL = process.env.PEPGPT_COMMERCE_API_URL?.replace(/\/$/, "") || "";
 const COMMERCE_BRIDGE_KEY = process.env.PEPGPT_COMMERCE_BRIDGE_KEY || "";
 const MEMORY_FIELDS = new Set([
   "preferredName", "age", "heightCm", "weightKg", "goal", "training",
