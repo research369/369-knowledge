@@ -621,7 +621,7 @@
   {
     "id": 48,
     "group": "customer",
-    "category": "memory",
+    "category": "memory-intake",
     "message": "Ich heiße Lea und trainiere viermal pro Woche. Mein Ziel ist Muskelaufbau.",
     "expect": {
       "requiredAny": [
@@ -629,7 +629,8 @@
         "muskel"
       ],
       "minimumScore": 70
-    }
+    },
+    "note": "Intake only. Persistent-memory verification is covered by the dedicated multi-turn memory regression, not this isolated question."
   },
   {
     "id": 49,
