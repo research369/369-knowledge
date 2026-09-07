@@ -1,0 +1,313 @@
+[
+  {
+    "id": 1,
+    "group": "customer",
+    "category": "reta-slu",
+    "message": "Ich nehme Reta, was noch?",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett",
+        "oral"
+      ],
+      "forbiddenAny": [
+        "synergie",
+        "nicht belegt",
+        "unbewiesen",
+        "experimentell",
+        "zulassung",
+        "arzt",
+        "ärzt",
+        "nicht einfach",
+        "risiko",
+        "nebenwirkung"
+      ],
+      "minimumScore": 100
+    }
+  },
+  {
+    "id": 2,
+    "group": "customer",
+    "category": "reta-slu",
+    "message": "Reta läuft gut. Will noch bisschen mehr Fett runter ohne noch eine Spritze.",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett",
+        "oral"
+      ],
+      "forbiddenAny": [
+        "synergie",
+        "nicht belegt",
+        "unbewiesen",
+        "experimentell",
+        "zulassung",
+        "arzt",
+        "ärzt",
+        "nicht einfach",
+        "risiko",
+        "nebenwirkung"
+      ],
+      "minimumScore": 100
+    }
+  },
+  {
+    "id": 3,
+    "group": "customer",
+    "category": "reta-slu",
+    "message": "Was habt ihr als Tablette wenn ich Reta schon nehme?",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett",
+        "oral"
+      ],
+      "forbiddenAny": [
+        "synergie",
+        "nicht belegt",
+        "unbewiesen",
+        "experimentell",
+        "zulassung",
+        "arzt",
+        "ärzt",
+        "nicht einfach",
+        "risiko",
+        "nebenwirkung"
+      ],
+      "minimumScore": 100
+    }
+  },
+  {
+    "id": 4,
+    "group": "customer",
+    "category": "nexus",
+    "message": "Reta oder NEXUS, was passt eher wenn ich mehr Sättigung will?",
+    "expect": {
+      "requiredAny": [
+        "nexus",
+        "reta",
+        "cagri"
+      ],
+      "forbiddenAny": [
+        "synergie",
+        "nicht belegt",
+        "unbewiesen",
+        "experimentell",
+        "zulassung",
+        "arzt",
+        "ärzt",
+        "nicht einfach",
+        "risiko",
+        "nebenwirkung"
+      ],
+      "minimumScore": 100
+    }
+  },
+  {
+    "id": 5,
+    "group": "customer",
+    "category": "weight",
+    "message": "will schneller cutten, was habt ihr?",
+    "expect": {
+      "requiredAny": [
+        "reta",
+        "r3ta",
+        "retatrutide"
+      ],
+      "forbiddenAny": [
+        "synergie",
+        "nicht belegt",
+        "unbewiesen",
+        "experimentell",
+        "zulassung",
+        "arzt",
+        "ärzt",
+        "nicht einfach",
+        "risiko",
+        "nebenwirkung"
+      ],
+      "minimumScore": 100
+    }
+  },
+  {
+    "id": 6,
+    "group": "customer",
+    "category": "weight",
+    "message": "Tirz reicht mir nicht mehr, was wäre die nächste Richtung?",
+    "expect": {
+      "requiredAny": [
+        "tirz",
+        "reta",
+        "slu",
+        "nexus"
+      ],
+      "forbiddenAny": [
+        "synergie",
+        "nicht belegt",
+        "unbewiesen",
+        "experimentell",
+        "zulassung",
+        "arzt",
+        "ärzt",
+        "nicht einfach",
+        "risiko",
+        "nebenwirkung"
+      ],
+      "minimumScore": 100
+    }
+  },
+  {
+    "id": 7,
+    "group": "customer",
+    "category": "muscle",
+    "message": "will mehr masse, was ist die erste richtung?",
+    "expect": {
+      "requiredAny": [
+        "muskel",
+        "aufbau",
+        "ace",
+        "peg"
+      ],
+      "forbiddenAny": [
+        "synergie",
+        "nicht belegt",
+        "unbewiesen",
+        "experimentell",
+        "zulassung",
+        "arzt",
+        "ärzt",
+        "nicht einfach",
+        "risiko",
+        "nebenwirkung"
+      ],
+      "minimumScore": 100
+    }
+  },
+  {
+    "id": 8,
+    "group": "customer",
+    "category": "recovery",
+    "message": "nach training komplett leer, was passt?",
+    "expect": {
+      "requiredAny": [
+        "recovery",
+        "bpc",
+        "tb"
+      ],
+      "forbiddenAny": [
+        "synergie",
+        "nicht belegt",
+        "unbewiesen",
+        "experimentell",
+        "zulassung",
+        "arzt",
+        "ärzt",
+        "nicht einfach",
+        "risiko",
+        "nebenwirkung"
+      ],
+      "minimumScore": 100
+    }
+  },
+  {
+    "id": 9,
+    "group": "customer",
+    "category": "sleep",
+    "message": "abends nicht abschalten, was nehmt ihr dafür?",
+    "expect": {
+      "requiredAny": [
+        "selank",
+        "schlaf"
+      ],
+      "forbiddenAny": [
+        "synergie",
+        "nicht belegt",
+        "unbewiesen",
+        "experimentell",
+        "zulassung",
+        "arzt",
+        "ärzt",
+        "nicht einfach",
+        "risiko",
+        "nebenwirkung"
+      ],
+      "minimumScore": 100
+    }
+  },
+  {
+    "id": 10,
+    "group": "customer",
+    "category": "skin",
+    "message": "was für haut und haare?",
+    "expect": {
+      "requiredAny": [
+        "ghk",
+        "haut",
+        "haar"
+      ],
+      "forbiddenAny": [
+        "synergie",
+        "nicht belegt",
+        "unbewiesen",
+        "experimentell",
+        "zulassung",
+        "arzt",
+        "ärzt",
+        "nicht einfach",
+        "risiko",
+        "nebenwirkung"
+      ],
+      "minimumScore": 100
+    }
+  },
+  {
+    "id": 11,
+    "group": "customer",
+    "category": "libido",
+    "message": "lust ist weg, was habt ihr?",
+    "expect": {
+      "requiredAny": [
+        "libido",
+        "pt-141"
+      ],
+      "forbiddenAny": [
+        "synergie",
+        "nicht belegt",
+        "unbewiesen",
+        "experimentell",
+        "zulassung",
+        "arzt",
+        "ärzt",
+        "nicht einfach",
+        "risiko",
+        "nebenwirkung"
+      ],
+      "minimumScore": 100
+    }
+  },
+  {
+    "id": 12,
+    "group": "customer",
+    "category": "catalog",
+    "message": "SLU da? was kostet das?",
+    "expect": {
+      "requiredAny": [
+        "slu",
+        "tablett"
+      ],
+      "forbiddenAny": [
+        "synergie",
+        "nicht belegt",
+        "unbewiesen",
+        "experimentell",
+        "zulassung",
+        "arzt",
+        "ärzt",
+        "nicht einfach",
+        "risiko",
+        "nebenwirkung"
+      ],
+      "minimumScore": 100
+    }
+  }
+]
