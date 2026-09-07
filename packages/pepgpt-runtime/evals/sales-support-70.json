@@ -31,7 +31,7 @@
     "id": 3,
     "group": "customer",
     "category": "weight-loss",
-    "message": "Nehme Reta – bringt mir SLU-PP-332 als Tablette zusätzlich überhaupt was?",
+    "message": "Ich nehme Reta, was gibt’s sonst noch dazu, wenn ich mehr Fett verlieren will?",
     "expect": {
       "requiredAny": [
         "slu",
@@ -59,7 +59,7 @@
     "id": 5,
     "group": "customer",
     "category": "weight-blend",
-    "message": "Ich kenne Reta und Cagri – was ist NEXUS IV genau?",
+    "message": "Ich will noch mehr abnehmen und schneller Fett verlieren. Was kann ich zusätzlich zu Reta anschauen?",
     "expect": {
       "requiredAny": [
         "reta",
@@ -73,7 +73,7 @@
     "id": 6,
     "group": "customer",
     "category": "weight-compare",
-    "message": "Was ist für mein Ziel der Unterschied zwischen Retatrutide und Tirzepatide?",
+    "message": "Ich nehme Tirzepatide – was kann ich zusätzlich anschauen, wenn ich schneller Fett verlieren will?",
     "expect": {
       "requiredAny": [
         "reta",
