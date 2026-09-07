@@ -31,7 +31,7 @@
     "id": 3,
     "group": "customer",
     "category": "weight-loss",
-    "message": "Ich nehme Reta und möchte eine orale metabolische Richtung verstehen.",
+    "message": "Nehme Reta – bringt mir SLU-PP-332 als Tablette zusätzlich überhaupt was?",
     "expect": {
       "requiredAny": [
         "slu",
@@ -59,7 +59,7 @@
     "id": 5,
     "group": "customer",
     "category": "weight-blend",
-    "message": "Ich kenne Reta und Cagri. Wie ordnet ihr NEXUS IV ein?",
+    "message": "Ich kenne Reta und Cagri – was ist NEXUS IV genau?",
     "expect": {
       "requiredAny": [
         "reta",
@@ -177,7 +177,7 @@
     "id": 14,
     "group": "customer",
     "category": "muscle",
-    "message": "Ich suche einen Forschungsansatz für Aufbau. Welche Richtung würdet ihr zuerst vergleichen?",
+    "message": "Ich will aufbauen – welche Richtung würdet ihr dafür zuerst anschauen?",
     "expect": {
       "requiredAny": [
         "aufbau",
@@ -203,7 +203,7 @@
     "id": 16,
     "group": "customer",
     "category": "muscle",
-    "message": "ACE-031 mit CJC oder Hexarelin – wie unterscheiden sich die Richtungen?",
+    "message": "Ich will mehr Aufbau: eher ACE-031 mit CJC oder mit Hexarelin?",
     "expect": {
       "requiredAny": [
         "ace",
@@ -230,7 +230,7 @@
     "id": 18,
     "group": "customer",
     "category": "recovery",
-    "message": "BPC-157 oder TB-500 bei allgemeiner Recovery – wie unterscheiden sie sich?",
+    "message": "Nach hartem Training: eher BPC-157 oder TB-500 für Recovery?",
     "expect": {
       "requiredAny": [
         "bpc",
@@ -255,7 +255,7 @@
     "id": 20,
     "group": "customer",
     "category": "sleep",
-    "message": "Was unterscheidet Melatonin und Delta Sleep Inducing Peptide?",
+    "message": "Melatonin oder DSIP – was wäre für Schlaf der Unterschied?",
     "expect": {
       "requiredAny": [
         "melatonin",
