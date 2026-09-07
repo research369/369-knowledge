@@ -495,6 +495,9 @@ function validateEvalCases(value) {
     const requiredAny = Array.isArray(item?.expect?.requiredAny)
       ? item.expect.requiredAny.filter((term) => typeof term === "string" && term.trim()).map((term) => term.trim().toLowerCase()).slice(0, 12)
       : [];
+    const forbiddenAny = Array.isArray(item?.expect?.forbiddenAny)
+      ? item.expect.forbiddenAny.filter((term) => typeof term === "string" && term.trim()).map((term) => term.trim().toLowerCase()).slice(0, 20)
+      : [];
     const minimumScore = Number.isFinite(item?.expect?.minimumScore) ? Math.min(100, Math.max(0, Number(item.expect.minimumScore))) : 70;
     const history = Array.isArray(item?.history)
       ? item.history.filter((entry) => entry && (entry.role === "user" || entry.role === "assistant") && typeof entry.content === "string").slice(-12).map((entry) => ({ role: entry.role, content: entry.content.slice(0, 4000) }))
@@ -505,14 +508,14 @@ function validateEvalCases(value) {
       category: typeof item?.category === "string" ? item.category.slice(0, 80) : "uncategorized",
       history,
       message: message.slice(0, 4000),
-      expect: { requiredAny, minimumScore },
+      expect: { requiredAny, forbiddenAny, minimumScore },
     };
   });
 }
 
 async function loadBundledEvalSuite() {
   const requestedSuite = process.env.PEPGPT_EVAL_SUITE || "new-customer-questions";
-  const supportedSuites = new Set(["new-customer-questions", "sales-support-70", "intent-need-60", "conversation-journeys-24"]);
+  const supportedSuites = new Set(["new-customer-questions", "sales-support-70", "intent-need-60", "conversation-journeys-24", "sales-acceptance-12"]);
   const suite = supportedSuites.has(requestedSuite) ? requestedSuite : "new-customer-questions";
   const url = new URL("../evals/" + suite + ".json", import.meta.url);
   return { suite, cases: validateEvalCases(JSON.parse(await readFile(url, "utf8"))) };
@@ -523,6 +526,8 @@ function evaluateEvalResponse(testCase, output) {
   const checks = [{ name: "answer_present", passed: normalized.length >= 20 }];
   const requiredAny = testCase.expect?.requiredAny || [];
   if (requiredAny.length) checks.push({ name: "required_any", passed: requiredAny.some((term) => normalized.includes(term)), expected: requiredAny });
+  const forbiddenAny = testCase.expect?.forbiddenAny || [];
+  if (forbiddenAny.length) checks.push({ name: "forbidden_any_absent", passed: !forbiddenAny.some((term) => normalized.includes(term)), forbidden: forbiddenAny });
   const passedChecks = checks.filter((check) => check.passed).length;
   const score = Math.round((passedChecks / checks.length) * 100);
   return { score, passed: score >= (testCase.expect?.minimumScore ?? 70), checks };
