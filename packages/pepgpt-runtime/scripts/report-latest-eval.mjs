@@ -28,6 +28,22 @@ try {
   for (const item of results.filter((row) => selected.has(row.id))) {
     console.log("PEPGPT_EVAL_SAMPLE " + JSON.stringify({ id: item.id, group: item.group, category: item.category, question: item.message, score: item.evaluation?.score, passed: item.evaluation?.passed, answer: typeof item.output === "string" ? item.output.slice(0, 1800) : item.detail || "" }));
   }
+  const reviewQuery = await pool.query("SELECT review_id, run_id, status, total, completed, failed, results, completed_at FROM pepgpt_eval_reviews ORDER BY created_at DESC LIMIT 1");
+  const review = reviewQuery.rows[0];
+  if (review) {
+    const reviewResults = Array.isArray(review.results) ? review.results : [];
+    const byGroup = {};
+    for (const item of reviewResults) {
+      const group = item.group || "general";
+      const entry = byGroup[group] || (byGroup[group] = { total: 0, revision: 0, relevance: 0, clarity: 0, sales: 0, catalog: 0, safety: 0 });
+      entry.total += 1;
+      if (item.review?.verdict === "needs_revision") entry.revision += 1;
+      for (const key of ["relevance", "clarity", "sales", "catalog", "safety"]) entry[key] += Number(item.review?.[key] || 0);
+    }
+    for (const entry of Object.values(byGroup)) for (const key of ["relevance", "clarity", "sales", "catalog", "safety"]) entry[key] = Number((entry[key] / entry.total).toFixed(2));
+    console.log("PEPGPT_QUALITY_SUMMARY " + JSON.stringify({ reviewId: review.review_id, runId: review.run_id, status: review.status, total: review.total, completed: review.completed, failed: review.failed, groups: byGroup }));
+    for (const item of reviewResults.filter((row) => row?.review?.verdict === "needs_revision")) console.log("PEPGPT_QUALITY_FLAG " + JSON.stringify(item));
+  }
   console.log("PEPGPT_EVAL_REPORT_END");
 } finally {
   await pool.end();
