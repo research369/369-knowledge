@@ -250,7 +250,9 @@ async function syncMaintenanceKnowledgeOnBoot() {
 }
 
 async function bootstrapKnowledgeIfNeeded() {
-  if ((await knowledgeCount()) >= 2) return false;
+  const hasKnowledge = (await knowledgeCount()) >= 2;
+  const shouldSync = process.env.PEPGPT_SYNC_DRIVE_ON_BOOT === "true";
+  if (hasKnowledge && !shouldSync) return false;
   if (!DRIVE_BOOTSTRAP_ASSERTION || !BEHAVIOR_DOC_ID || !KNOWLEDGE_DOC_ID) return false;
   const token = await exchangeBootstrapAssertion();
   const [behavior, productKnowledge] = await Promise.all([
@@ -258,7 +260,7 @@ async function bootstrapKnowledgeIfNeeded() {
     exportGoogleDoc(token, KNOWLEDGE_DOC_ID),
   ]);
   await upsertKnowledge(behavior, productKnowledge);
-  console.log(JSON.stringify({ event: "pepgpt.knowledge.bootstrapped", behaviorChars: behavior.length, knowledgeChars: productKnowledge.length, at: new Date().toISOString() }));
+  console.log(JSON.stringify({ event: hasKnowledge ? "pepgpt.knowledge.synced" : "pepgpt.knowledge.bootstrapped", behaviorChars: behavior.length, knowledgeChars: productKnowledge.length, at: new Date().toISOString() }));
   return true;
 }
 
