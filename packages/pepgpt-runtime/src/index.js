@@ -307,7 +307,7 @@ async function loadVerifiedOrderStatus(context) {
     url.searchParams.set("orderId", orderId);
     url.searchParams.set("customerName", customerName);
     const response = await fetch(url, {
-      headers: { "x-pepgpt-commerce-key": COMMERCE_BRIDGE_KEY },
+      headers: { authorization: `Bearer ${COMMERCE_BRIDGE_KEY}` },
       signal: AbortSignal.timeout(5000),
     });
     if (response.status === 404) return { found: false };
