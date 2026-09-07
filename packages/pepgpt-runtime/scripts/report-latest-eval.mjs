@@ -45,6 +45,7 @@ try {
     for (const item of reviewResults.filter((row) => row?.review?.verdict === "needs_revision")) console.log("PEPGPT_QUALITY_FLAG " + JSON.stringify(item));
     for (const item of reviewResults.filter((row) => row?.status === "failed").slice(0, 5)) console.log("PEPGPT_QUALITY_ERROR " + JSON.stringify(item));
   }
+  for (const item of results) console.log("PEPGPT_EVAL_ROW " + JSON.stringify({ id: item.id, group: item.group, category: item.category, question: item.message, answer: item.output || item.detail || "", ruleScore: item.evaluation?.score ?? null, rulePassed: item.evaluation?.passed ?? null }));
   console.log("PEPGPT_EVAL_REPORT_END");
 } finally {
   await pool.end();
