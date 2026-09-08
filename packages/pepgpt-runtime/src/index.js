@@ -312,17 +312,24 @@ function authenticatedCustomerName(context) {
   return typeof name === "string" ? name.trim().slice(0, 160) : "";
 }
 
+function authenticatedCustomerPhone(context) {
+  const phone = context?.authenticatedCustomer?.phone || context?.authenticatedCustomerPhone || "";
+  return typeof phone === "string" ? phone.trim().slice(0, 40) : "";
+}
+
 async function loadVerifiedOrderStatus(context, message = "") {
   const lookup = context?.orderLookup || extractOrderLookupFromMessage(message);
   const orderId = typeof lookup?.orderId === "string" ? lookup.orderId.trim().slice(0, 64) : "";
   const customerName = typeof lookup?.customerName === "string" && lookup.customerName.trim()
     ? lookup.customerName.trim().slice(0, 160)
     : authenticatedCustomerName(context);
-  if (!COMMERCE_API_URL || !COMMERCE_BRIDGE_KEY || !orderId || !customerName) return null;
+  const customerPhone = authenticatedCustomerPhone(context);
+  if (!COMMERCE_API_URL || !COMMERCE_BRIDGE_KEY || !orderId || (!customerName && !customerPhone)) return null;
   try {
     const url = new URL("/api/internal/pepgpt/order-status", COMMERCE_API_URL);
     url.searchParams.set("orderId", orderId);
-    url.searchParams.set("customerName", customerName);
+    if (customerName) url.searchParams.set("customerName", customerName);
+    if (customerPhone) url.searchParams.set("customerPhone", customerPhone);
     const response = await fetch(url, {
       headers: { authorization: `Bearer ${COMMERCE_BRIDGE_KEY}` },
       signal: AbortSignal.timeout(5000),
@@ -365,7 +372,7 @@ function buildInstructions(behavior, knowledge, memory = { profile: {}, turnCoun
     "For prices, stock, variants, payment methods, order status, customer accounts, personal discounts, active discount codes, exclusions, minimum order values and code combinability, use only current live commerce data supplied in trusted runtime sections or authenticated context. If it is absent or unavailable, say that a live check is needed; never guess or reuse an old value.",
     "The trusted LIVE_SHOP_CATALOG below is the current authority for public product names, prices, sale prices, variants and availability. Use it when available. Do not expose internal stock quantities; state only availability. It contains no order, customer or personal discount data.",
     "Personal codes, credit, customer-specific prices, addresses and order history require an authenticated customer context.",
-    "For an order or shipping question, ask for the order number only when a verified authenticated customer name is supplied by the chat context; otherwise ask for order number and full name. Treat only VERIFIED_ORDER_STATUS from runtime context as authoritative. If it is found and shipmentRecency is current, give the supplied status, dates and tracking link directly. If shipmentRecency is older, clearly state the relevant order or shipping date and do not describe it as a currently running shipment; ask for the current order number if the customer means a newer delivery. Never expose address, email, internal notes or other order history.",
+    "For an order or shipping question, ask for the order number only when a verified authenticated customer name or verified WhatsApp sender phone is supplied by the chat context; otherwise ask for order number and full name. Treat only VERIFIED_ORDER_STATUS from runtime context as authoritative. If it is found and shipmentRecency is current, give the supplied status, dates and tracking link directly. If shipmentRecency is older, clearly state the relevant order or shipping date and do not describe it as a currently running shipment; ask for the current order number if the customer means a newer delivery. Never expose address, email, internal notes or other order history.",
     "When a customer reports a damaged, warm, cloudy, particulate, incomplete or otherwise suspicious product, tell them not to use it until support has reviewed it and ask only for the minimum relevant order/batch evidence. Urgent symptoms require immediate medical help.",
     "Do not diagnose or promise treatment, safety or success. Do not set an individualized dose or application plan. For a direct dose question, give one concise boundary and then, when the knowledge base contains it, summarize the relevant handout-backed study or community protocol as source context, clearly separated from a personal instruction. Keep concentration arithmetic and protocol descriptions separate from personal use advice.",
     "Escalate to qualified medical care when the customer's actual situation makes it relevant: pregnancy or breastfeeding in connection with use, a relevant contraindication, a potentially harmful product/medication combination, significant or persistent side effects, or other concrete medical risk. Persistent vomiting, allergic reactions or circulatory problems need prompt medical assessment; urgent symptoms require immediate medical help. Address the specific risk concisely and do not imply that a risky combination is safe.",
