@@ -297,8 +297,19 @@ async function loadLiveCatalog() {
   }
 }
 
-async function loadVerifiedOrderStatus(context) {
-  const lookup = context?.orderLookup;
+function extractOrderLookupFromMessage(message) {
+  if (typeof message !== "string") return null;
+  const orderId = message.match(/\b(?:369[-\s]?)\d{3,12}\b/i)?.[0]?.replace(/\s/g, "") || "";
+  if (!orderId) return null;
+  const labelledName = message.match(/(?:vollst[aä]ndiger\s+name|name)\s*[:=,-]?\s*([\p{L}][\p{L}'-]*(?:\s+[\p{L}][\p{L}'-]*){1,3})/iu)?.[1];
+  const beforeOrder = message.slice(0, message.indexOf(orderId));
+  const leadingName = beforeOrder.match(/^\s*([\p{L}][\p{L}'-]*\s+[\p{L}][\p{L}'-]*)/u)?.[1];
+  const customerName = (labelledName || leadingName || "").trim();
+  return customerName ? { orderId, customerName } : null;
+}
+
+async function loadVerifiedOrderStatus(context, message = "") {
+  const lookup = context?.orderLookup || extractOrderLookupFromMessage(message);
   const orderId = typeof lookup?.orderId === "string" ? lookup.orderId.trim().slice(0, 64) : "";
   const customerName = typeof lookup?.customerName === "string" ? lookup.customerName.trim().slice(0, 160) : "";
   if (!COMMERCE_API_URL || !COMMERCE_BRIDGE_KEY || !orderId || !customerName) return null;
@@ -767,7 +778,7 @@ app.post("/v1/chat", requireInternalKey, async (req, res) => {
     const history = Array.isArray(req.body?.history) ? req.body.history.slice(-24) : [];
     const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
     const memory = await loadCustomerMemory(customerId);
-    const verifiedOrderStatus = await loadVerifiedOrderStatus(context);
+    const verifiedOrderStatus = await loadVerifiedOrderStatus(context, message);
     const trustedContext = { ...context, verifiedOrderStatus };
     const result = await callOpenAI({ message, history, context: trustedContext, memory });
     let memoryUpdated = false;
