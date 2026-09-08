@@ -823,6 +823,37 @@ app.get("/health", async (_req, res) => {
   }
 });
 
+app.get("/webhooks/whatsapp", (req, res) => {
+  const mode = req.query["hub.mode"];
+  const token = req.query["hub.verify_token"];
+  const challenge = req.query["hub.challenge"];
+  if (mode === "subscribe" && WHATSAPP_VERIFY_TOKEN && token === WHATSAPP_VERIFY_TOKEN) return res.status(200).send(String(challenge || ""));
+  return res.sendStatus(403);
+});
+
+app.post("/webhooks/whatsapp", async (req, res) => {
+  if (!validWhatsAppSignature(req)) return res.sendStatus(401);
+  res.sendStatus(200);
+  try {
+    await ensureSchema();
+    const changes = Array.isArray(req.body?.entry) ? req.body.entry.flatMap((entry) => Array.isArray(entry?.changes) ? entry.changes : []) : [];
+    const messages = changes.flatMap((change) => Array.isArray(change?.value?.messages)
+      ? change.value.messages.map((message) => ({ message, contacts: change.value.contacts })) : []);
+    for (const { message, contacts } of messages) {
+      if (message?.type !== "text" || typeof message?.text?.body !== "string") continue;
+      const contact = Array.isArray(contacts) ? contacts.find((item) => item?.wa_id === message.from) : null;
+      processWhatsAppMessage({
+        messageId: typeof message?.id === "string" ? message.id : "",
+        from: typeof message?.from === "string" ? message.from : "",
+        contactName: typeof contact?.profile?.name === "string" ? contact.profile.name : "",
+        text: message.text.body.trim(),
+      }).catch((error) => console.error(JSON.stringify({ event: "pepgpt.whatsapp.message_failed", detail: error instanceof Error ? error.message : String(error), at: new Date().toISOString() })));
+    }
+  } catch (error) {
+    console.error(JSON.stringify({ event: "pepgpt.whatsapp.webhook_parse_failed", detail: error instanceof Error ? error.message : String(error), at: new Date().toISOString() }));
+  }
+});
+
 app.put("/internal/knowledge", requireInternalKey, async (req, res) => {
   try {
     await ensureSchema();
