@@ -1,12 +1,12 @@
 import express from "express";
 import pg from "pg";
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
 const { Pool } = pg;
 const app = express();
 app.set("trust proxy", 1);
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "2mb", verify: (req, _res, buffer) => { req.rawBody = buffer; } }));
 
 const PORT = Number(process.env.PORT || 8080);
 const MODEL = process.env.PEPGPT_MODEL || "gpt-5.6-sol";
@@ -30,6 +30,12 @@ const CATALOG_API_URL = process.env.PEPGPT_CATALOG_API_URL || "https://api.369re
 const CATALOG_CACHE_MS = Math.min(300000, Math.max(10000, Number(process.env.PEPGPT_CATALOG_CACHE_MS || 30000)));
 const COMMERCE_API_URL = process.env.PEPGPT_COMMERCE_API_URL?.replace(/\/$/, "") || "";
 const COMMERCE_BRIDGE_KEY = process.env.PEPGPT_COMMERCE_BRIDGE_KEY || "";
+const WHATSAPP_VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || "";
+const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN || "";
+const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID || "";
+const WHATSAPP_APP_SECRET = process.env.WHATSAPP_APP_SECRET || "";
+const WHATSAPP_TEST_MODE = process.env.WHATSAPP_TEST_MODE === "1";
+const WHATSAPP_TEST_ALLOWED_PHONE = (process.env.WHATSAPP_TEST_ALLOWED_PHONE || "").replace(/[^0-9]/g, "");
 const MEMORY_FIELDS = new Set([
   "preferredName", "age", "heightCm", "weightKg", "goal", "training",
   "nutrition", "occupation", "children", "stressLevel", "sleep",
@@ -58,6 +64,12 @@ async function ensureSchema() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS pepgpt_whatsapp_messages (
+      message_id TEXT PRIMARY KEY,
+      received_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
   await pool.query(`
@@ -359,6 +371,56 @@ async function loadVerifiedOrderStatus(context, message = "") {
     console.warn(JSON.stringify({ event: "pepgpt.commerce_lookup_unavailable", detail: error instanceof Error ? error.message : String(error), at: new Date().toISOString() }));
     return { found: null };
   }
+}
+
+function normalizeWhatsAppPhone(value) {
+  return typeof value === "string" ? value.replace(/[^0-9]/g, "") : "";
+}
+
+function validWhatsAppSignature(req) {
+  if (!WHATSAPP_APP_SECRET || !Buffer.isBuffer(req.rawBody)) return false;
+  const signature = req.get("x-hub-signature-256") || "";
+  const expected = "sha256=" + createHmac("sha256", WHATSAPP_APP_SECRET).update(req.rawBody).digest("hex");
+  if (signature.length !== expected.length) return false;
+  return timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+}
+
+async function claimWhatsAppMessage(messageId) {
+  if (!messageId) return false;
+  const result = await pool.query(
+    "INSERT INTO pepgpt_whatsapp_messages (message_id) VALUES ($1) ON CONFLICT (message_id) DO NOTHING",
+    [messageId]
+  );
+  return result.rowCount === 1;
+}
+
+async function sendWhatsAppText(to, body) {
+  if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID) throw new Error("WhatsApp sending is not configured");
+  const response = await fetch(`https://graph.facebook.com/v22.0/${encodeURIComponent(WHATSAPP_PHONE_NUMBER_ID)}/messages`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${WHATSAPP_ACCESS_TOKEN}`, "content-type": "application/json" },
+    body: JSON.stringify({ messaging_product: "whatsapp", to, type: "text", text: { body: body.slice(0, 4096) } }),
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!response.ok) throw new Error(`WhatsApp API HTTP ${response.status}`);
+}
+
+async function processWhatsAppMessage({ messageId, from, contactName, text }) {
+  const phone = normalizeWhatsAppPhone(from);
+  if (!phone || !text || (WHATSAPP_TEST_MODE && phone !== WHATSAPP_TEST_ALLOWED_PHONE)) return;
+  if (!(await claimWhatsAppMessage(messageId))) return;
+  const customerId = "whatsapp-" + phone;
+  const memory = await loadCustomerMemory(customerId);
+  const context = { channel: "whatsapp", authenticatedCustomerPhone: phone, authenticatedCustomerName: contactName || null };
+  const verifiedOrderStatus = await loadVerifiedOrderStatus(context, text);
+  const result = await callOpenAI({ message: text, context: { ...context, verifiedOrderStatus }, memory });
+  try {
+    const patch = await extractMemoryPatch({ message: text, existingProfile: memory.profile });
+    await saveCustomerMemory(customerId, memory.profile, patch);
+  } catch (error) {
+    console.warn(JSON.stringify({ event: "pepgpt.whatsapp.memory_unavailable", detail: error instanceof Error ? error.message : String(error), at: new Date().toISOString() }));
+  }
+  await sendWhatsAppText(phone, result.text);
 }
 
 function buildInstructions(behavior, knowledge, memory = { profile: {}, turnCount: 0, isNew: false }, liveCatalog = { available: false, products: [] }) {
