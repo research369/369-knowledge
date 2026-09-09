@@ -2,6 +2,7 @@ import express from "express";
 import pg from "pg";
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { customerIdFromWhatsAppPhone } from "./customer-id.js";
 
 const { Pool } = pg;
 const app = express();
@@ -409,7 +410,8 @@ async function processWhatsAppMessage({ messageId, from, contactName, text }) {
   const phone = normalizeWhatsAppPhone(from);
   if (!phone || !text || (WHATSAPP_TEST_MODE && phone !== WHATSAPP_TEST_ALLOWED_PHONE)) return;
   if (!(await claimWhatsAppMessage(messageId))) return;
-  const customerId = "whatsapp-" + phone;
+  const customerId = customerIdFromWhatsAppPhone(phone, WHATSAPP_APP_SECRET);
+  if (!customerId) return;
   const memory = await loadCustomerMemory(customerId);
   const context = { channel: "whatsapp", authenticatedCustomerPhone: phone, authenticatedCustomerName: contactName || null };
   const verifiedOrderStatus = await loadVerifiedOrderStatus(context, text);
