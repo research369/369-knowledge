@@ -3,6 +3,7 @@ import pg from "pg";
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { customerIdFromWhatsAppPhone } from "./customer-id.js";
+import { contextForModel } from "./model-context.js";
 
 const { Pool } = pg;
 const app = express();
@@ -496,7 +497,7 @@ async function callOpenAI({ message, history = [], context = {}, memory }) {
   const instructions = buildInstructions(behavior, knowledge, memory, liveCatalog);
   const input = [
     ...history.filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string").map((m) => ({ role: "user", content: [{ type: "input_text", text: `Previous ${m.role === "assistant" ? "PepGPT" : "customer"} message: ${m.content}` }] })),
-    { role: "user", content: [{ type: "input_text", text: `Runtime context: ${JSON.stringify(context)}\nCustomer message: ${message}` }] },
+    { role: "user", content: [{ type: "input_text", text: `Runtime context: ${JSON.stringify(contextForModel(context))}\nCustomer message: ${message}` }] },
   ];
   console.log(JSON.stringify({ event: "pepgpt.request.sent", model: MODEL, at: new Date().toISOString() }));
   const data = await requestOpenAI(
