@@ -4,6 +4,7 @@ import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { customerIdFromWhatsAppPhone } from "./customer-id.js";
 import { contextForModel } from "./model-context.js";
+import { extractOrderLookupFromMessage } from "./order-lookup.js";
 
 const { Pool } = pg;
 const app = express();
@@ -309,16 +310,6 @@ async function loadLiveCatalog() {
     console.warn(JSON.stringify({ event: "pepgpt.catalog.unavailable", detail: error instanceof Error ? error.message : String(error), at: new Date().toISOString() }));
     return { available: false, source: "369 Research live shop catalog", products: [] };
   }
-}
-
-function extractOrderLookupFromMessage(message) {
-  if (typeof message !== "string") return null;
-  const orderId = message.match(/\b(?:369[-\s]?)\d{3,12}\b/i)?.[0]?.replace(/\s/g, "") || "";
-  if (!orderId) return null;
-  const labelledName = message.match(/(?:vollst[aä]ndiger\s+name|name)\s*[:=,-]?\s*([\p{L}][\p{L}'-]*(?:\s+[\p{L}][\p{L}'-]*){1,3})/iu)?.[1];
-  const beforeOrder = message.slice(0, message.indexOf(orderId));
-  const leadingName = beforeOrder.match(/^\s*([\p{L}][\p{L}'-]*\s+[\p{L}][\p{L}'-]*)/u)?.[1];
-  return { orderId, customerName: (labelledName || leadingName || "").trim() };
 }
 
 function authenticatedCustomerName(context) {
