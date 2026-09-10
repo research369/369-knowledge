@@ -475,9 +475,14 @@ async function requestOpenAI(body, purpose) {
     if (response.ok) return response.json();
     const errorText = await response.text();
     const retryable = response.status === 429 || response.status >= 500;
-    if (!retryable || attempt === maxAttempts) throw new Error(`OpenAI ${purpose} failed after ${attempt} attempt(s): HTTP ${response.status}`);
+    let errorKind = "unknown";
+    try {
+      const parsed = JSON.parse(errorText);
+      errorKind = String(parsed?.error?.code || parsed?.error?.type || "unknown").slice(0, 80);
+    } catch {}
+    if (!retryable || attempt === maxAttempts) throw new Error(`OpenAI ${purpose} failed after ${attempt} attempt(s): HTTP ${response.status} (${errorKind})`);
     const delayMs = retryDelayMs(response, errorText, attempt);
-    console.warn(JSON.stringify({ event: "pepgpt.openai.retry", purpose, status: response.status, attempt, delayMs, at: new Date().toISOString() }));
+    console.warn(JSON.stringify({ event: "pepgpt.openai.retry", purpose, status: response.status, errorKind, attempt, delayMs, at: new Date().toISOString() }));
     await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
   throw new Error(`OpenAI ${purpose} failed`);
