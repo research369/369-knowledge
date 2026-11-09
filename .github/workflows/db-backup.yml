@@ -2,57 +2,84 @@ name: Daily PostgreSQL Backup
 
 on:
   schedule:
-    # Täglich um 03:00 UTC (05:00 CEST)
     - cron: '0 3 * * *'
   workflow_dispatch:
-    # Manuell auslösbar über GitHub Actions UI
+
+permissions:
+  contents: read
+
+concurrency:
+  group: knowledge-database-backup
+  cancel-in-progress: false
 
 jobs:
   backup:
-    name: pg_dump → GitHub Artifact
+    name: Export, restore-check and encrypt backup
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: restore-check-only
+          POSTGRES_DB: backup_verify
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     steps:
-      - name: Install PostgreSQL client
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y postgresql-client
-
-      - name: Run pg_dump
+      - name: Export database
         env:
           PGPASSWORD: ${{ secrets.PG_PASSWORD }}
+        shell: bash
         run: |
-          TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
-          FILENAME="knowledge_backup_${TIMESTAMP}.sql.gz"
-          pg_dump \
-            --host=thomas.proxy.rlwy.net \
-            --port=12065 \
-            --username=knowledge_user \
-            --dbname=knowledge \
-            --no-password \
-            --format=plain \
-            --clean \
-            --if-exists \
-            | gzip > "${FILENAME}"
-          echo "BACKUP_FILE=${FILENAME}" >> $GITHUB_ENV
-          echo "Backup size: $(du -sh ${FILENAME} | cut -f1)"
-
-      - name: Upload backup as artifact
+          set -Eeuo pipefail
+          test -n "$PGPASSWORD"
+          docker run --rm -e PGPASSWORD -e PGCONNECT_TIMEOUT=20 postgres:16 \
+            pg_dump --host=thomas.proxy.rlwy.net --port=12065 \
+            --username=knowledge_user --dbname=knowledge --no-password \
+            --format=custom --no-owner --no-privileges > knowledge.dump
+          test -s knowledge.dump
+      - name: Verify full restore in isolated database
+        env:
+          VERIFY_CONTAINER: ${{ job.services.postgres.id }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          docker exec -i "$VERIFY_CONTAINER" pg_restore --username=postgres \
+            --dbname=backup_verify --no-owner --no-privileges --exit-on-error < knowledge.dump
+          COUNT=$(docker exec "$VERIFY_CONTAINER" psql -U postgres -d backup_verify -Atc \
+            "SELECT count(*) FROM pg_tables WHERE schemaname NOT IN ('pg_catalog','information_schema');")
+          test "$COUNT" -gt 0
+          echo "Restore verified: $COUNT application tables."
+      - name: Encrypt verified backup
+        env:
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test -n "$BACKUP_ENCRYPTION_KEY"
+          FILE="knowledge_backup_$(date -u +%Y-%m-%d_%H-%M-%S).dump.enc"
+          openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -md sha256 \
+            -pass env:BACKUP_ENCRYPTION_KEY -in knowledge.dump -out "$FILE"
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -md sha256 \
+            -pass env:BACKUP_ENCRYPTION_KEY -in "$FILE" -out roundtrip.dump
+          cmp knowledge.dump roundtrip.dump
+          rm knowledge.dump roundtrip.dump
+          sha256sum "$FILE" > "$FILE.sha256"
+          echo "BACKUP_FILE=$FILE" >> "$GITHUB_ENV"
+      - name: Upload verified encrypted backup
         uses: actions/upload-artifact@v4
         with:
           name: db-backup-${{ github.run_id }}
-          path: ${{ env.BACKUP_FILE }}
+          path: |
+            ${{ env.BACKUP_FILE }}
+            ${{ env.BACKUP_FILE }}.sha256
+          if-no-files-found: error
           retention-days: 30
           compression-level: 0
-
-      - name: Verify backup
-        run: |
-          SIZE=$(du -sb "${BACKUP_FILE}" | cut -f1)
-          echo "Backup file: ${BACKUP_FILE}"
-          echo "Backup size: ${SIZE} bytes"
-          if [ "$SIZE" -lt 1000 ]; then
-            echo "ERROR: Backup file is suspiciously small (< 1KB)"
-            exit 1
-          fi
-          echo "Backup verified successfully."
+      - name: Remove temporary plaintext
+        if: always()
+        shell: bash
+        run: rm -f knowledge.dump roundtrip.dump
